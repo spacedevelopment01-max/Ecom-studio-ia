@@ -131,13 +131,13 @@ function ProjectAdCreator({ onDone }: { onDone?: () => void }) {
     }
   };
   const ads = data?.aiAds ?? [];
-  if(data?.access===false)return <Card className="mb-6 p-5" data-ad-plan-lock>{t("La publicité et l’aide aux campagnes sont incluses avec Dominer. Vos créations existantes restent conservées et accessibles.","Advertising and campaign assistance are included with Dominate. Existing creations remain kept and accessible.")}</Card>;
+  if(data?.access===false)return <Card className="mb-6 p-5" data-ad-plan-lock>{t("La publicité et l’aide aux campagnes sont incluses avec Dominer. Tes créations existantes restent gardées et accessibles.","Advertising and campaign assistance are included with Dominate. Existing creations remain kept and accessible.")}</Card>;
   return (
     <section className="mb-8" data-ai-ad-creator>
       <CommunicationAngleSelector value={angleId} onChange={setAngleId}/>
       <SectionTitle title={t("Publicité conçue par l'IA", "Ad designed by AI")}>
         {t(
-          "Choisissez le produit ou le service, décrivez votre idée : l'IA crée la publicité complète (scène, mise en page, textes) avec votre vrai produit et votre marque.",
+          "Choisis le produit ou le service, décris ton idée : l'IA crée la publicité complète (scène, mise en page, textes) avec ton vrai produit et ta marque.",
           "Pick the product or service, describe your idea: the AI creates the whole ad (scene, layout, copy) with your real product and brand.",
         )}
       </SectionTitle>
@@ -156,14 +156,14 @@ function ProjectAdCreator({ onDone }: { onDone?: () => void }) {
           <p role="status" className="text-sm" data-ai-ad-result>
             {(tracked.result?.assetIds ?? [tracked.result?.assetId]).filter(Boolean).some((assetId:string)=>data?.aiAds.some(a=>a.id===assetId))
               ? tracked.result?.delivery?.message || t("Publicité enregistrée dans la galerie ci-dessous.","Ad saved in the gallery below.")
-              : t("La tâche est terminée, mais son image n’est pas disponible dans cette galerie. Vérifiez la bibliothèque avant de lancer un nouvel essai.","The task ended, but its image is unavailable in this gallery. Check the library before starting another attempt.")}
+              : t("La tâche est terminée, mais son image n’est pas disponible dans cette galerie. Regarde la bibliothèque avant de lancer un nouvel essai.","The task ended, but its image is unavailable in this gallery. Check the library before starting another attempt.")}
           </p>
         )}
         {data && !data.ai ? (
           <p className="text-sm text-muted">
             {t(
-              "L'IA n'est pas active pour ce projet (forfait Découverte, budget IA épuisé ou fournisseur désactivé) : la création attend une configuration utilisable, aucun gabarit de secours.",
-              "AI isn't active for this project (Discovery plan, AI budget used up or provider disabled): creation waits for a usable configuration, without a template fallback.",
+              "L'IA n'est pas active pour ce projet (compte sans abonnement, budget IA du mois utilisé ou IA momentanément indisponible) : la création attend que l'IA revienne, sans rien fabriquer à la place.",
+              "AI isn't active for this project (account without a subscription, this month's AI budget used up or AI temporarily unavailable): creation waits for AI to come back, without making anything else instead.",
             )}
           </p>
         ) : (
@@ -214,7 +214,7 @@ function ProjectAdCreator({ onDone }: { onDone?: () => void }) {
                       <>
                         Coût probable : <strong>{budget.label(quote)}</strong>.
                         Si le contrôle demande un nouvel essai, il est décompté
-                        et vous êtes prévenu.
+                        et tu es prévenu.
                       </>,
                       <>
                         Likely cost: <strong>{budget.label(quote)}</strong>. If

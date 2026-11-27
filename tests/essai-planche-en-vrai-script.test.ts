@@ -492,7 +492,8 @@ describe("le script de l'essai de la planche en vrai (appels simulés)", async (
     expect(cas("publication-4x5").gardee).toBeNull();
     expect(cas("publication-4x5").essais.at(-1)!.raisonsApres).toEqual(["un texte est coupé ou collé au bord", "sa fidélité n'est pas au niveau (7/10, il faut 8)"]);
     expect(r.palette.map((p) => p.hex)).toEqual(["#C44912", "#D97A52", "#F6E8DA", "#A7B89B", "#8C6F4E"]);
-    expect(r.logosDeLApercu.sort()).toEqual(["badge", "favicon", "icone", "logo-compact"]);
+    // Depuis le 27 novembre 2026, le logo empilé d'Écume, identique au principal, est aussi repris de l'aperçu.
+    expect(r.logosDeLApercu.sort()).toEqual(["badge", "favicon", "icone", "logo-compact", "logo-empile"]);
     expect((await sharp(path.join(dir, "a-b", "planche-en-vrai.png")).metadata()).width).toBe(3072);
     expect(fs.existsSync(path.join(dir, "a-b", "comparaison-apercu-et-reassemblee.jpg"))).toBe(true);
     // c) : la seule case encore refusée, reprise une fois avec ses raisons d'aujourd'hui, relue.

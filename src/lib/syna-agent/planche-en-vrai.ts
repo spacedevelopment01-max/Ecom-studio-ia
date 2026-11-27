@@ -27,7 +27,7 @@ import { z } from "zod";
 import { L } from "../i18n-server";
 import { getJsonSetting } from "../settings";
 import { NOTE_DU_PROPRIETAIRE } from "./note-du-proprietaire";
-import { DOSSIER_DE_LA_PLANCHE, motQuiDitUnFait, nomDeProduitPermis, nomDuProduitALEcran } from "./planche-de-marque";
+import { DOSSIER_DE_LA_PLANCHE, motQuiDitUnFait, motsDuProduit, nomDeProduitPermis, nomDuProduitALEcran } from "./planche-de-marque";
 import { libelleDeLElement } from "./planche-en-vrai-libelles";
 
 // ---------------------------------------------------------------- 0. le réglage
@@ -485,6 +485,29 @@ export function inventaireIncomplet(inv: Inventaire, attendues: readonly string[
   return attendues.filter((n) => !lues.has(n));
 }
 export const caseLue = (inv: Inventaire | null | undefined, n: string): CaseLue | undefined => inv?.cases.find((c) => c.case === n);
+/**
+ * LES RÔLES DES POLICES SE LISENT SUR LA PLACE DANS L'APERÇU (27 novembre 2026, essai réel de Mouture, étape 5 ; constat du
+ * chef d'orchestre : « L'aperçu montre Montserrat à gauche (titres) et Playfair Display à droite. La planche en vrai écrit
+ * « Playfair Display / Nunito » »). L'inventaire avait rangé Playfair Display en titres. Ici, dans la case « typographies »
+ * telle que l'inventaire l'a relevée (de gauche à droite, de haut en bas) : la police nommée la première est celle des
+ * titres, la seconde celle des textes ; sauf si l'aperçu le dit autrement (une ligne qui nomme une police avec le mot
+ * « titre », ou le mot « titre » seul sur la ligne juste avant son nom). Sans les deux noms dans la case, rien ne change.
+ */
+export function policesDeLApercu(inv: Inventaire): Inventaire["polices"] {
+  const t = caseLue(inv, "typographies")?.textes.map((x) => x.trim()) ?? [];
+  const plat = (x: string) => x.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const { titres, textes } = inv.polices;
+  if (!titres.nom.trim() || !textes.nom.trim() || plat(titres.nom) === plat(textes.nom)) return inv.polices;
+  // La ligne du nom : le nom seul, ou une ligne qui le contient (« Titres : Montserrat »).
+  const place = (nom: string) => { const n = plat(nom), i = t.findIndex((x) => plat(x) === n); return i >= 0 ? i : t.findIndex((x) => plat(x).includes(n)); };
+  const a = place(titres.nom), b = place(textes.nom);
+  if (a < 0 || b < 0) return inv.polices;
+  const ditTitre = (i: number) => /titre|heading/i.test(t[i]) || (i > 0 && /^\s*(titres?|headings?)\s*:?\s*$/i.test(t[i - 1]));
+  // L'aperçu le dit autrement : son mot fait foi.
+  if (ditTitre(a) && !ditTitre(b)) return inv.polices;
+  if (ditTitre(b) && !ditTitre(a)) return { titres: textes, textes: titres };
+  return a <= b ? inv.polices : { titres: textes, textes: titres };
+}
 
 // ---------------------------------------------------------------- 7. la relecture, par groupe
 
@@ -510,6 +533,12 @@ export const ImageRelueSchema = z.object({
    * compare à la fiche (`faitsInventesEnVrai`). Absent d'un verdict d'avant ce champ.
    */
   inventes: z.array(z.object({ ou: z.string().max(200).catch(""), texte: z.string().max(200).catch("") })).max(20).optional().catch(undefined),
+  /**
+   * Les textes lus sur l'image refaite que le relecteur voit aussi, lisibles, sur l'aperçu de la case (27 novembre 2026,
+   * essai réel de Mouture : « Saveurs intenses » écrit sur l'étiquette du sachet de la 4:5, compté en trop). Le code ne les
+   * compte jamais en trop (`textesExcusesEnVrai`). Absent d'un verdict d'avant ce champ.
+   */
+  aussiSurLApercu: z.array(z.string().max(300)).max(40).optional().catch(undefined),
 });
 export type ImageRelue = z.infer<typeof ImageRelueSchema>;
 export const RelectureDuGroupeSchema = z.object({ images: z.array(ImageRelueSchema).max(20).catch([]) });
@@ -525,7 +554,8 @@ export const RELECTEUR_EN_VRAI = `Tu es le relecteur le plus exigeant d'un studi
 - texteCoupe : un texte est coupé, ou collé au bord de l'image ;
 - note : ta note de fidélité à l'aperçu, de 0 à 10 ; une image fidèle, nette, sans défaut visible vaut 8 ou plus ;
 - pourquoi : une ou deux phrases simples ;
-- inventes : chaque texte lisible de l'image refaite qui donne un nom de produit, une origine, une date, une année ou un chiffre absents de son aperçu et des produits de la marque donnés dans la demande (sur une étiquette, un emballage, une plaque, partout) ; pour chacun, « ou » (l'objet qui le porte) et « texte » (recopié lettre pour lettre) ; vide s'il n'y en a pas. Le nom de la marque et la phrase de son logo ne sont jamais inventés.
+- inventes : chaque texte lisible de l'image refaite qui donne un nom de produit, une origine, une date, une année ou un chiffre absents de son aperçu et des produits de la marque donnés dans la demande (sur une étiquette, un emballage, une plaque, partout) ; pour chacun, « ou » (l'objet qui le porte) et « texte » (recopié lettre pour lettre) ; vide s'il n'y en a pas. Le nom de la marque et la phrase de son logo ne sont jamais inventés ;
+- aussiSurLApercu : chaque texte de textesLus que tu lis aussi, écrit de la même façon, sur l'aperçu de la case (à n'importe quelle place de l'aperçu), recopié comme dans textesLus ; vide s'il n'y en a pas.
 Ne juge que ce que tu vois.`;
 
 export function demandeAuRelecteurEnVrai(o: { nom: string; personnes: boolean; groupe: Groupe; cases: { element: NomElement; photo: boolean }[]; produits?: readonly string[]; phrase?: readonly string[] }): string {
@@ -624,6 +654,49 @@ export function faitsInventesEnVrai(v: ImageRelue, o: { attendus: readonly strin
   const aPart = (v.inventes ?? []).map((x) => x.texte.trim()).filter((t) => t && motsDe(t).some(nouveau) && !nomDeProduitPermis(t, o.produits));
   return [...new Set([...lignes, ...aPart])];
 }
+/**
+ * LES TEXTES QUI NE SONT JAMAIS EN TROP (27 novembre 2026, essai réel de Mouture, étape 5 ; constat du chef d'orchestre :
+ * « Les noms des produits de la fiche posés sur les sachets (« Cafés en grains », « Cafés moulus », « Coffrets », au singulier
+ * comme au pluriel, quelle que soit la casse) ne sont jamais du « texte en trop ». » et « L'inventaire a raté « Saveurs
+ * intenses » sur la 4:5 »). Rend les mots excusés, un pour un, parmi les mots en trop et les mots manquants :
+ * - une ligne lue qui est le nom d'un produit de la fiche (`nomDeProduitPermis`) n'est jamais en trop ; une ligne attendue qui
+ *   est le nom d'un produit, rendue par le même produit au singulier ou au pluriel, ne manque pas ;
+ * - une ligne lue dont chaque mot est déjà un texte attendu de la case (un texte de l'aperçu écrit une seconde fois, par
+ *   exemple sur une étiquette) n'est pas en trop : c'est le code qui le vérifie, mot pour mot, lettre pour lettre ;
+ * - une ligne lue que le relecteur voit aussi sur l'aperçu de la case (`aussiSurLApercu`), quand l'inventaire ne l'a pas
+ *   recopiée : seulement si elle est bien dans ses textes lus, et jamais un fait inventé (un chiffre, une origine, une date,
+ *   un nom de produit hors de la fiche restent refusés, par le code et par `inventes`, avant cette excuse).
+ * Pourquoi ce mécanisme : le relecteur a l'aperçu et l'image refaite sous les yeux, dans le même appel ; il est le seul à
+ * pouvoir dire qu'un texte de l'aperçu, trop petit pour l'inventaire, est bien le même. Le code garde le dernier mot sur
+ * tout ce qu'il sait vérifier seul (produits de la fiche, répétition d'un texte attendu, faits inventés).
+ */
+export function textesExcusesEnVrai(v: ImageRelue, o: { attendus: readonly string[]; lus: readonly string[]; produits?: readonly string[] }): { enTrop: string[]; manquants: string[] } {
+  const enTrop: string[] = [], manquants: string[] = [];
+  const attendus = new Set(o.attendus.flatMap(motsDe));
+  const memeProduit = (a: string, b: string) => { const x = [...new Set(motsDuProduit(a))].sort().join(" "), y = [...new Set(motsDuProduit(b))].sort().join(" "); return !!x && x === y; };
+  const produitsLus = o.lus.filter((l) => nomDeProduitPermis(l, o.produits));
+  const pris = new Set<number>();
+  for (const a of o.attendus) {
+    if (!nomDeProduitPermis(a, o.produits)) continue;
+    const i = produitsLus.findIndex((l, k) => !pris.has(k) && memeProduit(a, l));
+    if (i >= 0) { pris.add(i); manquants.push(...motsDe(a)); }
+  }
+  for (const l of produitsLus) enTrop.push(...motsDe(l));
+  const vus = new Set((v.aussiSurLApercu ?? []).map((t) => motsDe(t).join(" ")).filter(Boolean));
+  for (const l of o.lus) {
+    if (nomDeProduitPermis(l, o.produits)) continue;
+    const m = motsDe(l);
+    if (!m.length) continue;
+    if (m.every((w) => attendus.has(w)) || vus.has(m.join(" "))) enTrop.push(...m);
+  }
+  return { enTrop, manquants };
+}
+/** Retire d'une liste de mots, un pour un, les mots excusés. */
+const sansLesMots = (mots: readonly string[], excuses: readonly string[]) => {
+  const reste = new Map<string, number>();
+  for (const w of excuses) reste.set(w, (reste.get(w) ?? 0) + 1);
+  return mots.filter((w) => { const n = reste.get(w) ?? 0; if (n > 0) { reste.set(w, n - 1); return false; } return true; });
+};
 /** Le début de la raison des faits inventés (le compte rendu garde les textes exacts ; le dessinateur ne les reçoit jamais). */
 export const DEBUT_FAITS_INVENTES_EN_VRAI = "faits ou produits inventés, absents de l'aperçu et de la fiche du client : ";
 export function raisonsDuRefusEnVrai(v: ImageRelue | undefined, o: { inventaire: CaseLue | undefined; personnes: boolean; photo: boolean; element?: string; deborde?: boolean;
@@ -638,7 +711,8 @@ export function raisonsDuRefusEnVrai(v: ImageRelue | undefined, o: { inventaire:
   const inventes = faitsInventesEnVrai(v, { attendus: z.attendus, lus: z.lus, produits: o.produits, logo: logoLa });
   // Les mots des lignes inventées sont dits dans leur propre raison, pas deux fois.
   const dansLesInventes = new Set(inventes.flatMap(motsDe));
-  const t = { manquants: c.manquants, enTrop: sansLesTextesDuLogo(c.enTrop, logoLa).filter((w) => !dansLesInventes.has(w)) };
+  const excuses = textesExcusesEnVrai(v, { attendus: z.attendus, lus: z.lus, produits: o.produits });
+  const t = { manquants: sansLesMots(c.manquants, excuses.manquants), enTrop: sansLesMots(sansLesTextesDuLogo(c.enTrop, logoLa).filter((w) => !dansLesInventes.has(w)), excuses.enTrop) };
   if (inventes.length) r.push(`${DEBUT_FAITS_INVENTES_EN_VRAI}${inventes.map((l) => `« ${l} »`).join(", ")}`);
   if (t.manquants.length || t.enTrop.length) r.push(`ses textes ne sont pas ceux de l'aperçu, lettre pour lettre${t.manquants.length ? ` (manquent : ${t.manquants.slice(0, 8).map((w) => `« ${w} »`).join(", ")})` : ""}${t.enTrop.length ? ` (en trop ou mal écrits : ${t.enTrop.slice(0, 8).map((w) => `« ${w} »`).join(", ")})` : ""}`);
   if (v.logoPresent && !o.inventaire?.logo) r.push("un logo a été ajouté là où l'aperçu n'en a pas");

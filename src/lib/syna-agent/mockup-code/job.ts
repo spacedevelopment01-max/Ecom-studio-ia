@@ -69,7 +69,7 @@ export async function runMockupCodeJob(ctx: JobContext) {
   const p = loadProject(a.projectId);
   const set = loadMockupSet(p.id);
   const d = set?.directions.find((x) => x.key === a.direction);
-  if (!set || !d) throw new UserFacingError(L("Maquette introuvable : préparez et choisissez d'abord une maquette (étape 6).", "Mockup not found: prepare and choose a mockup first (step 6)."));
+  if (!set || !d) throw new UserFacingError(L("Je ne retrouve pas le dessin de ton site : choisis-en d'abord un, je m'occupe du reste.", "I can't find your site's design: pick one first and I'll take care of the rest."));
   const units = (mockupCodeJobDeps.callMaxMicro ?? step7CallMaxMicro)(p.userId);
   if (!units) throw new UserFacingError(L("Le coût des appels n'a pas pu être encadré (modèle ou tarif inconnu) : aucun appel n'a été fait.", "The call cost could not be bounded: no call was made."));
   ctx.progress(0.02, L("Préparation du thème de départ", "Preparing the base theme"));
@@ -105,7 +105,7 @@ export async function runMockupCodeJob(ctx: JobContext) {
     if (a.conversationId) {
       try { updateJourney(a.conversationId, (j) => setStep(j, 7, "review", report.summary.slice(0, 300))); } catch { /* fil supprimé : le rapport reste dans le projet */ }
     }
-    notify(p.userId, p.id, report.ok ? L("Votre site codé d'après la maquette est prêt", "Your site coded from the mockup is ready") : L("Site codé d'après la maquette : des points restent à corriger", "Site coded from the mockup: some points remain"), report.summary.slice(0, 200), report.ok ? "success" : "warning");
+    notify(p.userId, p.id, report.ok ? L("Ton site, monté d'après son dessin, est prêt", "Your site, built from its design, is ready") : L("Ton site, monté d'après son dessin : quelques points restent à reprendre", "Your site, built from its design: a few points still need work"), report.summary.slice(0, 200), report.ok ? "success" : "warning");
     return { versionId: v.id, number: v.number, ok: report.ok, summary: report.summary, pages: compactPages(report) };
   } finally {
     await deps.close?.();

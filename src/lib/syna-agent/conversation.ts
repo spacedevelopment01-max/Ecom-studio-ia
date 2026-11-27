@@ -116,11 +116,18 @@ type Msg = { role: string; content?: any };
  * « Impossible de valider : … », « Rien n'est enregistré : … ») est une étape ordinaire : SINA le corrige seule
  * (audit de la conversation, 22 novembre 2026).
  */
+/**
+ * Le début du résumé d'un outil tombé en panne, lu par le client dans le fil (26 novembre 2026 : dit comme SINA le dirait,
+ * sans « Échec de l'outil »). Les anciens résumés gardent leur début d'avant, toujours reconnu par `vraiEchec`.
+ */
+export const PREFIXE_ECHEC_FR = "Je n'ai pas pu le faire : ";
+export const PREFIXE_ECHEC_EN = "I couldn't do it: ";
+const ECHEC_RX = /^(Je n'ai pas pu le faire :|I couldn't do it:|Échec de l'outil|Tool failed)|budget|plafond/i;
 export function vraiEchec(c: { tool?: string; summary?: string; jobs?: unknown[] }): boolean {
   if (c.tool === "jobs.wait") return true;
   const t = c.tool ? allTools().find((x) => x.name === c.tool) : undefined;
   if (t?.estimate) return true;
-  return /^(Échec de l'outil|Tool failed)|budget|plafond/i.test(String(c.summary ?? ""));
+  return ECHEC_RX.test(String(c.summary ?? ""));
 }
 
 /**

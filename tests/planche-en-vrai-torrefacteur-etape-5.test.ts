@@ -27,7 +27,10 @@ const raisons = (n: P.NomElement, o: { logo?: typeof LOGO; produits?: string[] }
 
 describe("planche en vrai de Mouture, étape 5 : les textes du logo jamais en trop", () => {
   it("sans le nom et la phrase du logo, le code d'avant refusait pour « TORRÉFACTION », « ARTISANALE » (verdicts réels)", () => {
-    for (const n of ["publication-1x1", "publication-9x16", "site-ordinateur"] as const) expect(raisons(n, {}).join(" ")).toMatch(/en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE »/);
+    for (const n of ["publication-1x1", "publication-9x16"] as const) expect(raisons(n, {}).join(" ")).toMatch(/en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE »/);
+    // Depuis le 27 novembre 2026 (`textesExcusesEnVrai`), site-ordinateur n'en a plus besoin : « TORRÉFACTION ARTISANALE »
+    // y est aussi un texte de l'aperçu (le bandeau du site), écrit une seconde fois sous le logo : jamais en trop.
+    expect(raisons("site-ordinateur", {})).toEqual([]);
   });
   it("avec eux, publication-1x1, publication-9x16 et site-ordinateur sont gardées ; produit-1, produit-2 et reference-4 ne sont plus reprochés pour la phrase ni pour le nom", () => {
     for (const n of ["publication-1x1", "publication-9x16", "site-ordinateur"] as const) expect(raisons(n), n).toEqual([]);

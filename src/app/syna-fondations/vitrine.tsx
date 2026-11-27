@@ -86,10 +86,10 @@ export function SynaVitrine({ initial }: { initial: SynaVitrineState }) {
       progress="indeterminate"
       steps={[
         { title: L("Table en pierre, lumière du matin", "Stone table, morning light"), detail: L("Contrôle : produit entier, aucune lettre ajoutée", "Check: whole product, no added lettering"), state: "verified" },
-        { title: L("Gros plan sur la ceinture cuivrée", "Close-up of the copper band"), detail: L("Le fournisseur n'a pas répondu (erreur 503). Résultat incertain : rien n'est relancé sans votre accord.", "The provider did not answer (error 503). Uncertain result: nothing is retried without your consent."), state: "failed" },
+        { title: L("Gros plan sur la ceinture cuivrée", "Close-up of the copper band"), detail: L("Cette image n'a pas pu être créée, à cause d'un problème passager. Je ne la refais pas sans ton accord.", "This image couldn't be created because of a temporary problem. I won't redo it without your go-ahead."), state: "failed" },
         { title: L("Machine et tasse, fond clair", "Machine and cup, light background"), detail: L("Création en cours…", "Creating…"), state: "running" },
       ]}
-      note={L("Exemple. Débité à ce stade : 2 %. Image 2 non débitée tant que le fournisseur ne confirme pas.", "Example. Charged so far: 2%. Image 2 is not charged until the provider confirms.")}
+      note={L("Exemple. Compté à ce stade : 2 % de ton budget IA du mois. L'image 2 n'est pas comptée tant qu'elle n'est pas faite.", "Example. Counted so far: 2% of your monthly AI budget. Image 2 isn't counted until it's done.")}
       actions={<><SynaButton variant="ghost" size="sm">{L("Arrêter après l'image 3", "Stop after image 3")}</SynaButton><SynaButton size="sm">{L("Relancer l'image 2 · ≈ 2 %", "Retry image 2 · ≈ 2%")}</SynaButton></>}
     />
   );
@@ -111,7 +111,7 @@ export function SynaVitrine({ initial }: { initial: SynaVitrineState }) {
         thread: (
           <>
             <SynaMessage from="user" lang={lang}><p>{L("Crée 3 images de la finition Cuivre sur une table en pierre, sans personne.", "Create 3 images of the Copper finish on a stone table, no people.")}</p></SynaMessage>
-            <SynaMessage from="syna" lang={lang}><p>{L("Je prépare trois images à partir de votre photo du produit. Je vérifie chacune avant de vous la montrer.", "I am preparing three images from your product photo. I check each one before showing it to you.")}</p></SynaMessage>
+            <SynaMessage from="syna" lang={lang}><p>{L("Je prépare trois images à partir de ta photo du produit. Je vérifie chacune avant de te la montrer.", "I am preparing three images from your product photo. I check each one before showing it to you.")}</p></SynaMessage>
             {runningCard}
           </>
         ),
@@ -167,7 +167,7 @@ export function SynaVitrine({ initial }: { initial: SynaVitrineState }) {
         </header>
 
         <Section id="sv-shell" eyebrow="01" title={L("Coquille : conversation et espace de travail", "Shell: conversation and workspace")} intro={L(
-          "Le même contenu dans les deux présentations. Changez de mode : le brouillon tapé, l'élément désigné et la tâche restent en place.",
+          "Le même contenu dans les deux présentations. Change de mode : le brouillon tapé, l'élément désigné et la tâche restent en place.",
           "The same content in both presentations. Switch modes: the typed draft, the selected element and the task stay in place.",
         )}>
           <div className="sv-shell-tools">
@@ -207,7 +207,7 @@ export function SynaVitrine({ initial }: { initial: SynaVitrineState }) {
               state="proposal"
               summary={L("« L'espresso, partout où vous allez. » devient « L'espresso, partout. »", "“Espresso, wherever you go.” becomes “Espresso, everywhere.”")}
               steps={[
-                { title: L("Modifier le texte de l'en-tête", "Edit the header text"), detail: L("Moteur local, sans IA", "Local engine, no AI"), state: "proposal" },
+                { title: L("Modifier le texte de l'en-tête", "Edit the header text"), detail: L("Fait par le Studio, sans IA", "Done by the Studio, no AI"), state: "proposal" },
                 { title: L("Comparer avant / après", "Compare before / after"), detail: L("Capture de la page d'accueil", "Home page capture"), state: "proposal" },
               ]}
               note={L("Gratuit · annulable (retour à la version 12)", "Free · undoable (back to version 12)")}
@@ -222,7 +222,7 @@ export function SynaVitrine({ initial }: { initial: SynaVitrineState }) {
               lang={lang}
               eyebrow={L("Avant de créer", "Before creating")}
               title={L("3 images de la finition Cuivre", "3 images of the Copper finish")}
-              model={L("Qwen-Image 3.0 Pro · format 4:5 · aucune personne · photo du produit fournie", "Qwen-Image 3.0 Pro · 4:5 · no people · product photo provided")}
+              model={L("Image créée par l'IA · format 4:5 · aucune personne · photo du produit fournie", "AI-created image · 4:5 · no people · product photo provided")}
               costPct={6}
               usedPct={46}
               details={[

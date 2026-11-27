@@ -263,8 +263,8 @@ export function AssetViewer({
               <div className="col-span-2">
                 <dt className="text-muted">{t("Recette", "Recipe")}</dt>
                 <dd>
+                  {/* Le nom du fournisseur d'IA reste au Studio : le client ne lit que la recette. */}
                   {a.meta.recipe}
-                  {a.meta.provider ? ` · ${a.meta.provider}` : ""}
                 </dd>
               </div>
             )}
@@ -503,8 +503,8 @@ export function AssetViewer({
               )}
               <p className="mt-1.5 text-[11px] text-muted">
                 {t(
-                  "Via l'API officielle Canva Connect (compte à connecter dans Connexions). La version retouchée revient comme nouvelle version liée.",
-                  "Via the official Canva Connect API (connect your account in Connections). The edited version comes back as a new linked version.",
+                  "Avec ton compte Canva, à relier dans Connexions. La version retouchée revient ici comme une nouvelle version liée.",
+                  "With your Canva account, to link in Connections. The edited version comes back here as a new linked version.",
                 )}
               </p>
             </div>

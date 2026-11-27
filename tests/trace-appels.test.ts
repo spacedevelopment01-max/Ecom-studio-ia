@@ -84,7 +84,7 @@ describe("trace des appels", async () => {
     await llmText({ task: "copywriting", userId: "u-replay", system: "s", prompt: "p", usageKey: key });
     // Cette fixture sans vraie réservation représente une trace d'avant migration.
     // La réutilisation du résultat avec reçu natif est vérifiée dans budget-ia.test.ts.
-    await expect(llmText({ task: "copywriting", userId: "u-replay", system: "s", prompt: "p", usageKey: key })).rejects.toThrow(/déjà été envoyée/);
+    await expect(llmText({ task: "copywriting", userId: "u-replay", system: "s", prompt: "p", usageKey: key })).rejects.toThrow(/déjà été lancée/);
     const r = rows("user_id = ?", "u-replay");
     expect(sent.length - before).toBe(1);
     expect(r).toHaveLength(1);

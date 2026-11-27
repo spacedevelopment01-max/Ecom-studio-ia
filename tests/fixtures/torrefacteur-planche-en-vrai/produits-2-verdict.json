@@ -1,0 +1,107 @@
+{
+  "verdict": {
+    "images": [
+      {
+        "case": "produit-1",
+        "identique": true,
+        "textesLus": [
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "CAFÉ EN GRAINS"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "Même sachet kraft, même bol de grains et même décor que l'aperçu. Le logo est complet et l'étiquette est propre, sans texte inventé.",
+        "inventes": []
+      },
+      {
+        "case": "produit-2",
+        "identique": true,
+        "textesLus": [
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "CAFÉ MOULU",
+          "EXCELLENCE"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 7,
+        "pourquoi": "La composition est fidèle : sachet kraft, tas de café moulu, table en bois. Mais l'étiquette ajoute « EXCELLENCE », un nom de gamme absent de l'aperçu et des produits de la marque.",
+        "inventes": [
+          {
+            "ou": "étiquette du sachet",
+            "texte": "EXCELLENCE"
+          }
+        ]
+      },
+      {
+        "case": "produit-3",
+        "identique": true,
+        "textesLus": [
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "CAFÉS EN GRAINS",
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "CAFÉS MOULUS",
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "On retrouve le même coffret ouvert avec deux sachets et la tasse blanche, comme dans l'aperçu. Les étiquettes reprennent les produits de la marque et les logos sont nets.",
+        "inventes": []
+      },
+      {
+        "case": "emballage",
+        "identique": true,
+        "textesLus": [
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "TORRÉFACTION ARTISANALE",
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "Cafés moulus",
+          "TORRÉFACTION ARTISANALE",
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "La mise en scène est identique à l'aperçu : carton illustré, sachet, carte et mug émaillé. Sur le mug sombre, le logo reste lisible grâce à son liseré et à son texte clairs.",
+        "inventes": []
+      }
+    ]
+  },
+  "raisons": {
+    "produit-1": [],
+    "produit-2": [
+      "faits ou produits inventés, absents de l'aperçu et de la fiche du client : « EXCELLENCE »",
+      "sa fidélité n'est pas au niveau (7/10, il faut 8)"
+    ],
+    "produit-3": [
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « CAFÉS », « EN », « GRAINS », « CAFÉS », « MOULUS »)"
+    ],
+    "emballage": [
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Cafés », « moulus »)"
+    ]
+  },
+  "gardees": [
+    "produit-1"
+  ]
+}

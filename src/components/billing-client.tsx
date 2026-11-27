@@ -146,7 +146,7 @@ export function AiUsageBar({ billing, variant = "compact", className }: { billin
       {credits && row(t("Crédits achetés", "Purchased credits"), credits.used, t("Utilisés une fois le forfait épuisé ; ils n'expirent pas.", "Used once the plan is used up; they don't expire."))}
       {pending ? <p className="rounded-xl bg-signal/10 p-3 text-sm">{t("Une génération utilise temporairement le budget disponible. Les pourcentages montrent la consommation enregistrée ; attendez son résultat avant une nouvelle action.", "A generation is temporarily using the available budget. Percentages show recorded usage; wait for its result before starting another action.")}</p> : paused ? (
         <div className="rounded-xl bg-bad/10 p-3 text-sm text-bad">
-          {t(`L'IA est en pause : elle reprend le ${date}, ou tout de suite avec une recharge. En attendant, le moteur local du studio continue (sans IA).`, `AI is paused: it resumes on ${date}, or right away with a top-up. Meanwhile, the studio's local engine keeps working (without AI).`)}
+          {t(`L'IA est en pause : elle reprend le ${date}, ou tout de suite avec une recharge. En attendant, ce qui se fait sans IA continue.`, `AI is paused: it resumes on ${date}, or right away with a top-up. Meanwhile, whatever can be done without AI keeps going.`)}
           <div><Link href="/studio/compte" className="mt-2 inline-flex h-10 items-center rounded-full bg-signal px-4 text-sm font-semibold text-signal-ink">{t("Recharger l'IA", "Top up AI")}</Link></div>
         </div>
       ) : plan.used >= 80 && !credits ? (

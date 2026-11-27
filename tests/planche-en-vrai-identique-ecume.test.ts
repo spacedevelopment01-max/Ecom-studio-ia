@@ -132,7 +132,8 @@ describe("4. le bloc 01 du vrai logo 10 : les cases fidèles à l'aperçu, sans 
     expect(mp.height! / mp.width!).toBeGreaterThan(0.15);
     const decoupe = await P.decouperLesApercus(fs.readFileSync(`${F}/planche-B-gardee.jpg`), "standard");
     const v = await C.versionsDuLogo({ logo: det.ok ? det.png : logo, separation: sep, couleur: "#C44912", sombre: "#C44912", clair: "#F6E8DA", monoClair: "#A7B89B", nom: "Écume", bas: "SAVONNERIE ARTISANALE", police: T.POLICE_DU_BADGE, tuiles: decoupe.apercus });
-    expect(v.depuisLApercu.sort()).toEqual(["badge", "favicon", "icone", "logo-compact"]);
+    // Depuis le 27 novembre 2026, le logo empilé d'Écume, identique au principal, est aussi repris de l'aperçu.
+    expect(v.depuisLApercu.sort()).toEqual(["badge", "favicon", "icone", "logo-compact", "logo-empile"]);
     const hz = await sharp(v.versions["logo-horizontal"]).metadata();
     expect(hz.width! / hz.height!).toBeGreaterThan(1.8);
     // Une version reprise : la tuile agrandie quatre fois, fond retiré (coins transparents).

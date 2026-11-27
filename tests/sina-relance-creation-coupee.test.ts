@@ -64,6 +64,32 @@ describe("relancer une création de site coupée, sans repayer ce qui est fait",
     expect(S.creationCoupee(vieux)).toBeNull();
   });
 
+  it("textes du client alignés (26 novembre 2026) : la création coupée se reconnaît par son code, plus par son texte", async () => {
+    const { failJob, getJob, CODE_DEJA_LANCEE, CODE_TACHE_COUPEE, ErreurAuDetailDuStudio, UserFacingError } = await import("@/lib/jobs");
+    const { operationPending } = await import("@/lib/billing");
+    const user = `u-${id()}`, t = now();
+    const echoue = (projet: string, err: unknown) => {
+      const job = id();
+      run("INSERT INTO jobs (id, user_id, project_id, type, payload, status, run_at, created_at, updated_at, attempts, max_attempts) VALUES (?,?,?,?,?,?,?,?,?,?,?)", job, user, projet, S.SINA_SITE_JOB, JSON.stringify({ projectId: projet, consigne: "Chaleureux", capMicro: 10_000_000 }), "running", t, t, t, 1, 3);
+      failJob(getJob(job)!, err, { permanent: true });
+      return job;
+    };
+    // L'étape déjà lancée, avec sa nouvelle phrase (tutoyée, sans « déjà été envoyée ») : reconnue par son code.
+    let deja: unknown; try { operationPending(); } catch (e) { deja = e; }
+    expect((deja as Error).message).not.toMatch(/déjà été envoyée|already been sent|incertain|uncertain/);
+    const p1 = `p-${id()}`, j1 = echoue(p1, deja);
+    expect(JSON.parse(getJob(j1)!.checkpoint).failureCode).toBe(CODE_DEJA_LANCEE);
+    expect(S.creationCoupee(p1)).toMatchObject({ id: j1, payload: { consigne: "Chaleureux" } });
+    // La tâche coupée en route : le client lit la phrase de SINA, le code fait la reprise.
+    const p2 = `p-${id()}`, j2 = echoue(p2, new ErreurAuDetailDuStudio("détail pour le Studio", "J'ai gardé tout ce qui est fait.", CODE_TACHE_COUPEE));
+    expect(getJob(j2)!.message).toBe("J'ai gardé tout ce qui est fait.");
+    expect(S.creationCoupee(p2)).toMatchObject({ id: j2 });
+    // Un autre refus, même si son texte contient « incertain » : il se refait, jamais relancé à l'identique.
+    const p3 = `p-${id()}`;
+    echoue(p3, new UserFacingError("Résultat incertain du contrôle des faits", "COPY_FACTS_REJECTED"));
+    expect(S.creationCoupee(p3)).toBeNull();
+  });
+
   it("le prix de la relance : ce qui reste, jamais moins d'un cinquième du prix probable ; le plafond garde la marge", () => {
     const full = { probableMicro: 6_000_000, maxMicro: 9_000_000, label: "site" };
     const q = S.relanceQuote(full, 1_180_000);

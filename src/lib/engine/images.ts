@@ -186,7 +186,7 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
     // photos, jamais sur une silhouette découpée et collée ailleurs.
     const own = await photoImageSet(ctx, loadProject(projectId), opts);
     if (own) return own;
-    throw new Error(L("Aucune photo du produit : importez au moins une photo pour créer les images.", "No product photo: upload at least one photo to create the images."));
+    throw new Error(L("Aucune photo du produit : ajoute au moins une photo pour que je crée les images.", "No product photo: upload at least one photo to create the images."));
   }
   project = loadProject(projectId);
   const main = cutouts[0];
@@ -410,11 +410,11 @@ async function photoImageSet(ctx: JobContext, project: Project, opts: ImageSetOp
       let layout: string | undefined;
       let variant: AdVariant | undefined;
       for (const f of c.formats) {
-        ctx.progress(0.4 + (ids.length / Math.max(1, total)) * 0.55, L("Visuels mis en page sur vos photos", "Visuals laid out on your photos"));
+        ctx.progress(0.4 + (ids.length / Math.max(1, total)) * 0.55, L("Visuels mis en page sur tes photos", "Visuals laid out on your photos"));
         const r = await composePoster(project, { aspect: f.aspect, headline: c.headline, subline: c.subline, eyebrow: c.eyebrow, cta: c.cta, background, product: null, features: c.features, layout, variant, seed: `images:${c.key}` });
         layout ??= r.layout;
         variant ??= r.doc.meta.recipe?.variant as AdVariant | undefined;
-        const a = await saveAsset({ projectId: project.id, userId: project.userId, data: r.jpg, name: `${slug(project.product.name || project.name)}-${f.role === "ad" ? C("publicite", "ad") : f.role === "banner" ? C("banniere", "banner") : "post"}-${c.key}-${f.aspect.replace(":", "x")}.jpg`, mime: "image/jpeg", role: f.role, folderKey: f.folder, origin: "generated", sourceAssetId: background.id, meta: { recipe: L(`${c.angle.fr} : votre photo entière, format ${f.aspect}`, `${c.angle.en}: your whole photo, ${f.aspect} format`), format: f.aspect, concept: c.key, text: { headline: c.headline }, poster: { docKey: r.docKey, layout: r.layout, backgroundAssetId: background.id } } });
+        const a = await saveAsset({ projectId: project.id, userId: project.userId, data: r.jpg, name: `${slug(project.product.name || project.name)}-${f.role === "ad" ? C("publicite", "ad") : f.role === "banner" ? C("banniere", "banner") : "post"}-${c.key}-${f.aspect.replace(":", "x")}.jpg`, mime: "image/jpeg", role: f.role, folderKey: f.folder, origin: "generated", sourceAssetId: background.id, meta: { recipe: L(`${c.angle.fr} : ta photo entière, format ${f.aspect}`, `${c.angle.en}: your whole photo, ${f.aspect} format`), format: f.aspect, concept: c.key, text: { headline: c.headline }, poster: { docKey: r.docKey, layout: r.layout, backgroundAssetId: background.id } } });
         savePosterDoc(project.id, r.docKey, r.doc, a.id);
         ids.push(a.id);
       }
@@ -495,7 +495,7 @@ export async function generateSingleImage(ctx: JobContext, projectId: string, re
   if (!["packshot", "scene", "social", "ad", "banner"].includes(req.kind)) throw new Error(L("Ce type d'image est réservé aux entreprises de services.", "This image type is for service businesses only."));
   const cutouts = await ensureCutouts(ctx, project);
   const cut = (req.sourceCutoutId && cutouts.find((c) => c.id === req.sourceCutoutId)) || cutouts[0];
-  if (!cut) throw new Error(L("Importez d'abord une photo du produit.", "Upload a product photo first."));
+  if (!cut) throw new Error(L("Ajoute d'abord une photo du produit.", "Add a product photo first."));
   const product = await loadImage(assetData(cut));
   const pal = palette(project);
   const look = sceneLook(brandPhotoLine(project));
@@ -514,7 +514,7 @@ export async function generateSingleImage(ctx: JobContext, projectId: string, re
   } else if (req.kind === "scene" || req.kind === "banner") {
     let aiNote: string | null = null;
     // Image payante seulement si son contrôle de fidélité est possible (sinon elle ne pourrait jamais être validée).
-    if (req.useAi && !llmConfigured()) aiNote = L("contrôle de fidélité indisponible : aucune image IA payée", "fidelity check unavailable: no AI image paid for");
+    if (req.useAi && !llmConfigured()) aiNote = L("je ne pouvais pas vérifier qu'elle montre bien ton produit, alors je ne l'ai pas créée", "I couldn't check that it really shows your product, so I didn't create it");
     else if (req.useAi) {
       const r = await ctx.step("ai-bg", async () => {
         try {
@@ -537,17 +537,17 @@ export async function generateSingleImage(ctx: JobContext, projectId: string, re
       if (r && "b64" in r && r.b64) {
         data = await sharp(Buffer.from(r.b64, "base64")).jpeg({ quality: 92 }).toBuffer();
         const st = r.stock;
-        const recipe = st ? L(`${st.credit} — décor ; votre produit réel composé par le studio (aucune image générée)`, `${st.credit} — set; your real product composited by the studio (no generated image)`) : L("Photo publicitaire générée à partir de la photo du produit", "Ad photograph generated from the product photo");
+        const recipe = st ? L(`${st.credit} — décor ; ton vrai produit posé par le Studio (aucune image créée)`, `${st.credit} — set; your real product composited by the studio (no generated image)`) : L("Photo publicitaire générée à partir de la photo du produit", "Ad photograph generated from the product photo");
         const a = await saveAsset({ projectId, userId: project.userId, data, name: `${base}-${req.kind === "banner" ? C("banniere", "banner") : "scene"}-${C("ia", "ai")}-${Date.now().toString(36)}.jpg`, mime: "image/jpeg", role: req.kind, folderKey: req.kind === "banner" ? "images.banners" : "images.scenes", origin: "generated", sourceAssetId: cut.id, meta: { recipe, provider: r.providerLabel ?? "IA", ...(st ? { stock: { source: st.source, id: st.id, page: st.page, author: st.author, license: st.license } } : {}), qc: r.qc, gate: r.gate, format: fmt.label }, status: "review" });
         return { assetId: a.id };
       }
       // Image IA refusée au contrôle (ou indisponible) : scène composée localement, la raison est gardée et affichée.
-      aiNote = r && "rejected" in r ? r.rejected ?? null : L("génération d'image IA indisponible", "AI image generation unavailable");
+      aiNote = r && "rejected" in r ? r.rejected ?? null : L("la création d'images par l'IA n'était pas disponible", "AI image creation wasn't available");
     }
     const s = await renderScene({ product, palette: pal, style: req.style ?? "studio", format: fmt, seed: Date.now() % 1000, offsetX: req.kind === "banner" ? 0.18 : 0, look });
     data = await sharp(s.png).jpeg({ quality: 92 }).toBuffer();
     folder = req.kind === "banner" ? "images.banners" : "images.scenes";
-    meta = { recipe: L(`Scène ${req.style ?? "studio"}`, `Scene: ${req.style ?? "studio"}`), provider: "local", ...(aiNote ? { aiFallback: L(`Image IA non utilisée : ${aiNote}. Scène composée à partir de votre photo.`, `AI image not used: ${aiNote}. Scene composed from your photo.`) } : {}) };
+    meta = { recipe: L(`Scène ${req.style ?? "studio"}`, `Scene: ${req.style ?? "studio"}`), provider: "local", ...(aiNote ? { aiFallback: L(`Je n'ai pas utilisé d'image créée par l'IA (${aiNote}) : j'ai composé la scène à partir de ta photo.`, `I didn't use an AI-created image (${aiNote}): I composed the scene from your photo.`) } : {}) };
   } else {
     const logoAsset = latestAsset(projectId, "logo");
     const r = await renderCreative({ product, palette: pal, typo: brandTypo(project), format: fmt, layout: req.layout ?? "editorial", headline: req.headline || project.brand?.tagline || project.product.name, subline: req.subline, cta: req.cta, brand: project.brand?.name ?? project.name, logo: logoAsset ? await loadImage(assetData(logoAsset)) : null, scene: req.style, seed: Date.now() % 1000, look });
@@ -558,6 +558,6 @@ export async function generateSingleImage(ctx: JobContext, projectId: string, re
   }
   const a = await saveAsset({ projectId, userId: project.userId, data, name: `${base}-${role}-${fmt.label.replace(":", "x")}-${Date.now().toString(36)}.jpg`, mime: "image/jpeg", role, folderKey: folder, origin: "generated", sourceAssetId: cut.id, meta: { ...meta, format: fmt.label }, status: "review" });
   // Image IA demandée mais non utilisée : dit honnêtement au client (note du travail), jamais passé sous silence.
-  if (typeof meta.aiFallback === "string") notify(project.userId, projectId, L("Image IA non utilisée", "AI image not used"), meta.aiFallback, "warning");
+  if (typeof meta.aiFallback === "string") notify(project.userId, projectId, L("Scène faite à partir de ta photo", "Scene made from your photo"), meta.aiFallback, "warning");
   return { assetId: a.id, ...(typeof meta.aiFallback === "string" ? { note: meta.aiFallback } : {}) };
 }

@@ -1051,9 +1051,13 @@ export async function reassemblerLEssaiEnVrai(o: {
   const aReprendre = (o.reprendre ?? []).filter((n) => !images.has(n) && cases.find((c) => c.element === n)?.essais.length);
   const { separerSymbole } = await import("../../src/lib/syna-agent/planche-en-vrai-code");
   const separation = await separerSymbole(logo);
+  // LES LOGOS EN HAUTE DÉFINITION DÉJÀ REÇUS (27 novembre 2026, réassemblage de Mouture après l'étape 5 : ses quatre
+  // versions avaient été payées et gardées) : sans LOGO_HD, quand le dossier de l'essai garde leurs images reçues et leur
+  // relecture (logos-hd/), elles sont reprises telles quelles et rejugées par le code d'aujourd'hui, sans aucun appel ni clé.
+  const dejaRecus = !o.logoHd && !separation.fiable && fs.existsSync(path.join(o.dossier, "logos-hd", "relecture-logos-hd-verdict.json"));
   // Les versions reprises de l'aperçu (sans symbole séparable) : ce sont elles que LOGO_HD refait.
-  const versionsHd = o.logoHd && !separation.fiable ? P.VERSIONS_EN_HD.filter((v) => decoupe.apercus.has(P.LOGOS_EN_HD[v].tuile)) : [];
-  if (aReprendre.length || versionsHd.length) {
+  const versionsHd = (o.logoHd || dejaRecus) && !separation.fiable ? P.VERSIONS_EN_HD.filter((v) => decoupe.apercus.has(P.LOGOS_EN_HD[v].tuile)) : [];
+  if (aReprendre.length || (versionsHd.length && !dejaRecus)) {
     const maxMicro = (aReprendre.length ? T.devisDUneReprise(aReprendre).maxMicro : 0) + (versionsHd.length ? T.devisDesLogosEnHd(versionsHd.length).maxMicro : 0);
     const plafond = Number(String(o.plafondEuros ?? "").replace(",", "."));
     if (!Number.isFinite(plafond) || plafond <= 0) throw new Error("PLAFOND_ESSAI_EUR manquant ou illisible pour la reprise : rien n'est lancé.");
@@ -1073,7 +1077,7 @@ export async function reassemblerLEssaiEnVrai(o: {
   }
   const gardesHd = new Map<VersionEnHd, Buffer>(), refusesHd: VersionEnHd[] = [];
   if (versionsHd.length && !arret) {
-    const r = await logosEnHdDeLEssai({ client, decoupe, logo, nom, personnes, versions: versionsHd, aiLogos: o.aiLogos, ecrire });
+    const r = await logosEnHdDeLEssai({ client, decoupe, logo, nom, personnes, versions: versionsHd, aiLogos: dejaRecus ? rejeuDesLogosEnHd(o.dossier) : o.aiLogos, ecrire });
     for (const [v, p] of r.gardees) gardesHd.set(v, p);
     refusesHd.push(...versionsHd.filter((v) => !r.gardees.has(v) && r.tentees.includes(v)));
     logosEnHd = { versions: versionsHd, devis: r.devis, depenseMicro: r.depenseMicro, gardees: [...r.gardees.keys()], refusees: refusesHd, surLaPlanche: [] };
@@ -1230,6 +1234,25 @@ async function repriseDesCases(o: {
  * appel, une reprise des refusées ; sous la borne `devisDesLogosEnHd` et le plafond de l'essai (posé par l'appelant). Ce qui
  * part et ce qui revient est écrit tout de suite dans logos-hd/ (un arrêt ne perd rien). Une panne arrête, jamais relancée.
  */
+/**
+ * Le rejeu des logos en haute définition déjà reçus (aucun appel) : chaque image reçue et chaque relecture sont relues dans
+ * logos-hd/ du dossier de l'essai. Une image qui n'y est pas (une reprise jamais faite) arrête le rejeu, sans appel.
+ */
+export function rejeuDesLogosEnHd(dossier: string): (q: Qui) => LogosEnHdAi {
+  return () => ({
+    refaire: async (_d, cle) => {
+      const f = path.join(dossier, "logos-hd", `${cle}-recue.png`);
+      if (!fs.existsSync(f)) throw new Error(`rejeu des logos en haute définition : ${cle} n'a jamais été reçu ; aucun appel n'est fait`);
+      const r = path.join(dossier, "logos-hd", `${cle}-recu.json`);
+      return { png: fs.readFileSync(f), recu: fs.existsSync(r) ? JSON.parse(fs.readFileSync(r, "utf8")) : null };
+    },
+    relire: async (_images, _demande, cle) => {
+      const f = path.join(dossier, "logos-hd", `${cle}-verdict.json`);
+      if (!fs.existsSync(f)) throw new Error(`rejeu des logos en haute définition : la relecture ${cle} n'a jamais été reçue ; aucun appel n'est fait`);
+      return JSON.parse(fs.readFileSync(f, "utf8"));
+    },
+  });
+}
 async function logosEnHdDeLEssai(o: {
   client: ClientDeLEssai; decoupe: import("../../src/lib/syna-agent/planche-en-vrai").Decoupe; logo: Buffer; nom: string; personnes: boolean;
   versions: VersionEnHd[]; aiLogos?: (q: Qui) => LogosEnHdAi; ecrire: (f: string, c: string | Buffer) => string;

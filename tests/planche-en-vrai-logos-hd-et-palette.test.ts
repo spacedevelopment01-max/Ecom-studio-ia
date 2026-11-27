@@ -106,7 +106,8 @@ describe("1. les quatre petites versions du logo en haute définition", async ()
     const l = det.ok ? det.png : logo, sep = await C.separerSymbole(l);
     const v = await C.versionsDuLogo({ logo: l, separation: sep, couleur: "#C44912", sombre: "#C44912", clair: "#F6E8DA", monoClair: "#A7B89B", nom: "Écume", bas: "SAVONNERIE ARTISANALE", police: T.POLICE_DU_BADGE, tuiles: decoupe.apercus, hd: gardes });
     expect(v.enHd).toEqual(["logo-compact", "icone", "favicon"]);
-    expect(v.depuisLApercu).toEqual(["badge"]);
+    // Depuis le 27 novembre 2026, le logo empilé d'Écume, identique au principal, est aussi repris de l'aperçu.
+    expect(v.depuisLApercu).toEqual(["logo-empile", "badge"]);
     expect(v.versions["logo-compact"].equals(gardes.get("logo-compact")!)).toBe(true);
     expect(v.symbole.equals(gardes.get("logo-compact")!)).toBe(true);
     const { runWithLang } = await import("@/lib/i18n-server");
@@ -178,14 +179,15 @@ describe("1. les quatre petites versions du logo en haute définition", async ()
     const sortie = path.join(dir, "4c");
     const r = await reassemblerLEssaiEnVrai({ dossier: essai, sortie, planche, logo: logoF, logoHd: true, plafondEuros: (c.maxMicro / 1e6 + 0.01).toFixed(2), ai: () => sansAppel as never, aiLogos: () => s.ai });
     expect(r.logosEnHd).toMatchObject({ versions: ["logo-compact", "icone", "favicon", "badge"], gardees: ["logo-compact", "icone", "favicon", "badge"], refusees: [] });
-    expect(r.logosDeLApercu).toEqual([]);
+    // Depuis le 27 novembre 2026, le logo empilé d'Écume, identique au principal, est aussi repris de l'aperçu.
+    expect(r.logosDeLApercu).toEqual(["logo-empile"]);
     // Ce qui part et revient est écrit tout de suite.
     expect(fs.existsSync(path.join(sortie, "logos-hd", "logo-hd-badge-texte-envoye.txt"))).toBe(true);
     expect(fs.existsSync(path.join(sortie, "logos-hd", "relecture-logos-hd-verdict.json"))).toBe(true);
     // L'état : les versions en haute définition, plus reprises de l'aperçu ; plus de proposition de les refaire.
     const etat = JSON.parse(fs.readFileSync(path.join(sortie, "etat.json"), "utf8")) as P.EtatPlancheEnVrai;
     expect(etat.logosEnHd).toEqual(["logo-compact", "icone", "favicon", "badge"]);
-    expect(etat.logosDeLApercu).toBeUndefined();
+    expect(etat.logosDeLApercu).toEqual(["logo-empile"]);
     expect(etat.issues.join(" ")).not.toMatch(/Je peux les refaire en haute définition/);
     // Le zip : chaque fichier est la version en haute définition (sans fond), jamais l'agrandissement d'environ 460 pixels.
     const { assetData, getAsset } = await import("@/lib/library");
@@ -207,7 +209,7 @@ describe("1. les quatre petites versions du logo en haute définition", async ()
     // chaque image reçue est gardée ; le badge refusé deux fois garde son agrandissement, et SINA le dit.
     const r0 = await reassemblerLEssaiEnVrai({ dossier: essai, sortie: path.join(dir, "4b"), planche, logo: logoF, ai: () => sansAppel as never });
     const ev0 = JSON.parse(fs.readFileSync(path.join(dir, "4b", "etat.json"), "utf8")) as P.EtatPlancheEnVrai;
-    expect(ev0.logosDeLApercu?.sort()).toEqual(["badge", "favicon", "icone", "logo-compact"]);
+    expect(ev0.logosDeLApercu?.sort()).toEqual(["badge", "favicon", "icone", "logo-compact", "logo-empile"]);
     const { one } = await import("@/lib/db");
     const who = { userId: one<{ user_id: string }>("SELECT user_id FROM projects WHERE id=?", r0.projectId)!.user_id, projectId: r0.projectId };
     const route = { key: "A", name: "Écume", slogan: "SAVONNERIE / ARTISANALE", palette: { dark: "#C14706" }, board: { planche: { image: { id: ev0.demo, w: 1536, h: 2304 }, logo: "", domaine: "ecumefrance.fr", statut: "disponible", annee: 2026, essais: 1, at: 0 } } } as never;
@@ -216,7 +218,7 @@ describe("1. les quatre petites versions du logo en haute définition", async ()
     expect(etapes).toEqual(["brand:envrai:logo-hd-logo-compact", "brand:envrai:logo-hd-icone", "brand:envrai:logo-hd-favicon", "brand:envrai:logo-hd-badge", "brand:envrai:relecture-logos-hd", "brand:envrai:logo-hd-badge-r1", "brand:envrai:relecture-logos-hd-r1"]);
     expect(ev.logosEnHd).toEqual(["logo-compact", "icone", "favicon"]);
     expect(ev.logosEnHdRefuses).toEqual(["badge"]);
-    expect(ev.logosDeLApercu).toEqual(["badge"]);
+    expect(ev.logosDeLApercu).toEqual(["logo-empile", "badge"]);
     expect(ev.planche?.id).not.toBe(ev0.planche?.id);
     const { all } = await import("@/lib/db");
     expect(all<{ meta: string }>("SELECT meta FROM assets WHERE project_id=? AND role='planche-en-vrai-brut'", r0.projectId).filter((a) => /"logoEnHd":true/.test(a.meta))).toHaveLength(5);

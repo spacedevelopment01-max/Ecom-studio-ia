@@ -316,6 +316,103 @@ telles quelles et rejugées par le code. Vérifié sans dépense, de bout en bou
 les verdicts réels (`tests/planche-en-vrai-rejuger-puis-reprendre.test.ts`) : 9 images et 4 relectures redemandées, aucune
 autre, aucune n'emportant un texte inventé.
 
+### L'étape 5 finie (27 novembre 2026) : assemblée, pas identique, corrigée sans dépense
+
+La quatrième passe est allée au bout, sans coupure : 0,86 € pour la passe, **2,62 € pour toute l'étape 5** (fichiers :
+`docs/studio/essais-complets/images/torrefacteur/5-planche-en-vrai/` et `6-ecran/`, branche `claude/essais-complets`).
+Constat du chef d'orchestre : « La planche est assemblée, mais elle n'est pas identique à l'aperçu A. » Ses cinq points,
+corrigés sans aucun appel, essayés sur les vrais fichiers (épreuve `planche-en-vrai-pas-identique-a-l-apercu-mouture`,
+`tests/planche-en-vrai-mouture-identique.test.ts`) :
+
+1. **Monochrome foncé, monochrome clair et inversé lisibles.** Le logo de Mouture est « à aplats » (un hexagone brun plein,
+   les lettres claires dedans) : le code le reconnaît (`logoAAplats`) et fait ses monochromes aux creux (un seul ton, les
+   lettres creusées, `monochromeAuxCreux`) ; l'inversé peint en blanc les lettres et les filets sur le fond sombre. Le
+   contraste entre les lettres et l'aplat est mesuré (au moins 3) ; s'il manque, la version est reprise de sa case de
+   l'aperçu. Sur la planche, chaque tuile faite par le code n'est posée que si elle ne change pas visiblement la case ;
+   pour Mouture, les trois gardent l'aperçu, tel que le client l'a vu ; les fichiers à télécharger sont ceux du code.
+2. **Le logo horizontal et le logo empilé** sont repris de leur case de l'aperçu (le petit badge à gauche, le nom et la
+   phrase à droite ; la flamme, le nom, la phrase et le grain l'un sous l'autre) : le code les rendait identiques au logo
+   principal, le symbole ne se séparant pas du nom. Décision du chef d'orchestre, pour tout client : une version que le code
+   rend identique au logo principal, ou illisible, est reprise de l'aperçu. Chez Écume, rejoué avec cette règle, le logo
+   empilé (identique au principal) s'ajoute aux quatre versions reprises : cinq au lieu de quatre. SINA ne promet la haute
+   définition que pour les quatre petites versions (compact, icône, favicon, badge).
+3. **Les polices.** Les rôles se lisent sur la place dans l'aperçu : Montserrat, nommée la première (à gauche), est la police
+   des titres ; Playfair Display celle des textes. L'inventaire avait lu le bon genre pour Montserrat (« sans ») mais avait
+   choisi « Nunito » comme la plus proche : désormais une police nommée, au catalogue, de genre compatible, n'est jamais
+   remplacée. L'exception du 26 novembre reste (« Nunito » montrée en manuscrite chez Écume : le choix de l'inventaire).
+   Ces deux points contredisent deux épreuves scellées : `planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu` (son
+   rejeu attendait « Poppins » pour « Montserrat » lue « sans ») et `planche-en-vrai-identique-a-l-apercu` (exactement
+   quatre versions reprises chez Écume). Elles sont marquées remplacées le 27 novembre 2026 par
+   `planche-en-vrai-pas-identique-a-l-apercu-mouture`, qui rejoue tout ce qu'elles demandaient sauf ces deux points ; leur
+   verdict, leur attendu et leur sceau ne changent pas ; l'accord écrit du propriétaire tient encore sa place
+   (`ACCORD_A_COMPLETER`). La phrase d'accord à lui faire écrire : « Oui, marque planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu et planche-en-vrai-identique-a-l-apercu comme remplacées par ma décision du 27 novembre, ajoute et scelle planche-en-vrai-pas-identique-a-l-apercu-mouture (une police nommée, au catalogue, de genre compatible avec le spécimen, n'est jamais remplacée ; les rôles des polices se lisent sur leur place dans l'aperçu ; une version du logo que le code rend identique au logo principal ou illisible, l'empilé comme l'horizontal, est reprise de l'aperçu, pour tout client), et mets à jour la partie Identité de CLAUDE.md. »
+4. **Le bandeau du haut.** « D », « à », « le », « TO », lus dans le haut, sont des morceaux du titre du bandeau voisin : ils
+   ne sont plus écrits. Le logo est posé à la place du logo de l'aperçu ; seuls l'ancien logo et les débris sont effacés,
+   le filet et le fond de l'aperçu restent ; la couture entre le haut et le bandeau est nettoyée ; de part et d'autre de
+   l'image d'ouverture (posée entière, jamais rognée), le fond est celui de l'aperçu sans ses textes, photo comprise, sous
+   un fondu de ses bords.
+5. **Les faux refus.** Les noms des produits de la fiche (« Cafés en grains », « Cafés moulus », « Coffrets », singulier ou
+   pluriel, toute casse) ne sont jamais en trop ; un texte de l'aperçu écrit une seconde fois (« Saveurs intenses » sur
+   l'étiquette de la 4:5 : l'inventaire l'avait bien lu dans la liste des arguments, l'étiquette de l'aperçu était
+   illisible) n'est pas en trop. Pour un texte que l'inventaire n'aurait pas recopié, le relecteur relève désormais à part
+   ceux qu'il voit aussi sur l'aperçu de la case (`aussiSurLApercu`) ; le code ne les compte pas en trop, mais refuse
+   toujours un fait inventé (chiffre, origine, date, autre produit). Pourquoi ce mécanisme : seul le relecteur a l'aperçu et
+   l'image refaite sous les yeux dans le même appel ; le code garde le dernier mot sur tout ce qu'il vérifie seul.
+
+**Le rejugement gratuit** (`REJUGER=1`, sur les vrais fichiers copiés) : **13 images gardées sur 17** (8 avant). Gardées en
+plus : publication-4x5, produit-1, produit-3, emballage, reference-6 (leurs reprises, regardées une à une : propres, sans
+texte inventé). Restent, l'aperçu agrandi gardant leur case :
+
+| Image | Pourquoi | À refaire ? |
+|---|---|---|
+| produit-2 | « EXCELLENCE » sur l'étiquette, un nom de gamme inventé ; fidélité 7/10 | oui |
+| reference-5 | « Café de Qualité » sur la plaque du moulin (illisible sur l'aperçu) | oui |
+| reference-4 | les étiquettes changent (« COFFRETS », « CAFÉS MOULUS » au lieu de « CAFÉ EN GRAINS ») et un sachet coupé au bord, comme sur l'aperçu | oui (décision du chef d'orchestre) |
+| site-telephone | la phrase manuscrite « Une boutique toujours avec vous », coupée par le bord de la case sur l'aperçu, disparaît ; fidélité 7/10 | non : la case coupe la phrase, une nouvelle image buterait au même endroit |
+
+Devis du code (`DEVIS_SEULEMENT=1 REASSEMBLER=… REPRENDRE=produit-2,reference-4,reference-5`, à la charge du Studio) :
+les trois à refaire, 3 images et 2 relectures, **probable 0,38 €** (0,3801 €), au plus 0,91 € (0,9080 €). Plafond conseillé :
+1 € (deux fois le probable, arrondi ; le pire cas des trois passe dessous). Pour mémoire : les quatre, site-telephone
+compris, probable 0,53 €, au plus 1,28 €.
+
+**La commande gratuite pour réassembler puis refaire l'écran** (aucun appel, aucune clé ; les quatre logos en haute
+définition déjà payés sont repris tels quels de `logos-hd/`, rejugés par le code) :
+
+```
+DEBUT CLIENT_NOM="Mouture" REASSEMBLER=data/essai-torrefacteur/5-planche-en-vrai \
+  RESULTAT_PLANCHE=data/essai-torrefacteur/4-planches/planche-A-resultat.json \
+  PHRASE="$(cat data/essai-torrefacteur/3-finalisation/esquisse-11-phrase-du-logo.txt)" \
+  node_modules/.bin/tsx scripts/syna-recette/essai-planche-en-vrai.mts data/essai-torrefacteur/5-planche-en-vrai-reassemblee \
+  data/essai-torrefacteur/4-planches/planche-A-gardee.png data/essai-torrefacteur/3-finalisation/esquisse-11-logo-garde.png
+
+DATA_DIR=data/essai-torrefacteur/studio node_modules/.bin/tsx scripts/syna-recette/ecran-planche-en-vrai.mts \
+  data/essai-torrefacteur/5-planche-en-vrai-reassemblee/etat.json
+```
+
+Essayée sur les vrais fichiers : 13 images gardées, planche en 3072 × 4608, comparaison dans
+`5-planche-en-vrai-reassemblee/comparaison-apercu-et-reassemblee.jpg`. **Ce qui reste différent**, franchement : les quatre
+cases refusées gardent l'aperçu agrandi, moins net ; l'image d'ouverture refaite est plus étroite que sa case (3 pour 1
+contre 3,7 pour 1) : posée entière, son titre est un peu plus petit et décalé vers la droite par rapport à l'aperçu ; le
+bloc 01 garde, pour l'horizontal, l'empilé, les monochromes et l'inversé, l'aperçu agrandi (net à la taille de la planche,
+mais ce n'est pas la haute définition) ; le logo principal du bloc 01 est le vrai logo, un peu plus petit que celui de
+l'aperçu ; la flèche dessinée à la main entre le site sur ordinateur et le téléphone (bloc 08) n'est pas dans l'image
+refaite du site. Dans l'onglet Logos (les fichiers à télécharger) : le logo horizontal est la tuile de l'aperçu agrandie
+quatre fois, moins nette que les autres ; le logo empilé de même.
+Images à regarder : `5-planche-en-vrai-reassemblee/comparaison-apercu-et-reassemblee.jpg` et
+`5-planche-en-vrai-reassemblee/onglet-logos-avant-apres.jpg` (les dix fichiers, avant et après). L'écran a été refait par
+`ecran-planche-en-vrai.mts` (parcours écrit) ; les captures du Studio privé n'ont pas été refaites le 27 novembre : il faut
+une construction du site (`next build`), impossible ce jour-là, le disque du conteneur étant plein.
+
+**Le texte préparé pour CLAUDE.md** (partie Identité, « La planche en vrai » ; non appliqué, il attend l'accord écrit) :
+- remplacer « polices du catalogue du Studio, la plus proche du spécimen montré sinon, et c'est dit » par « polices du
+  catalogue du Studio : leurs rôles se lisent sur leur place dans l'aperçu (la première nommée est celle des titres, sauf si
+  l'aperçu dit autrement) ; une police nommée, au catalogue, de genre compatible avec le spécimen, n'est jamais remplacée ;
+  absente du catalogue, ou démentie par le genre montré, la plus proche du spécimen, et c'est dit » ;
+- après « sans symbole séparable, le compact, l'icône, le favicon et le badge sont repris de leur case de l'aperçu »,
+  ajouter « ; une version que le code rend identique au logo principal ou illisible (l'horizontal, l'empilé, les monochromes
+  d'un logo à aplats) est reprise de sa case de l'aperçu, pour tout client ; les monochromes d'un logo à aplats gardent ses
+  creux, le nom lisible ».
+
 ## Étape 6 — l'écran (gratuit)
 
 ```

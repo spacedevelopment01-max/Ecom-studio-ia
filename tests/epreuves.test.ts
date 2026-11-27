@@ -34,7 +34,7 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
   });
   it("une épreuve remplacée par une décision datée garde son sceau à jamais et ne se rescelle pas", () => {
     const remplacees = EPREUVES.filter((e) => e.remplaceePar);
-    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule", "planches-de-recherche-demande-exacte", "relecteur-du-logo-fini", "finalisation-ecrite-par-le-plus-fort", "relecteur-sans-refus-pour-trop-proche", "logo-refait-une-fois-avec-ses-raisons", "relecteur-juge-l-execution-pas-l-idee", "planche-refusee-deux-fois-jamais-montree", "vrai-produit-du-client-joint", "relecteur-petites-finitions-sans-refus", "planche-phrase-par-lignes-et-reprise-qui-part-toujours", "relecteur-de-planche-texte-lisible-et-promesses-mesurables", "planche-reprend-la-phrase-du-logo", "planche-en-vrai-a-l-identique", "planche-en-vrai-symbole-seul-et-bandeau-sans-marges", "planche-en-vrai-palette-mesuree-et-logos-en-hd", "accord-des-noms-compte-la-verification"].sort());
+    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule", "planches-de-recherche-demande-exacte", "relecteur-du-logo-fini", "finalisation-ecrite-par-le-plus-fort", "relecteur-sans-refus-pour-trop-proche", "logo-refait-une-fois-avec-ses-raisons", "relecteur-juge-l-execution-pas-l-idee", "planche-refusee-deux-fois-jamais-montree", "vrai-produit-du-client-joint", "relecteur-petites-finitions-sans-refus", "planche-phrase-par-lignes-et-reprise-qui-part-toujours", "relecteur-de-planche-texte-lisible-et-promesses-mesurables", "planche-reprend-la-phrase-du-logo", "planche-en-vrai-a-l-identique", "planche-en-vrai-symbole-seul-et-bandeau-sans-marges", "planche-en-vrai-palette-mesuree-et-logos-en-hd", "accord-des-noms-compte-la-verification", "planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu", "planche-en-vrai-identique-a-l-apercu"].sort());
     for (const e of remplacees) {
       const r = e.remplaceePar!;
       // Le sceau ne change pas : celui du catalogue, celui de sceaux.json et celui figé au jour du remplacement.
@@ -49,10 +49,10 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
       expect(par && SCEAUX[par.id], `${e.id} → ${r.epreuve}`).toBeTruthy();
       while (par?.remplaceePar) { expect(vus.has(par.id), `boucle : ${par.id}`).toBe(false); vus.add(par.id); par = EPREUVES.find((x) => x.id === par!.remplaceePar!.epreuve); }
       expect(par && SCEAUX[par.id] && par.rejeu === "gratuit", `${e.id} → ${par?.id}`).toBeTruthy();
-      expect(["23 novembre 2026", "24 novembre 2026", "25 novembre 2026", "26 novembre 2026"]).toContain(r.decision);
-      expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin|Oui, marque planches-de-recherche-demande-exacte|Oui, marque finalisation-ecrite-par-le-plus-fort|Oui, marque relecteur-sans-refus-pour-trop-proche|Oui, marque logo-refait-une-fois-avec-ses-raisons|Oui, marque vrai-produit-du-client-joint|Oui, marque relecteur-petites-finitions-sans-refus|Oui, marque relecteur-de-planche-texte-lisible-et-promesses-mesurables|Oui, marque planche-phrase-par-lignes-et-reprise-qui-part-toujours|Oui, marque planche-en-vrai-a-l-identique|Oui, marque planche-en-vrai-palette-mesuree-et-logos-en-hd)/);
-      // Les accords écrits du 24 et du 25 novembre 2026 nomment chaque épreuve qu'il remplace, et celle qui la remplace.
-      if (r.decision === "24 novembre 2026" || r.decision === "25 novembre 2026" || r.decision === "26 novembre 2026") { expect(r.mots, e.id).toContain(e.id); expect(r.mots, r.epreuve).toContain(r.epreuve); }
+      expect(["23 novembre 2026", "24 novembre 2026", "25 novembre 2026", "26 novembre 2026", "27 novembre 2026"]).toContain(r.decision);
+      expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin|Oui, marque planches-de-recherche-demande-exacte|Oui, marque finalisation-ecrite-par-le-plus-fort|Oui, marque relecteur-sans-refus-pour-trop-proche|Oui, marque logo-refait-une-fois-avec-ses-raisons|Oui, marque vrai-produit-du-client-joint|Oui, marque relecteur-petites-finitions-sans-refus|Oui, marque relecteur-de-planche-texte-lisible-et-promesses-mesurables|Oui, marque planche-phrase-par-lignes-et-reprise-qui-part-toujours|Oui, marque planche-en-vrai-a-l-identique|Oui, marque planche-en-vrai-palette-mesuree-et-logos-en-hd|Oui, marque planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu)/);
+      // Les accords écrits du 24 au 27 novembre 2026 nomment chaque épreuve qu'il remplace, et celle qui la remplace.
+      if (r.decision === "24 novembre 2026" || r.decision === "25 novembre 2026" || r.decision === "26 novembre 2026" || r.decision === "27 novembre 2026") { expect(r.mots, e.id).toContain(e.id); expect(r.mots, r.epreuve).toContain(r.epreuve); }
     }
   });
   it("chaque épreuve gratuite est rejouée ci-dessous", () => {
@@ -60,6 +60,9 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
     for (const e of EPREUVES.filter((x) => x.rejeu === "gratuit")) expect(src.includes(`epreuve("${e.id}"`), e.id).toBe(true);
   });
 });
+
+/** Les rejeux d'une épreuve remplacée que l'épreuve qui la remplace rejoue (remplis à la lecture des blocs, avant les tests). */
+const rejeuxPartages: { finitionsEtPolice?: (o: { policeNommeeRemplacee: boolean }) => Promise<void>; identiqueALApercu?: (o: { empileDuCode: boolean }) => Promise<void> } = {};
 
 /** Une épreuve gratuite : son verdict en titre. Une épreuve remplacée reste au catalogue, mais n'est plus rejouée. */
 const epreuve = (id: string, fn: () => Promise<void> | void) => {
@@ -1882,7 +1885,12 @@ describe("les épreuves de la planche en vrai (25 novembre 2026, aucun appel)", 
     expect(V.phraseDeLaPublicationIncomprehensible(1)).toMatch(/je ne la mets pas à ton calendrier/);
   };
   epreuve("planche-en-vrai-symbole-seul-et-bandeau-sans-marges", rejeuSymboleSeulEtBandeau);
-  epreuve("planche-en-vrai-identique-a-l-apercu", async () => {
+  /**
+   * Le rejeu de planche-en-vrai-identique-a-l-apercu, partagé : remplacée le 27 novembre 2026, elle n'est plus rejouée seule ;
+   * planche-en-vrai-pas-identique-a-l-apercu-mouture le rejoue en entier, sauf la règle remplacée (`empileDuCode` faux : le logo empilé identique au
+   * principal est repris de l'aperçu).
+   */
+  const rejeuIdentiqueALApercu = async (o: { empileDuCode: boolean }) => {
     // Tout ce que demandaient les deux épreuves remplacées reste rejoué.
     await rejeuEnVraiALIdentique();
     await rejeuSymboleSeulEtBandeau();
@@ -1929,7 +1937,8 @@ describe("les épreuves de la planche en vrai (25 novembre 2026, aucun appel)", 
     expect(sep.fiable).toBe(false);
     const d = await V.decouperLesApercus(demo, "standard");
     const v = await C.versionsDuLogo({ logo, separation: sep, couleur: "#C44912", sombre: "#C44912", clair: "#F6E8DA", monoClair: "#A7B89B", nom: "Écume", bas: "SAVONNERIE ARTISANALE", police: T.POLICE_DU_BADGE, tuiles: d.apercus });
-    expect([...v.depuisLApercu].sort()).toEqual(["badge", "favicon", "icone", "logo-compact"]);
+    // La règle remplacée le 27 novembre 2026 : le logo empilé identique au principal est désormais repris de l'aperçu.
+    expect([...v.depuisLApercu].sort()).toEqual(o.empileDuCode ? ["badge", "favicon", "icone", "logo-compact"] : ["badge", "favicon", "icone", "logo-compact", "logo-empile"]);
     expect(await C.separerLaPhrase(logo)).not.toBeNull();
     // 6. La zone d'une case et l'heure du téléphone, sur les verdicts réels.
     expect(d.boites.get("publication-4x5")![1]).toBeGreaterThan(V.bandesDesTitres("standard").get("titre-07")![3]);
@@ -1961,7 +1970,9 @@ describe("les épreuves de la planche en vrai (25 novembre 2026, aucun appel)", 
     expect([(await sharp(await C.rognerAuContenu(cadre, 6)).metadata()).width, (await sharp(await C.rognerAuContenu(cadre, 6)).metadata()).height]).toEqual([162, 132]);
     expect(fs.readFileSync("src/components/studio/tab-marque.tsx", "utf8")).toContain('className="columns-2 gap-3 md:columns-3 lg:columns-4" data-brand-envrai-images');
     expect(T.devisDesLogosEnHd().maxMicro).toBeGreaterThan(0);
-  });
+  };
+  rejeuxPartages.identiqueALApercu = rejeuIdentiqueALApercu;
+  epreuve("planche-en-vrai-identique-a-l-apercu", () => rejeuIdentiqueALApercu({ empileDuCode: true }));
 });
 
 describe("les épreuves du texte sous le nom sur plusieurs lignes (essai d'Écume)", async () => {
@@ -2080,7 +2091,11 @@ describe("l'épreuve de la planche en vrai identique en visuel (essai d'Écume, 
   const { runWithLang } = await import("@/lib/i18n-server");
   const F2 = "tests/fixtures/ecume-planches-2";
 
-  epreuve("planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu", async () => {
+  /**
+   * Le rejeu de planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu, partagé : remplacée le 27 novembre 2026, elle n'est plus rejouée seule ;
+   * planche-en-vrai-pas-identique-a-l-apercu-mouture le rejoue en entier, sauf la règle remplacée (`policeNommeeRemplacee` faux).
+   */
+  const rejeuFinitionsEtPolice = async (o: { policeNommeeRemplacee: boolean }) => {
     // 1. La finition de A-2, notée au verdict réel, voyage avec la planche gardée.
     const texte = fs.readFileSync(`${F2}/planche-A-2-texte-envoye.txt`, "utf8");
     const v = PM.VerdictRangeDeLaPlancheSchema.parse(JSON.parse(fs.readFileSync(`${F2}/planche-A-2-relecture-verdict.json`, "utf8")).verdict);
@@ -2122,11 +2137,15 @@ describe("l'épreuve de la planche en vrai identique en visuel (essai d'Écume, 
     // Retenu s'il est au catalogue et dans le genre lu ; sinon la règle d'avant.
     expect(C.policeDuCatalogue({ nom: "Nunito", genre: "manuscrite", procheDuCatalogue: "Caveat" }, 400)).toMatchObject({ famille: "Caveat", remplacee: true, pourquoi: "genre" });
     for (const x of ["Brush Script MT", "Inter", "Nunito"]) expect(C.policeDuCatalogue({ nom: "Nunito", genre: "manuscrite", procheDuCatalogue: x }, 400).famille, x).toBe("Dancing Script");
-    expect(C.policeDuCatalogue({ nom: "Montserrat", genre: "sans", procheDuCatalogue: "Poppins" }, 400)).toMatchObject({ famille: "Poppins", remplacee: true, pourquoi: "apercu" });
+    // La règle remplacée le 27 novembre 2026 : la police nommée, au catalogue et de genre compatible, l'emporte désormais.
+    if (o.policeNommeeRemplacee) expect(C.policeDuCatalogue({ nom: "Montserrat", genre: "sans", procheDuCatalogue: "Poppins" }, 400)).toMatchObject({ famille: "Poppins", remplacee: true, pourquoi: "apercu" });
+    else expect(C.policeDuCatalogue({ nom: "Montserrat", genre: "sans", procheDuCatalogue: "Poppins" }, 400)).toMatchObject({ famille: "Montserrat", remplacee: false });
     expect(C.policeDuCatalogue({ nom: "Montserrat", genre: "sans", procheDuCatalogue: "Montserrat" }, 400)).toMatchObject({ famille: "Montserrat", remplacee: false });
     // Le devis de l'inventaire compte la liste.
     expect(T.APPELS_EN_VRAI.inventaire.input).toBe(32_000 + Math.ceil(Buffer.byteLength(liste) / 3));
-  });
+  };
+  rejeuxPartages.finitionsEtPolice = rejeuFinitionsEtPolice;
+  epreuve("planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu", () => rejeuFinitionsEtPolice({ policeNommeeRemplacee: true }));
 });
 
 describe("l'épreuve du spécimen mesuré et de l'écran qui suit le réassemblage (essai d'Écume, 26 novembre 2026, aucun appel)", async () => {
@@ -2743,5 +2762,137 @@ describe("l'épreuve des erreurs techniques (une tâche au résultat incertain, 
     const en = await essai(undefined, "en");
     expect(en.fin.message).toBe("I kept everything that's done. One image couldn't be created because of a connection problem: I can redo it whenever you like.");
     expect(en.fin.message).not.toMatch(TECHNIQUE);
+  });
+});
+
+describe("l'épreuve des textes du client alignés (tutoiement, aucun mot technique, aucun euro pour l'IA ; sans aucun appel à l'IA)", () => {
+  epreuve("textes-du-client-alignes", async () => {
+    const { createUser } = await import("@/lib/auth");
+    const { all, id: newId, now, run: sql } = await import("@/lib/db");
+    const J = await import("@/lib/jobs");
+    const { operationPending } = await import("@/lib/billing");
+    const { friendlyToolError } = await import("@/lib/tool-errors");
+    const { runWithLang } = await import("@/lib/i18n-server");
+    const { PREFIXE_ECHEC_FR, PREFIXE_ECHEC_EN, vraiEchec } = await import("@/lib/syna-agent/conversation");
+    const S = await import("@/lib/syna-agent/custom-theme/site-job");
+    const INTERDIT = /\b(vous|votre|vos|vôtre)\b|fournisseur|\bprovider\b|\bAPI\b|moteur local|local engine|erreur \d{3}|error \d{3}|Codespace|sudo|ffmpeg|ENOENT|\bgpt-|dall-?e|\d\s?€|€\s?\d|faites vérifier|résultat incertain|uncertain outcome|coût maximal/i;
+    // 1. L'étape déjà lancée et l'outil absent : la phrase de SINA, en français et en anglais.
+    for (const ui of ["fr", "en"] as const) {
+      let deja: unknown; try { runWithLang({ ui, content: ui }, () => operationPending()); } catch (e) { deja = e; }
+      expect((deja as InstanceType<typeof J.UserFacingError>).code).toBe(J.CODE_DEJA_LANCEE);
+      expect((deja as Error).message).not.toMatch(INTERDIT);
+      expect(runWithLang({ ui, content: ui }, () => friendlyToolError("spawn ffmpeg ENOENT"))).not.toMatch(INTERDIT);
+    }
+    // 2. Le site coupé en route, une tâche réelle : le client lit la phrase de SINA, le détail reste au Studio, et la
+    // reprise reconnaît la coupure par son code (étape déjà lancée comme tâche coupée), jamais par le texte.
+    const u = await createUser(`ep${Date.now()}${Math.random().toString(36).slice(2, 7)}@test.fr`, "motdepasse-test", "T");
+    const coupe = (err: unknown) => {
+      const projet = `p-${newId()}`, t = now(), job = newId();
+      sql("INSERT INTO jobs (id, user_id, project_id, type, payload, status, run_at, created_at, updated_at, attempts, max_attempts) VALUES (?,?,?,?,?,?,?,?,?,?,?)", job, u.id, projet, S.SINA_SITE_JOB, JSON.stringify({ projectId: projet, consigne: "Franc", capMicro: 1_000_000 }), "running", t, t, t, 1, 3);
+      J.failJob(J.getJob(job)!, err, { permanent: true });
+      return { projet, job, fin: J.getJob(job)! };
+    };
+    let deja: unknown; try { operationPending(); } catch (e) { deja = e; }
+    const a = coupe(deja);
+    expect(S.creationCoupee(a.projet)).toMatchObject({ id: a.job });
+    const b = coupe(new J.ErreurAuDetailDuStudio("Interrompue pendant un appel IA payant ; coût maximal compté, rendu après la facture du fournisseur.", "J'ai gardé tout ce qui est fait et je ne relance rien d'office. Dis-moi quand tu veux que je reprenne.", J.CODE_TACHE_COUPEE));
+    expect(S.creationCoupee(b.projet)).toMatchObject({ id: b.job });
+    expect(b.fin.error).toMatch(/fournisseur/);
+    for (const x of [a.fin.message, J.publicJob(a.fin).error, b.fin.message, J.publicJob(b.fin).error]) expect(String(x)).not.toMatch(INTERDIT);
+    for (const n of all<{ title: string; body: string }>("SELECT title, body FROM notifications WHERE user_id = ?", u.id)) expect(`${n.title} ${n.body}`).not.toMatch(INTERDIT);
+    // Un autre refus, même avec « incertain » dans son texte : il se refait.
+    expect(S.creationCoupee(coupe(new J.UserFacingError("Résultat incertain du contrôle", "COPY_FACTS_REJECTED")).projet)).toBeNull();
+    // 3. Le fil de SINA : une panne se dit comme SINA la dirait ; reconnue comme panne, anciens résumés compris.
+    expect(vraiEchec({ tool: "catalogue.update", summary: `${PREFIXE_ECHEC_FR}base indisponible` })).toBe(true);
+    expect(vraiEchec({ tool: "catalogue.update", summary: `${PREFIXE_ECHEC_EN}base unavailable` })).toBe(true);
+    expect(vraiEchec({ tool: "catalogue.update", summary: "Échec de l'outil : base indisponible" })).toBe(true);
+    const fil = fs.readFileSync("src/components/studio/syna-thread.tsx", "utf8");
+    expect(fil).not.toMatch(/t\("Erreur : "|L'exécution s'est arrêtée/);
+    // 4. Les textes relevés : plus aucun ne vouvoie, ne parle technique ni n'affiche d'euros pour l'IA.
+    const relevees: [string, RegExp][] = [
+      ["src/lib/billing.ts", /faites vérifier le résultat incertain/],
+      ["src/lib/ai/media-providers.ts", /conservé chez le fournisseur/],
+      ["src/lib/social-v2/autopilot.ts", /recharge de 10 €|€10 top-up/],
+      ["src/lib/social-v2/scheduler.ts", /vérifiez sur/],
+      ["src/lib/social-v2/automations.ts", /votre (accord|validation)/],
+      ["src/lib/engine/cutouts.ts", /au vôtre|Ajoutez une photo/],
+      ["src/lib/engine/images.ts", /votre photo/],
+      ["src/lib/engine/custom-theme.ts", /\bVotre thème/],
+      ["src/lib/syna-agent/mockup-code/job.ts", /\bVotre site/],
+      ["src/lib/tool-errors.ts", /redémarrez-le|tapez dans le terminal/],
+      ["src/lib/http.ts", /réessayez dans un instant/],
+      ["src/components/billing-client.tsx", /moteur local/],
+      ["src/components/studio/cost-confirm.tsx", /moteur local du studio/],
+      ["src/app/syna-fondations/vitrine.tsx", /erreur 503|Qwen-Image/],
+    ];
+    for (const [f, rx] of relevees) expect(fs.readFileSync(f, "utf8"), f).not.toMatch(rx);
+  });
+});
+
+describe("l'épreuve de la planche en vrai de Mouture identique à l'aperçu A (vrais fichiers, aucun appel)", async () => {
+  const P = await import("@/lib/syna-agent/planche-en-vrai");
+  const C = await import("@/lib/syna-agent/planche-en-vrai-code");
+  const T = await import("@/lib/syna-agent/planche-en-vrai-tache");
+  const { logoDetoure } = await import("@/lib/syna-agent/brand-images");
+  type NomElement = import("@/lib/syna-agent/planche-en-vrai").NomElement;
+  const F = "tests/fixtures/torrefacteur-planche-en-vrai";
+  const PRODUITS = ["cafés en grains", "cafés moulus", "coffrets"], LOGO = { nom: "Mouture", phrase: ["TORRÉFACTION ARTISANALE"] };
+  const inventaire = P.InventaireSchema.parse(JSON.parse(fs.readFileSync(`${F}/inventaire-reponse.json`, "utf8")));
+  const v2 = (n: NomElement) => (JSON.parse(fs.readFileSync(`${F}/${P.def(n).groupe}-2-verdict.json`, "utf8")).verdict as import("@/lib/syna-agent/planche-en-vrai").RelectureDuGroupe).images.find((x) => x.case === n)!;
+  const raisons = (n: NomElement) => P.raisonsDuRefusEnVrai(v2(n), { inventaire: P.caseLue(inventaire, n), personnes: false, photo: false, element: n, logo: LOGO, produits: PRODUITS });
+  const routeMouture = { key: "A", name: "Mouture", slogan: "TORRÉFACTION ARTISANALE", palette: { dark: "#2B140E" }, board: { planche: { domaine: "mouturefrance.fr", statut: "disponible", annee: 2026 } } } as unknown as import("@/lib/syna-agent/brand-routes").Route;
+  const lum = (r: number, g: number, b: number) => 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  epreuve("planche-en-vrai-pas-identique-a-l-apercu-mouture", async () => {
+    // Tout ce que demandaient les deux épreuves remplacées, sauf la police nommée au catalogue de genre compatible et le
+    // logo empilé identique au principal.
+    expect(rejeuxPartages.finitionsEtPolice && rejeuxPartages.identiqueALApercu).toBeTruthy();
+    await rejeuxPartages.finitionsEtPolice!({ policeNommeeRemplacee: false });
+    await rejeuxPartages.identiqueALApercu!({ empileDuCode: false });
+    const demo = await sharp(`${F}/apercu-planche-A-gardee.jpg`).resize(P.TAILLE_DEMO.w, P.TAILLE_DEMO.h, { fit: "fill" }).png().toBuffer();
+    const d = await P.decouperLesApercus(demo, "standard");
+    const det = await logoDetoure(fs.readFileSync(`${F}/logo-joint.png`)), logo = det.ok ? det.png : fs.readFileSync(`${F}/logo-joint.png`);
+    // 1 et 2. Les monochromes lisibles, l'horizontal repris de l'aperçu ; sur la planche, ces tuiles gardent l'aperçu.
+    const a = (await C.logoAAplats(logo))!;
+    expect(a).toBeTruthy();
+    const v = await C.versionsDuLogo({ logo, separation: await C.separerSymbole(logo), couleur: await C.couleurDuLogo(logo), sombre: "#2E1A12", clair: "#FCFAF7", monoClair: "#C89B6B", nom: "Mouture", bas: "TORRÉFACTION ARTISANALE", police: T.POLICE_DU_BADGE, tuiles: d.apercus });
+    const ref = v.versions["logo-principal"];
+    expect(await C.contrasteDesLettres(ref, v.versions["monochrome-fonce"], "#FCFAF7", a.seuil)).toBeGreaterThanOrEqual(C.CONTRASTE_MIN_DES_LETTRES);
+    expect(await C.contrasteDesLettres(ref, v.versions["monochrome-clair"], "#222222", a.seuil)).toBeGreaterThanOrEqual(C.CONTRASTE_MIN_DES_LETTRES);
+    expect(await C.contrasteDesLettres(logo, await C.monochromeAuxCreux(logo, "#FFFFFF", a.seuil, "claires"), "#2E1A12", a.seuil)).toBeGreaterThanOrEqual(C.CONTRASTE_MIN_DES_LETTRES);
+    expect(v.depuisLApercu).toContain("logo-horizontal");
+    expect(v.depuisLApercu).toContain("logo-empile");
+    expect(v.versions["logo-horizontal"].equals(ref)).toBe(false);
+    expect(v.versions["logo-empile"].equals(ref)).toBe(false);
+    const tu = await C.tuilesDuBloc01({ demo, boites: d.boites, versions: v.versions, depuisLApercu: v.depuisLApercu });
+    for (const x of ["logo-horizontal", "monochrome-fonce", "monochrome-clair", "inverse"] as const) expect(tu.tuilesDeLApercu, x).toContain(x);
+    // 3. Les polices : Montserrat en titres (à gauche), jamais remplacée ; Playfair Display en textes.
+    const lues = P.policesDeLApercu(inventaire);
+    expect(C.policeDuCatalogue(lues.titres, 700)).toMatchObject({ famille: "Montserrat", remplacee: false });
+    expect(C.policeDuCatalogue(lues.textes, 400)).toMatchObject({ famille: "Playfair Display", remplacee: false });
+    expect(C.policeDuCatalogue({ nom: "Nunito", genre: "manuscrite", procheDuCatalogue: "Caveat" }, 400)).toMatchObject({ famille: "Caveat", pourquoi: "genre" });
+    // 4. Le bandeau : aucun débris écrit, aucune encre de l'ancien titre, les bandes gardent la photo.
+    const t = T.textesDeLaPlanche(inventaire, routeMouture);
+    expect(t.haut).toEqual([]);
+    expect(t.hautDansLeLogo).toBe(true);
+    const planche = await C.assemblerLaPlanche({
+      demo, boites: d.boites, pastilles: P.lesCases("standard").pastilles, images: new Map([["ouverture-planche", await sharp(`${F}/ouverture-planche-gardee-hd.jpg`).png().toBuffer()]]),
+      versions: Object.fromEntries(C.VERSIONS_DU_LOGO.map((x) => [x, logo])) as Record<import("@/lib/syna-agent/planche-en-vrai-code").VersionDuLogo, Buffer>, palette: [],
+      polices: { titres: C.policeDuCatalogue(lues.titres, 700), textes: C.policeDuCatalogue(lues.textes, 400) }, signature: t.haut, titres: new Map(), blocs: new Map([["ton", null], ["seo", null]]), encre: "#2B140E", hautDansLeLogo: t.hautDansLeLogo,
+    });
+    const { data, info } = await sharp(planche).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+    const { data: a0, info: ai } = await sharp(demo).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+    const haut = d.boites.get("haut")!, ob = d.boites.get("ouverture-planche")!, e = C.encresDuHaut(a0, ai.width, haut, C.fondDe(a0, ai.width, haut));
+    let encre = 0;
+    for (let y = 20; y < (ob[3] - 10) * 2; y++) for (let x = (e.logo![2] + 8) * 2; x < (ob[0] + 40) * 2; x++) { const i = (y * info.width + x) * 3; if (lum(data[i], data[i + 1], data[i + 2]) < 110) encre++; }
+    expect(encre).toBe(0);
+    const droite: number[] = [];
+    for (let y = ob[1] * 2 + 40; y < ob[3] * 2 - 40; y += 3) for (let x = ob[2] * 2 - 60; x < ob[2] * 2 - 10; x += 3) { const i = (y * info.width + x) * 3; droite.push(lum(data[i], data[i + 1], data[i + 2])); }
+    expect(droite.sort((p, q) => p - q)[droite.length >> 1]).toBeLessThan(170);
+    // 5. Les faux refus : noms des produits et texte de l'aperçu répété jamais en trop ; ce qui reste à refaire.
+    for (const n of ["publication-4x5", "produit-3", "emballage", "reference-6"] as const) expect(raisons(n), n).toEqual([]);
+    expect(raisons("site-telephone").join(" ")).not.toMatch(/« Cafés »|« Coffrets »/);
+    expect(raisons("produit-2").join(" ")).toMatch(/« EXCELLENCE »/);
+    expect(raisons("reference-5").join(" ")).toMatch(/« Qualité »/);
+    expect(P.RELECTEUR_EN_VRAI).toContain("aussiSurLApercu");
   });
 });
