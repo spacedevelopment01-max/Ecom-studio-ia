@@ -34,7 +34,7 @@ describe("les faits à montrer", async () => {
 
   it("le cahier est lu par le code ; ses parties sont choisies d'après l'activité et l'offre, sans liste figée", () => {
     const parties = F.cahierDesFaits();
-    expect(parties.map((p) => p.nom)).toEqual(["une boutique", "des prestations", "une boutique alimentaire", "le café", "un artisan", "la marque"]);
+    expect(parties.map((p) => p.nom)).toEqual(["une boutique", "des prestations", "une boutique alimentaire", "le café", "un artisan", "le cuir", "la marque"]);
     // Une boutique de café : la boutique, le café, la marque (jamais l'artisan pour « artisanal », mot entier).
     expect(F.partiesPour({ business: "products", offre: "petit torréfacteur artisanal qui vend des cafés" }).map((p) => p.nom)).toEqual(["une boutique", "le café", "la marque"]);
     expect(F.sujetsPour({ business: "products", offre: OFFRE_CAFE }).map((s) => s.sujet)).toEqual(["noms", "formats", "origine", "mentions", "fabrication", "torrefaction", "notes_de_gout", "annee", "ville"]);
@@ -43,6 +43,17 @@ describe("les faits à montrer", async () => {
     // Un artisan, une épicerie.
     expect(F.sujetsPour({ business: "products", offre: "Des tasses en céramique faites dans mon atelier" }).map((s) => s.sujet)).toContain("matieres");
     expect(F.sujetsPour({ business: "products", offre: "Une épicerie fine : confitures et miels" }).map((s) => s.sujet)).toContain("composition");
+    // Une maroquinerie : l'artisan est choisi par son métier (« artisanale » seul ne le choisit jamais), et le cuir a ses
+    // questions propres (tannage, coutures, finitions), après les matières ; un autre métier ne les reçoit pas.
+    const OFFRE_CUIR = "maroquinerie artisanale qui fabrique et vend en ligne des sacs, des portefeuilles et des ceintures en cuir : sacs en cuir, portefeuilles en cuir, ceintures en cuir";
+    expect(F.partiesPour({ business: "products", offre: OFFRE_CUIR }).map((p) => p.nom)).toEqual(["une boutique", "un artisan", "le cuir", "la marque"]);
+    expect(F.sujetsPour({ business: "products", offre: OFFRE_CUIR }).map((s) => s.sujet)).toEqual(["noms", "formats", "origine", "mentions", "fabrication", "matieres", "tannage", "coutures", "finitions", "annee", "ville"]);
+    expect(F.partiesPour({ business: "products", offre: "Je fabrique des ceintures et des sacs en cuirs tannés" }).map((p) => p.nom)).toContain("le cuir");
+    expect(F.partiesPour({ business: "products", offre: "Une maroquinière : petits sacs" }).map((p) => p.nom)).toEqual(["une boutique", "le cuir", "la marque"]);
+    expect(F.partiesPour({ business: "products", offre: "Des confitures artisanales" }).map((p) => p.nom)).not.toContain("le cuir");
+    for (const s of ["tannage", "coutures", "finitions"]) expect(F.libelleDuSujet(s)).not.toBe(s);
+    // Une question sur les couleurs de la marque n'est jamais prise pour celle des finitions (le sujet n'est pas redemandé).
+    expect(F.sujetsPour({ business: "products", offre: OFFRE_CUIR }).find((s) => s.sujet === "finitions")!.mots.test("Quelles couleurs aimes-tu pour ta marque ?")).toBe(false);
     // Rien tant que l'activité et l'offre ne sont pas connues.
     expect(F.sujetsDuParcours(J.emptyJourney())).toEqual([]);
     // Un cahier mal formé arrête tout, avec une erreur claire.
@@ -203,9 +214,11 @@ describe("les faits à montrer", async () => {
     expect(V.texteSansLesMentionsVraies(avec, produits, FAITS)).toBe(sans);
     // Le relecteur reçoit la liste des mentions permises ; le code les excuse, refuse le reste et ce qu'il ne veut pas montrer.
     expect(V.demandeAuRelecteurEnVrai({ nom: "Brûlerie", personnes: false, groupe: "produits", cases: [{ element: "produit-1", photo: false }], produits, faits: FAITS })).toContain("Les mentions vraies données par le client");
-    const v = { case: "produit-1", identique: true, textesLus: ["Brûlerie", "Café en grains", "250 g", "Origine Éthiopie"], logoPresent: true, personne: false, logoFonceSurFondSombre: false, produitFidele: null, texteCoupe: false, note: 9, pourquoi: "" } as any;
+    const v = { case: "produit-1", identique: true, textesLus: ["Brûlerie", "Café des collines", "250 g", "Origine Éthiopie"], logoPresent: true, personne: false, logoFonceSurFondSombre: false, produitFidele: null, texteCoupe: false, note: 9, pourquoi: "" } as any;
     const inv = { case: "produit-1", textes: ["Brûlerie"], logo: true } as any;
     expect(V.raisonsDuRefusEnVrai(v, { inventaire: inv, personnes: false, photo: false, element: "produit-1", logo: { nom: "Brûlerie" }, produits, faits: FAITS })).toEqual([]);
+    // Ses noms exacts donnés (27 novembre 2026) : un nom de produit écrit autrement, celui de la fiche compris, fait refuser.
+    expect(V.raisonsDuRefusEnVrai({ ...v, textesLus: ["Brûlerie", "Café en grains", "250 g"] }, { inventaire: inv, personnes: false, photo: false, element: "produit-1", logo: { nom: "Brûlerie" }, produits, faits: FAITS })).toEqual([`${V.DEBUT_NOMS_DE_PRODUITS_EN_VRAI}« Café en grains » (noms donnés : « Café des collines »)`]);
     expect(V.raisonsDuRefusEnVrai(v, { inventaire: inv, personnes: false, photo: false, element: "produit-1", logo: { nom: "Brûlerie" }, produits }).join(" ")).toMatch(/faits ou produits inventés.*« 250 g »/);
     expect(V.raisonsDuRefusEnVrai({ ...v, textesLus: [...v.textesLus, "1 kg"] }, { inventaire: inv, personnes: false, photo: false, element: "produit-1", logo: { nom: "Brûlerie" }, produits, faits: FAITS }).join(" ")).toMatch(/« 1 kg »/);
     expect(V.raisonsDuRefusEnVrai({ ...v, textesLus: [...v.textesLus, "Nantes"] }, { inventaire: inv, personnes: false, photo: false, element: "produit-1", logo: { nom: "Brûlerie" }, produits, faits: FAITS })).toContain(F.RAISON_FAIT_NON_MONTRE);

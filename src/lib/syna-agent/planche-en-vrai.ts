@@ -29,7 +29,7 @@ import { getJsonSetting } from "../settings";
 import { NOTE_DU_PROPRIETAIRE } from "./note-du-proprietaire";
 import { DOSSIER_DE_LA_PLANCHE, motQuiDitUnFait, motsDuProduit, nomDeProduitPermis, nomDuProduitALEcran } from "./planche-de-marque";
 import { libelleDeLElement } from "./planche-en-vrai-libelles";
-import { RAISON_FAIT_NON_MONTRE, chiffresPermis, demandeDesMentionsVraies, interditsDans, mentionPermise, mentionsDites, type FaitsPermis } from "./faits-a-montrer";
+import { RAISON_FAIT_NON_MONTRE, chiffresPermis, demandeDesMentionsVraies, interditsDans, memeNomExact, mentionPermise, mentionsDites, nomEnCapitales, type FaitsPermis } from "./faits-a-montrer";
 
 // ---------------------------------------------------------------- 0. le réglage
 
@@ -329,11 +329,18 @@ export const SANS_PERSONNE_EN_VRAI = "Aucune personne n'apparaît.";
  * mot pour mot) : les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de
  * son logo et les noms des produits de la fiche ; rien n'y est ajouté qui dise une date, une origine ou un chiffre.
  */
-export const ligneDesTextesEnVrai = (produits: readonly string[], faits?: FaitsPermis): string => faits?.mentions.length
+export const ligneDesTextesEnVrai = (produits: readonly string[], faits?: FaitsPermis): string => {
+  // LES NOMS EXACTS DONNÉS PAR LE CLIENT (27 novembre 2026, `faits-a-montrer.ts`, sujet « noms ») : quand il les a donnés,
+  // ce sont eux que les étiquettes portent, tels quels, à la place des produits de la fiche ; sans eux, la ligne reste celle
+  // d'avant, à la lettre près (une image déjà reçue est reconnue sans être repayée).
+  const noms = faits?.noms?.length ? `les noms exacts des produits du client, écrits tels quels : ${faits.noms.map((p) => `« ${p.trim()} »`).join(", ")}` : null;
+  const liste = produits.map((p) => `« ${nomDuProduitALEcran(p)} »`).join(", ");
   // LES MENTIONS VRAIES (27 novembre 2026, `faits-a-montrer.ts`) : seulement quand le client en a donné ; sans elles, la
   // ligne reste celle d'avant, à la lettre près (une image déjà reçue est reconnue sans être repayée).
-  ? `Les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo, les noms des produits du client : ${produits.map((p) => `« ${nomDuProduitALEcran(p)} »`).join(", ")}, et ces mentions vraies, données par le client, écrites exactement : ${mentionsDites(faits)} ; aucune autre date, aucune autre origine, aucun autre chiffre n'y est ajouté.`
-  : `Les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : ${produits.map((p) => `« ${nomDuProduitALEcran(p)} »`).join(", ")} ; aucune date, aucune origine, aucun chiffre n'y est ajouté.`;
+  return faits?.mentions.length
+    ? `Les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo, ${noms ?? `les noms des produits du client : ${liste}`}, et ces mentions vraies, données par le client, écrites exactement : ${mentionsDites(faits)} ; aucune autre date, aucune autre origine, aucun autre chiffre n'y est ajouté.`
+    : `Les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et ${noms ?? `les noms des produits du client : ${liste}`} ; aucune date, aucune origine, aucun chiffre n'y est ajouté.`;
+};
 /**
  * LES PETITS TEXTES ILLISIBLES DE L'APERÇU (27 novembre 2026, essai réel de Mouture, reprise des trois images ; constat du
  * chef d'orchestre : sur les étiquettes, une plaque ou un emballage, l'aperçu en petit ne montre que des traits ; en haute
@@ -345,7 +352,7 @@ export const MICRO_TEXTES_EN_VRAI = "Les petits textes illisibles de l'aperçu r
 /** La ligne qui dit ce qu'est l'élément (petits textes illisibles ; marge des formats larges ; textes des étiquettes ; sans accord du client, aucune personne). */
 export function ligneDeLElement(n: NomElement, personnes: boolean, produits?: readonly string[], faits?: FaitsPermis): string {
   const d = def(n);
-  return [d.quoi, MICRO_TEXTES_EN_VRAI, d.large && !/marges généreuses/.test(d.quoi) ? MARGE_LARGE : "", produits?.length ? ligneDesTextesEnVrai(produits, faits) : "", personnes ? "" : SANS_PERSONNE_EN_VRAI].filter(Boolean).join(" ");
+  return [d.quoi, MICRO_TEXTES_EN_VRAI, d.large && !/marges généreuses/.test(d.quoi) ? MARGE_LARGE : "", produits?.length || faits?.noms?.length ? ligneDesTextesEnVrai(produits ?? [], faits) : "", personnes ? "" : SANS_PERSONNE_EN_VRAI].filter(Boolean).join(" ");
 }
 /**
  * Le texte d'une image envoyé AVANT la ligne des étiquettes et celle des petits textes (une passe d'essai reçue avant ces
@@ -354,14 +361,24 @@ export function ligneDeLElement(n: NomElement, personnes: boolean, produits?: re
  */
 export const texteSansLaLigneDesTextes = (texte: string, produits: readonly string[] | undefined, faits?: FaitsPermis): string => {
   const t = texte.replace(` ${MICRO_TEXTES_EN_VRAI}`, "");
-  return produits?.length ? t.replace(` ${ligneDesTextesEnVrai(produits, faits)}`, "") : t;
+  return produits?.length || faits?.noms?.length ? t.replace(` ${ligneDesTextesEnVrai(produits ?? [], faits)}`, "") : t;
 };
 /**
  * Le texte d'une image envoyé AVANT les mentions vraies (27 novembre 2026) : la ligne des étiquettes d'avant à la place de
  * celle qui les porte. Sert seulement à reconnaître une image déjà reçue et payée, jamais à envoyer.
  */
 export const texteSansLesMentionsVraies = (texte: string, produits: readonly string[] | undefined, faits: FaitsPermis | undefined): string =>
-  produits?.length && faits?.mentions.length ? texte.replace(` ${ligneDesTextesEnVrai(produits, faits)}`, ` ${ligneDesTextesEnVrai(produits)}`) : texte;
+  produits?.length && (faits?.mentions.length || faits?.noms?.length) ? texte.replace(` ${ligneDesTextesEnVrai(produits, faits)}`, ` ${ligneDesTextesEnVrai(produits)}`) : texte;
+/**
+ * Le texte d'une image envoyé AVANT les noms exacts donnés par le client (27 novembre 2026, après la reprise réelle de
+ * Mouture : la ligne des étiquettes listait les produits de la fiche, mentions vraies comprises) : la ligne d'alors à la
+ * place de celle qui porte ses noms exacts. Sert seulement à reconnaître une image déjà reçue et payée, jamais à envoyer.
+ */
+export const texteSansLesNomsDonnes = (texte: string, produits: readonly string[] | undefined, faits: FaitsPermis | undefined): string => {
+  if (!faits?.noms?.length) return texte;
+  const avant: FaitsPermis = { mentions: faits.mentions, interdits: faits.interdits };
+  return produits?.length ? texte.replace(` ${ligneDesTextesEnVrai(produits, faits)}`, ` ${ligneDesTextesEnVrai(produits, avant)}`) : texte.replace(` ${ligneDesTextesEnVrai([], faits)}`, "");
+};
 /** Le texte d'une image envoyé avant la ligne des petits textes seulement (la ligne des étiquettes y était déjà). */
 export const texteSansLaLigneDesPetitsTextes = (texte: string): string => texte.replace(` ${MICRO_TEXTES_EN_VRAI}`, "");
 export const finDeRepriseEnVrai = (raisons: readonly string[]) => `À corriger : ${raisons.join(" ; ")}.`;
@@ -571,6 +588,14 @@ export const ImageRelueSchema = z.object({
    * compte jamais en trop (`textesExcusesEnVrai`). Absent d'un verdict d'avant ce champ.
    */
   aussiSurLApercu: z.array(z.string().max(300)).max(40).optional().catch(undefined),
+  /**
+   * LES NOMS DE PRODUITS LISIBLES (27 novembre 2026, reprise réelle de Mouture : « CAFÉ MOULUS » et « COFFRETS » sur des
+   * étiquettes quand le client a donné « Café moulu » et « Coffret découverte », sans que rien ne le relève) : chaque nom de
+   * produit lisible sur une étiquette, une boîte ou un emballage, recopié lettre pour lettre, sur une seule ligne. Demandé
+   * seulement quand le client a donné ses noms exacts ; le code les leur compare (`nomsDeProduitsNonDonnes`). Absent d'un
+   * verdict d'avant ce champ : le code lit alors les textes lus.
+   */
+  nomsDeProduits: z.array(z.object({ ou: z.string().max(200).catch(""), texte: z.string().max(200).catch("") })).max(20).optional().catch(undefined),
 });
 export type ImageRelue = z.infer<typeof ImageRelueSchema>;
 export const RelectureDuGroupeSchema = z.object({ images: z.array(ImageRelueSchema).max(20).catch([]) });
@@ -592,12 +617,21 @@ export const RELECTEUR_EN_VRAI = `Tu es le relecteur le plus exigeant d'un studi
 Le nom de la marque et la phrase de son logo, écrits exactement, ne sont jamais une faute, où que le logo soit posé (une étiquette, un sachet, une enseigne, une page), même quand l'aperçu est trop petit pour les lire : recopie-les dans textesLus sans les reprocher. Un petit texte de l'aperçu, illisible, doit rester des traits ou une texture : un mot lisible écrit à sa place est un texte inventé.
 Ne juge que ce que tu vois.`;
 
+/**
+ * Ce que la demande au relecteur dit des noms exacts donnés par le client (27 novembre 2026) : la liste, et le champ à part
+ * où il recopie chaque nom de produit lisible (sans aucun nom ni exemple d'essai). Seulement quand il les a donnés.
+ */
+export const demandeDesNomsDonnes = (noms: readonly string[]): string[] => [
+  `Les noms exacts des produits que la marque vend, donnés par le client : ${noms.map((p) => `« ${p.trim()} »`).join(", ")}. Tout autre nom de produit, toute origine, date, année ou chiffre lisible absent de l'aperçu va dans inventes.`,
+  "Réponds aussi, pour chaque case, nomsDeProduits : chaque nom de produit lisible sur une étiquette, une boîte, un sachet ou un emballage de l'image refaite, même écrit exactement comme l'un de ces noms ; pour chacun, « ou » (l'objet qui le porte) et « texte » (recopié lettre pour lettre, accents et pluriel compris, sur une seule ligne même s'il est écrit sur deux) ; vide s'il n'y en a pas. Le nom de la marque et la phrase de son logo n'y vont pas.",
+];
 export function demandeAuRelecteurEnVrai(o: { nom: string; personnes: boolean; groupe: Groupe; cases: { element: NomElement; photo: boolean }[]; produits?: readonly string[]; phrase?: readonly string[]; faits?: FaitsPermis }): string {
   return [
     `Marque : « ${o.nom.trim()} ». Groupe : ${NOM_DU_GROUPE[o.groupe]}.`,
     o.personnes ? "Le client a donné son accord pour des personnes." : "Le client n'a donné ni photo de personne ni accord : aucune personne ne doit être visible.",
     ...(o.phrase?.length ? [`Le logo porte le nom « ${o.nom.trim()} » et la phrase ${o.phrase.map((l) => `« ${l} »`).join(" puis ")} : partout où le logo apparaît, ces textes sont attendus.`] : []),
-    ...(o.produits?.length ? [`Les produits que la marque vend, donnés par le client : ${o.produits.map((p) => `« ${p.trim()} »`).join(", ")}. Tout autre nom de produit, toute origine, date, année ou chiffre lisible absent de l'aperçu va dans inventes.`] : []),
+    ...(o.faits?.noms?.length ? demandeDesNomsDonnes(o.faits.noms)
+      : o.produits?.length ? [`Les produits que la marque vend, donnés par le client : ${o.produits.map((p) => `« ${p.trim()} »`).join(", ")}. Tout autre nom de produit, toute origine, date, année ou chiffre lisible absent de l'aperçu va dans inventes.`] : []),
     ...demandeDesMentionsVraies(o.faits),
     `Cases : ${o.cases.map((c) => `${c.element}${c.photo ? " (photo du produit jointe)" : ""}`).join(", ")}.`,
   ].join("\n");
@@ -738,6 +772,54 @@ const sansLesMots = (mots: readonly string[], excuses: readonly string[]) => {
 };
 /** Le début de la raison des faits inventés (le compte rendu garde les textes exacts ; le dessinateur ne les reçoit jamais). */
 export const DEBUT_FAITS_INVENTES_EN_VRAI = "faits ou produits inventés, absents de l'aperçu et de la fiche du client : ";
+/** Le début de la raison des noms de produits mal écrits (le compte rendu garde les textes exacts ; le dessinateur ne les reçoit jamais). */
+export const DEBUT_NOMS_DE_PRODUITS_EN_VRAI = "noms de produits qui ne sont pas ceux donnés par le client, mot pour mot : ";
+/** Les séparateurs d'une ligne qui porte plusieurs noms (« Café en grains · Café moulu »). */
+const ENTRE_DEUX_NOMS = /\s*[·•|/]\s*|\s+[-–—]\s+/u;
+/** Les mots d'un texte, en capitales, accents gardés (pour chercher une suite de mots dans une ligne de l'aperçu). */
+const motsEnCapitales = (t: string) => motsDe(t).map((w) => nomEnCapitales(w)).filter(Boolean);
+/**
+ * Ces mots sont-ils une suite de mots de cette ligne de l'aperçu ? Le premier mot de la ligne, coupé à gauche par le bord de
+ * la case, peut être la fin du mot lu ; son dernier, coupé à droite, le début du mot lu (« u grain » pour « Du grain »), comme
+ * dans `comparerLesTextes`. Aucun autre mot n'est excusé.
+ */
+const suiteDans = (mots: readonly string[], ligne: readonly string[]) => mots.length > 0 && ligne.some((_, i) => i + mots.length <= ligne.length && mots.every((w, k) => {
+  const l = ligne[i + k];
+  return l === w || (i + k === 0 && w.length > l.length && w.endsWith(l)) || (i + k === ligne.length - 1 && w.length > l.length && w.startsWith(l));
+}));
+/**
+ * UN NOM DE PRODUIT LISIBLE EST COMPARÉ AUX NOMS EXACTS DONNÉS PAR LE CLIENT (27 novembre 2026, reprise réelle de Mouture :
+ * « CAFÉ MOULUS » et « COFFRETS » lus sur des étiquettes quand le client avait donné « Café moulu » et « Coffret
+ * découverte » ; rien ne l'avait relevé, les produits de la fiche excusant tout mot de produit, au singulier comme au
+ * pluriel). Les mots du chef d'orchestre : « un nom de produit lisible sur une étiquette doit être comparé aux noms exacts
+ * donnés par le client ». Seulement quand il les a donnés (`faits.noms`) ; sans eux, rien ne change.
+ * Les noms lus : ceux que le relecteur recopie à part (`nomsDeProduits`) et, lu par le code (aussi pour un verdict d'avant ce
+ * champ), chaque ligne lue dont tous les vrais mots sont des mots de produits (de la fiche ou de ses noms donnés), une
+ * ligne qui en porte plusieurs étant coupée à ses séparateurs. Un nom lu est permis quand il est l'un des noms donnés, mot
+ * pour mot (la casse ne compte pas ; espaces, apostrophes et tirets unifiés ; chaque lettre et chaque accent comptent), ou
+ * un texte déjà lisible sur l'aperçu de la case (une suite de mots d'une ligne de l'inventaire, ou un texte que le relecteur
+ * voit aussi sur l'aperçu) ; le nom de la marque et la phrase du logo ne sont jamais des noms de produits. Rend les noms
+ * refusés, tels qu'ils sont lus, sans doublon.
+ */
+export function nomsDeProduitsNonDonnes(v: Pick<ImageRelue, "nomsDeProduits" | "aussiSurLApercu">, o: { attendus: readonly string[]; lus: readonly string[]; produits?: readonly string[]; faits?: FaitsPermis; logo?: TextesDuLogo }): string[] {
+  const noms = o.faits?.noms ?? [];
+  if (!noms.length) return [];
+  const motsProduits = [...(o.produits ?? []), ...noms];
+  const lus = [
+    ...(v.nomsDeProduits ?? []).map((x) => x.texte),
+    ...o.lus.flatMap((l) => l.split(ENTRE_DEUX_NOMS)).filter((l) => nomDeProduitPermis(l, motsProduits)),
+  ].map((t) => t.replace(/^[\s.,;:!?…«»"“”]+|[\s.,;:!?…«»"“”]+$/gu, "")).filter((t) => motsDe(t).length);
+  const apercu = o.attendus.map(motsEnCapitales), vus = (v.aussiSurLApercu ?? []).map((t) => nomEnCapitales(motsDe(t).join(" ")));
+  const duLogo = o.logo ? [o.logo.nom, ...(o.logo.phrase ?? [])] : [];
+  const out: string[] = [];
+  for (const t of lus) {
+    if (noms.some((n) => memeNomExact(n, t)) || duLogo.some((x) => memeNomExact(x, t))) continue;
+    const m = motsEnCapitales(t);
+    if (apercu.some((l) => suiteDans(m, l)) || vus.includes(nomEnCapitales(motsDe(t).join(" ")))) continue;
+    if (!out.some((x) => memeNomExact(x, t))) out.push(t);
+  }
+  return out;
+}
 export function raisonsDuRefusEnVrai(v: ImageRelue | undefined, o: { inventaire: CaseLue | undefined; personnes: boolean; photo: boolean; element?: string; deborde?: boolean;
   /** Le nom et la phrase du logo : jamais en trop là où le logo est. */ logo?: TextesDuLogo;
   /** Les produits de la fiche du client : les seuls noms de produits permis. */ produits?: readonly string[];
@@ -752,14 +834,19 @@ export function raisonsDuRefusEnVrai(v: ImageRelue | undefined, o: { inventaire:
   // exactement, ils ne sont jamais une faute là où le logo est, dans l'aperçu ou dans l'image refaite, quelle que soit sa
   // place ; la comparaison reste lettre pour lettre (`sansLesTextesDuLogo`). Toute reprise reçoit la phrase.
   const logoLa = o.logo && (v.logoPresent || o.inventaire?.logo) ? o.logo : undefined;
-  const inventes = faitsInventesEnVrai(v, { attendus: z.attendus, lus: z.lus, produits: o.produits, logo: logoLa, faits: o.faits });
-  // Les mots des lignes inventées sont dits dans leur propre raison, pas deux fois.
-  const dansLesInventes = new Set(inventes.flatMap(motsDe));
-  const excuses = textesExcusesEnVrai(v, { attendus: z.attendus, lus: z.lus, produits: o.produits, ...(o.faits?.mentions.length ? { faits: o.faits, logo: logoLa } : {}) });
+  // Les noms exacts donnés par le client (27 novembre 2026) sont des noms de produits permis, comme ceux de la fiche ; écrit
+  // autrement qu'il les a donnés, un nom de produit fait refuser (`nomsDeProduitsNonDonnes`).
+  const produits = o.faits?.noms?.length ? [...(o.produits ?? []), ...o.faits.noms] : o.produits;
+  const inventes = faitsInventesEnVrai(v, { attendus: z.attendus, lus: z.lus, produits, logo: logoLa, faits: o.faits });
+  const malNommes = nomsDeProduitsNonDonnes(v, { attendus: z.attendus, lus: z.lus, produits: o.produits, faits: o.faits, logo: logoLa }).filter((t) => !inventes.some((x) => memeNomExact(x, t)));
+  // Les mots des lignes inventées (et des noms mal écrits) sont dits dans leur propre raison, pas deux fois.
+  const dansLesInventes = new Set([...inventes, ...malNommes].flatMap(motsDe));
+  const excuses = textesExcusesEnVrai(v, { attendus: z.attendus, lus: z.lus, produits, ...(o.faits?.mentions.length ? { faits: o.faits, logo: logoLa } : {}) });
   const fidele = v.texteCoupe && coupeFideleALApercu(v);
   const coupes = fidele ? motsCoupesCommeSurLApercu(z.attendus, z.lus, logoLa) : { enTrop: [], manquants: [] };
   const t = { manquants: sansLesMots(sansLesMots(c.manquants, excuses.manquants), coupes.manquants), enTrop: sansLesMots(sansLesMots(sansLesTextesDuLogo(c.enTrop, logoLa).filter((w) => !dansLesInventes.has(w)), excuses.enTrop), coupes.enTrop) };
   if (inventes.length) r.push(`${DEBUT_FAITS_INVENTES_EN_VRAI}${inventes.map((l) => `« ${l} »`).join(", ")}`);
+  if (malNommes.length) r.push(`${DEBUT_NOMS_DE_PRODUITS_EN_VRAI}${malNommes.map((l) => `« ${l} »`).join(", ")} (noms donnés : ${o.faits!.noms!.map((n) => `« ${n.trim()} »`).join(", ")})`);
   // Ce que le client ne veut pas montrer, lu sur l'image refaite (27 novembre 2026) : toujours refusé.
   if ([...v.textesLus, ...(v.inventes ?? []).map((x) => x.texte)].some((t) => interditsDans(t, o.faits).length)) r.push(RAISON_FAIT_NON_MONTRE);
   if (t.manquants.length || t.enTrop.length) r.push(`ses textes ne sont pas ceux de l'aperçu, lettre pour lettre${t.manquants.length ? ` (manquent : ${t.manquants.slice(0, 8).map((w) => `« ${w} »`).join(", ")})` : ""}${t.enTrop.length ? ` (en trop ou mal écrits : ${t.enTrop.slice(0, 8).map((w) => `« ${w} »`).join(", ")})` : ""}`);
@@ -830,9 +917,14 @@ export function motsCoupesCommeSurLApercu(attendus: readonly string[], lus: read
  * sont écrits. Le compte rendu garde les raisons exactes.
  */
 export function raisonsPourLeDessinateurEnVrai(raisons: readonly string[], o: { produits?: readonly string[]; faits?: FaitsPermis } = {}): string[] {
-  const ses = `${o.produits?.length ? ` : ${o.produits.map((p) => `« ${nomDuProduitALEcran(p)} »`).join(", ")}` : ""}${o.faits?.mentions.length ? `, et ses mentions vraies : ${mentionsDites(o.faits)}` : ""}`;
+  // Ses noms exacts, quand il les a donnés (27 novembre 2026), à la place des produits de la fiche.
+  const noms = o.faits?.noms?.length ? o.faits.noms.map((p) => `« ${p.trim()} »`).join(", ") : "";
+  const ses = `${noms ? ` : ${noms}` : o.produits?.length ? ` : ${o.produits.map((p) => `« ${nomDuProduitALEcran(p)} »`).join(", ")}` : ""}${o.faits?.mentions.length ? `, et ses mentions vraies : ${mentionsDites(o.faits)}` : ""}`;
   return raisons.map((r) => r.startsWith(DEBUT_FAITS_INVENTES_EN_VRAI)
     ? `un texte absent de l'aperçu est écrit sur une étiquette, un emballage ou un objet : retire-le ; les étiquettes ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client${ses}`
+    // Un nom mal écrit n'est jamais recopié pour le dessinateur : il reçoit seulement les noms exacts.
+    : r.startsWith(DEBUT_NOMS_DE_PRODUITS_EN_VRAI)
+    ? `un nom de produit n'est pas écrit exactement comme le client l'a donné : sur les étiquettes et les emballages, écris seulement ses noms exacts, lettre pour lettre${noms ? ` : ${noms}` : ""}`
     : r.replace(/\(en trop ou mal écrits : [^)]*\)/u, "(des mots absents de l'aperçu sont écrits : garde seulement ses textes, lettre pour lettre)"));
 }
 

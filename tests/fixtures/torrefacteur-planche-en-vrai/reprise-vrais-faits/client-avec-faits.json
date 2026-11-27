@@ -1,0 +1,129 @@
+{
+  "metier": "petit torréfacteur artisanal qui vend en ligne des cafés en grains et moulus, et des coffrets",
+  "kind": "produits",
+  "produits": [
+    "cafés en grains",
+    "cafés moulus",
+    "coffrets"
+  ],
+  "prix": "environ 9 € le paquet de 250 g, en grains ou moulu ; environ 30 € le coffret de trois cafés",
+  "clientele": "des gens qui aiment le bon café et veulent le boire frais chez eux, et des gens qui cherchent un cadeau",
+  "gouts": "chaleureux, simple et artisanal",
+  "descripteur": "café",
+  "faits": [
+    {
+      "sujet": "noms",
+      "etat": "donne",
+      "at": 1795785730973,
+      "noms": [
+        "Café en grains",
+        "Café moulu",
+        "Coffret découverte"
+      ]
+    },
+    {
+      "sujet": "formats",
+      "etat": "donne",
+      "at": 1795785731380,
+      "produit": "Café en grains",
+      "valeur": "250 g ou 1 kg"
+    },
+    {
+      "sujet": "formats",
+      "etat": "donne",
+      "at": 1795785731381,
+      "produit": "Café moulu",
+      "valeur": "250 g"
+    },
+    {
+      "sujet": "formats",
+      "etat": "donne",
+      "at": 1795785731381,
+      "produit": "Coffret découverte",
+      "valeur": "3 sachets de 250 g"
+    },
+    {
+      "sujet": "origine",
+      "etat": "donne",
+      "at": 1795785731381,
+      "produit": "Café en grains",
+      "valeur": "Brésil et Éthiopie"
+    },
+    {
+      "sujet": "origine",
+      "etat": "donne",
+      "at": 1795785731381,
+      "produit": "Café moulu",
+      "valeur": "Brésil et Éthiopie"
+    },
+    {
+      "sujet": "origine",
+      "etat": "ne_sait_pas",
+      "at": 1795785731381,
+      "produit": "Coffret découverte"
+    },
+    {
+      "sujet": "mentions",
+      "etat": "ne_montre_pas",
+      "at": 1795785731381
+    },
+    {
+      "sujet": "fabrication",
+      "etat": "donne",
+      "at": 1795785731381,
+      "valeur": "Torréfié à Lyon"
+    },
+    {
+      "sujet": "torrefaction",
+      "etat": "donne",
+      "at": 1795785731381,
+      "produit": "Café en grains",
+      "valeur": "torréfaction moyenne"
+    },
+    {
+      "sujet": "torrefaction",
+      "etat": "donne",
+      "at": 1795785731381,
+      "produit": "Café moulu",
+      "valeur": "torréfaction moyenne"
+    },
+    {
+      "sujet": "torrefaction",
+      "etat": "ne_sait_pas",
+      "at": 1795785731381,
+      "produit": "Coffret découverte"
+    },
+    {
+      "sujet": "notes_de_gout",
+      "etat": "donne",
+      "at": 1795785731381,
+      "produit": "Café en grains",
+      "valeur": "chocolat, noisette"
+    },
+    {
+      "sujet": "notes_de_gout",
+      "etat": "donne",
+      "at": 1795785731381,
+      "produit": "Café moulu",
+      "valeur": "chocolat, noisette"
+    },
+    {
+      "sujet": "notes_de_gout",
+      "etat": "ne_sait_pas",
+      "at": 1795785731381,
+      "produit": "Coffret découverte"
+    },
+    {
+      "sujet": "annee",
+      "etat": "donne",
+      "at": 1795785731381,
+      "valeur": "2021"
+    },
+    {
+      "sujet": "ville",
+      "etat": "donne",
+      "at": 1795785731381,
+      "valeur": "Lyon"
+    }
+  ]
+}

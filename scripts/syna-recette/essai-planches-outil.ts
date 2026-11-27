@@ -11,7 +11,7 @@ import sharp from "sharp";
 import type { PlancheAi } from "../../src/lib/syna-agent/planche-de-marque-tache";
 import type { RelectureDeLaPlanche, ValeursDuMetier } from "../../src/lib/syna-agent/planche-de-marque";
 import type { NameDomains } from "../../src/lib/syna-agent/brand-domains";
-import { clientDeLEssai, euros, faitsPermisDuClient, ficheDuClient, typeDuProjet, type ClientDeLEssai } from "./client-de-l-essai";
+import { clientDeLEssai, euros, faitsPermisDuClient, ficheDuClient, rangerLesFaitsDansLeProjet, typeDuProjet, type ClientDeLEssai } from "./client-de-l-essai";
 import { lignesDeLArret, avisDuPlafond } from "./plafond-des-essais";
 
 // Le client inventé de l'essai (client-de-l-essai.ts) : aucun client n'est pris par défaut.
@@ -340,6 +340,8 @@ export async function essaiDesPlanches(o: { sortie: string; plafondEuros: string
   const u = await account();
   const projectId = project(u, typeDuProjet(client)) as string;
   run("UPDATE projects SET name=? WHERE id=?", client.nom, projectId);
+  // Ses faits rangés dans la fiche du projet, comme dans le Studio : ce qui les relit dans le projet les voit aussi.
+  await rangerLesFaitsDansLeProjet(u.id, projectId, client);
   const jobId = `essai-planches-${id()}`;
   const qui: Qui = { userId: u.id, projectId, jobId };
   const brut: PlancheAi = o.ai ? o.ai(qui) : T.plancheDeps.ai ? T.plancheDeps.ai(jobId) : T.vraisAppelsDeLaPlanche(qui);

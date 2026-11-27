@@ -106,6 +106,25 @@ export async function faitsPermisDuClient(c: Pick<ClientDeLEssai, "faits">) {
   return faitsPermis(c.faits ?? []);
 }
 
+/**
+ * SES FAITS RANGÉS DANS LA FICHE DU PROJET DE L'ESSAI (27 novembre 2026, préparation du client de vérification), comme
+ * dans le Studio où SINA les enregistre pendant « Faire connaissance » (`start.fait`). Les fonctions du Studio qui les
+ * relisent dans le projet (`faitsPermisDuProjet` : l'assemblage de la planche en vrai, ses logos refaits par le code, le
+ * site, les publications) voient ainsi les mêmes faits que ceux passés aux appels : le premier passage n'a besoin d'aucune
+ * reprise pour les porter. Sans faits, rien n'est écrit. Rend le fil du projet.
+ */
+export async function rangerLesFaitsDansLeProjet(userId: string, projectId: string, c: Pick<ClientDeLEssai, "faits">): Promise<string | null> {
+  if (!c.faits?.length) return null;
+  const { one } = await import("../../src/lib/db");
+  const { threadFor } = await import("../../src/lib/syna-agent/thread");
+  const { enregistrerLesFaits } = await import("../../src/lib/syna-agent/faits-a-montrer");
+  const user = one<import("../../src/lib/auth").User>("SELECT id, email, name, role, timezone, created_at FROM users WHERE id=?", userId);
+  if (!user) throw new Error(`Compte ${userId} introuvable : les faits du client ne sont pas rangés. Rien n'est lancé.`);
+  const cid = threadFor(user, projectId);
+  enregistrerLesFaits(cid, c.faits.map(({ at: _at, ...f }) => f));
+  return cid;
+}
+
 /** Ses réponses facultatives (prix, client idéal, image voulue), comme le Studio les garde au départ ; rien quand elles manquent. */
 export function reponsesFacultatives(c: Pick<ClientDeLEssai, "prix" | "clientele" | "gouts">, at = Date.now()) {
   const r = (value: string) => ({ value, status: "answered" as const, source: "client" as const, at });
