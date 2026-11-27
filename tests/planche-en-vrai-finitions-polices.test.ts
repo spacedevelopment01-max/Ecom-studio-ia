@@ -127,7 +127,7 @@ describe("la planche en vrai : la police suit l'aperçu que le client a vu", asy
     expect(C.policeDuCatalogue(inv.polices.titres, 700).remplacee).toBe(false);
     // Depuis le 27 novembre 2026 (essai réel de Mouture : « Montserrat » remplacée par « Nunito ») : le genre concorde et la
     // police nommée est au catalogue, elle l'emporte sur le choix de l'inventaire (en attente de l'accord écrit, voir
-    // l'épreuve marquée ACCORD_A_COMPLETER).
+    // l'épreuve remplacée le 27 novembre 2026).
     const autre = C.policeDuCatalogue({ nom: "Montserrat", genre: "sans", procheDuCatalogue: "Poppins" }, 400);
     expect(autre).toMatchObject({ famille: "Montserrat", remplacee: false });
     expect(await fr(() => P.phraseDeLaPoliceRemplacee("Montserrat", "Poppins", undefined, true))).toBe("Sur ta planche, la police nommée « Montserrat » n'avait pas tout à fait le dessin montré : j'ai pris celle du catalogue du Studio qui ressemble le plus à ce que tu as vu, « Poppins ».");

@@ -157,18 +157,16 @@ const SIGNE_PARASITE = { decision: "26 novembre 2026", mots: "« Oui, marque pla
 const EN_VRAI_IDENTIQUE_A_L_APERCU = { decision: "26 novembre 2026", mots: "« Oui, marque planche-en-vrai-a-l-identique et planche-en-vrai-symbole-seul-et-bandeau-sans-marges comme remplacées par ma décision du 26 novembre, ajoute et scelle planche-en-vrai-identique-a-l-apercu (les codes couleur écrits sur l'aperçu gardés quand la couleur peinte en est proche, sinon la mesure ; sans symbole séparable, le compact, l'icône, le favicon et le badge repris de l'aperçu ; la police de mise en page partout sauf dans le spécimen ; rien d'ajouté sous le logo ; les titres nettoyés en entier ; les textes attendus pris dans la zone de la case et l'heure du téléphone jamais reprochée), et mets à jour la partie Identité de CLAUDE.md. »" };
 const SOURCE_EN_VRAI_ECUME_4 = "docs/studio/PLANCHE-EN-VRAI.md (partie « Identique à l'aperçu : l'assemblage corrigé après l'étape 4 d'Écume (26 novembre 2026) » ; essai réel : docs/studio/essais-complets/images/ecume/4-planche-en-vrai, branche claude/essais-complets ; planche B, logo 10, inventaire et verdicts réels copiés dans tests/fixtures/ecume-planche-en-vrai ; constat du chef d'orchestre)";
 /**
- * L'ACCORD ÉCRIT ENCORE À RECEVOIR (27 novembre 2026). Les corrections de l'essai réel de Mouture, étape 5, demandées par le
+ * Le 27 novembre 2026, les corrections de l'essai réel de Mouture, étape 5, demandées par le
  * chef d'orchestre, contredisent deux épreuves scellées : planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu (« Une
  * police nommée qui est au catalogue n'est jamais remplacée » : son rejeu retenait le choix de l'inventaire, « Montserrat »
  * lue « sans » remplacée par « Poppins ») et planche-en-vrai-identique-a-l-apercu (« Quand la version faite par le code est
  * identique au logo principal ou illisible, on reprend celle de l'aperçu » : le logo empilé d'Écume, identique au principal,
  * est désormais repris de l'aperçu, cinq versions au lieu de quatre). Elles sont marquées remplacées par
- * planche-en-vrai-pas-identique-a-l-apercu-mouture, qui rejoue tout le reste ; la phrase d'accord écrite du propriétaire,
- * mot pour mot, n'est pas encore là : `ACCORD_A_COMPLETER` tient sa place ; le banc n'accepte ce manque que pour ces deux
- * épreuves, et la phrase d'accord le remplacera à son arrivée.
+ * planche-en-vrai-pas-identique-a-l-apercu-mouture, qui rejoue tout le reste. Son accord écrit, mot pour mot (27 novembre
+ * 2026, écrit dans la conversation de construction).
  */
-export const ACCORD_A_COMPLETER = "[À compléter : phrase d'accord écrite du propriétaire]";
-const POLICE_NOMMEE_JAMAIS_REMPLACEE = { decision: "27 novembre 2026", mots: ACCORD_A_COMPLETER };
+const POLICE_NOMMEE_JAMAIS_REMPLACEE = { decision: "27 novembre 2026", mots: "« Oui, marque planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu et planche-en-vrai-identique-a-l-apercu comme remplacées par ma décision du 27 novembre, ajoute et scelle planche-en-vrai-pas-identique-a-l-apercu-mouture (une police nommée, au catalogue, de genre compatible avec le spécimen, n'est jamais remplacée ; les rôles des polices se lisent sur leur place dans l'aperçu ; une version du logo que le code rend identique au logo principal ou illisible, l'empilé comme l'horizontal, est reprise de l'aperçu, pour tout client), et mets à jour la partie Identité de CLAUDE.md. »" };
 const SOURCE_EN_VRAI_IDENTIQUE = "docs/studio/PLANCHE-EN-VRAI.md (partie « Identique en visuel : les finitions nettoyées et la police de l'aperçu (26 novembre 2026) » ; essai réel d'Écume, étape 3 reprise : docs/studio/essais-complets/images/ecume/3-planches-2, branche claude/essais-complets ; verdicts réels de A-2 et B-2 copiés tels quels dans tests/fixtures/ecume-planches-2 ; mots du chef d'orchestre)";
 const SOURCE_SIGNE_PARASITE = "docs/studio/ESSAI-ECUME.md (essai réel d'Écume du 26 novembre 2026, étape 3 reprise, 0,67 € : docs/studio/essais-complets/images/ecume/3-planches-2, branche claude/essais-complets ; verdict réel de A-2 copié tel quel dans tests/fixtures/ecume-planches-2 ; constat et décision du chef d'orchestre)";
 const SOURCE_ECUME_ETAPE_3 = "docs/studio/ESSAI-ECUME.md (essai réel d'Écume du 25 novembre 2026, étape 3, arrêté en erreur après 0,23 € : docs/studio/essais-complets/images/ecume/3-planches, branche claude/essais-complets ; verdict réel copié tel quel dans tests/fixtures/ecume-planches ; constat du chef d'orchestre)";

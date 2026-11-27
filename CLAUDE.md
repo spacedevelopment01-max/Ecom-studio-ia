@@ -220,11 +220,12 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   SINA propose de la refaire à sa charge. **Après le choix, la palette et les polices sont lues sur la planche choisie** (accord
   écrit du 26 novembre 2026, après l'essai réel d'Écume) : sous chaque pastille, le code écrit sur l'aperçu est gardé quand
   la couleur peinte en est proche (écart perceptuel de 10 au plus) et la pastille est peinte de ce code, sinon la médiane
-  mesurée ; ces codes font foi (marque, site, onglet Marque) ; polices du catalogue du Studio, la plus proche du spécimen
-  montré sinon, et c'est dit ; elles ne servent que dans leur spécimen : titres de blocs, libellés, codes, légendes et
+  mesurée ; ces codes font foi (marque, site, onglet Marque) ; polices du catalogue du Studio : leurs rôles se lisent sur leur place dans l'aperçu (la première nommée est celle des
+  titres, sauf si l'aperçu dit autrement) ; une police nommée, au catalogue, de genre compatible avec le spécimen, n'est
+  jamais remplacée ; absente du catalogue, ou démentie par le genre montré, la plus proche du spécimen, et c'est dit ; elles ne servent que dans leur spécimen : titres de blocs, libellés, codes, légendes et
   badge gardent la police de mise en page de l'aperçu ; rien ne s'ajoute qui ne soit pas sur l'aperçu, et un titre
   redessiné efface toute la zone de l'ancien ; les dix versions du logo, les favicons, l'avatar et le badge sont faits par
-  le code ; sans symbole séparable, le compact, l'icône, le favicon et le badge sont repris de leur case de l'aperçu ; une
+  le code ; sans symbole séparable, le compact, l'icône, le favicon et le badge sont repris de leur case de l'aperçu ; une version que le code rend identique au logo principal ou illisible (l'horizontal, l'empilé, les monochromes d'un logo à aplats) est reprise de sa case de l'aperçu, pour tout client (accord écrit du 27 novembre 2026) ; les monochromes d'un logo à aplats gardent ses creux, le nom lisible ; une
   image est jugée sur les textes de sa seule zone, jamais sur l'heure d'un téléphone ; dans l'onglet Marque, le site est
   une seule image, « Le site sur ordinateur et téléphone », et chaque image est découpée au plus juste de son contenu,
   montrée entière à sa vraie proportion ; l'assemblage se fait
