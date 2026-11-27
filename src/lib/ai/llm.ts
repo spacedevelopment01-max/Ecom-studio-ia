@@ -635,7 +635,7 @@ async function deposer(params: any, jobKey: string, reservationId?: string): Pro
 const suiviDeSortie = (call: Pick<LlmCall, "motifReprise">, format: unknown): Record<string, string> | null =>
   format || call.motifReprise ? { ...(format ? { sortie: "stricte" } : {}), ...(call.motifReprise ? { reprise: call.motifReprise } : {}) } : null;
 /** Un coût inconnu reste bloquant pour les moteurs, quelle que soit la langue du message. */
-function uncertainProviderFailure(message:string){return Object.assign(new PermanentError(message),{uncertain:true as const});}
+function uncertainProviderFailure(message:string){return Object.assign(new PermanentError(message),{uncertain:true as const,nature:"texte" as const});}
 
 async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[], format?: unknown, suffix = "", callTry = 0): Promise<RawResult> {
   const operation = { task: call.task, projectId: call.projectId, usageKey: call.usageKey ? `${call.usageKey}${suffix}` : undefined, requestHash: requestHash({ system: systemText(call), messages, format, maxTokens: call.maxTokens }) };

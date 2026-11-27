@@ -89,5 +89,7 @@
   "cout-probable-seul-et-arret-au-double": "0f1046877b87bfbecd566dc62e2857ced23d50a7a7bea9c6228efa8b9ec6b8e0",
   "planche-produits-de-la-fiche-seulement": "11a70111512f70fc9305480ab9df1c39b6685f3e6c833bc3e08e6de8469db908",
   "planche-signe-isole-declare-par-le-relecteur": "15f6b4cb6b302973c8b3054029678eaa46ea3ed50c7d15a875184f2ef4c1156f",
-  "nom-jamais-verifie-sans-comparaison": "019e36551bf6ab3523ca6f59e0c14703db327df6ec66f187a8f60497a5a24c9b"
+  "nom-jamais-verifie-sans-comparaison": "019e36551bf6ab3523ca6f59e0c14703db327df6ec66f187a8f60497a5a24c9b",
+  "planche-en-vrai-textes-du-logo-et-faits-inventes": "3ce9e046540c1bc9f8dd5736e2e4d50b91777315a6982abadf7c3b6b86b02764",
+  "erreur-technique-jamais-montree-au-client": "9b9b1d436114499ee3693cfa140a9f4bac53ca5c0358f98da77c7a095a40ec3d"
 }

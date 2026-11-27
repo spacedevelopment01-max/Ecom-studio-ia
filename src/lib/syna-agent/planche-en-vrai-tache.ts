@@ -24,7 +24,7 @@ import { DEFAULT_MODELS } from "./models";
 import { logoDetoure, photosDuProduitIds } from "./brand-images";
 import type { Route } from "./brand-routes";
 import { lignesDuTexte } from "./phrase-sous-le-nom";
-import { blocDeLaFinition, copyright, mentionDuDomaine, nettoyerLesSignesIsoles, porteUnSigneParasite, texteDeLaFinition } from "./planche-de-marque";
+import { blocDeLaFinition, copyright, lignesDeLaPhrase, mentionDuDomaine, nettoyerLesSignesIsoles, porteUnSigneParasite, texteDeLaFinition } from "./planche-de-marque";
 import {
   CASES_DU_CODE, ELEMENTS, GROUPES, INVENTAIRE_SYSTEM, InventaireSchema, NOMS_DES_ELEMENTS, RELECTEUR_EN_VRAI, RelectureDuGroupeSchema, TITRES, TUILES_DU_LOGO,
   caseLue, decouperLesApercus, demandeDeLInventaire, inventaireIncomplet, lesCases, phraseDeLaPoliceRemplacee, phraseDeLaPublicationIncomprehensible,
@@ -88,6 +88,20 @@ export function devisDeLaPlancheEnVrai(faits: readonly string[] = []): DevisDeLa
   }
   const maxMicro = Math.ceil(max), repriseMicro = Math.ceil(reprise);
   return { maxMicro, probableMicro: Math.ceil(probable), repriseMicro, repriseProbableMicro: Math.ceil(repriseProbable), studioMaxMicro: borneDuStudio(Math.max(1, maxMicro), false, repriseMicro, 1), images };
+}
+
+/**
+ * Le devis des reprises de quelques images (aucun appel) : chaque image refaite une fois, à la charge du Studio, et la
+ * relecture de chaque groupe touché ; il n'y a pas d'autre tour (refusée deux fois, l'aperçu garde sa case). Mêmes prix et
+ * mêmes maxima que `devisDeLaPlancheEnVrai`.
+ */
+export function devisDesReprisesEnVrai(elements: readonly NomElement[]): { maxMicro: number; probableMicro: number; images: number; relectures: number; groupes: Groupe[] } {
+  const rel = appel("relecture");
+  const groupes = GROUPES.filter((g) => elements.some((n) => ELEMENTS[n].groupe === g));
+  let max = 0, probable = 0;
+  for (const n of elements) { max += elementDeLaPlancheMaxMicro(ELEMENTS[n].taille, 3); probable += Math.round(PRIX_MESURES[n] * EUR); }
+  max += groupes.length * rel.max; probable += groupes.length * rel.probable;
+  return { maxMicro: Math.ceil(max), probableMicro: Math.ceil(probable), images: elements.length, relectures: groupes.length, groupes };
 }
 
 // ---------------------------------------------------------------- les appels réels
@@ -198,6 +212,21 @@ function dispositionDe(assetId: string): Laquelle {
   try { const m = JSON.parse(String(getAsset(assetId)?.meta ?? "{}")); return m?.plancheDeMarque?.disposition === "animaux" ? "animaux" : "standard"; } catch { return "standard"; }
 }
 
+/**
+ * LES PRODUITS DE LA FICHE gardés avec la planche choisie (26 novembre 2026) : les valeurs du métier, contrôlées, rangées avec
+ * son image (`plancheDeMarque.produits`) ; pour une planche d'avant ce champ, la liste « Montrer clairement » du texte envoyé
+ * au dessinateur, qui les reprend mot pour mot. Vide si rien n'est retrouvé (la ligne des étiquettes ne part pas).
+ */
+export function produitsDeLaPlanche(assetId: string): string[] {
+  try {
+    const m = JSON.parse(String(getAsset(assetId)?.meta ?? "{}"))?.plancheDeMarque;
+    if (Array.isArray(m?.produits)) return m.produits.filter((p: unknown): p is string => typeof p === "string" && !!p.trim());
+    const t = typeof m?.texteEnvoye === "string" ? m.texteEnvoye : "";
+    const liste = /Montrer clairement :\n((?:- [^\n]+\n)+)/u.exec(t)?.[1] ?? "";
+    return liste.split("\n").map((l) => l.replace(/^- /u, "").trim()).filter(Boolean);
+  } catch { return []; }
+}
+
 /** Le logo de la planche choisie a-t-il changé depuis (un autre logo adopté) ? Il faut alors refaire d'abord la démonstration. */
 export const logoChangeDepuisLaDemo = (route: Route, logoFrom: string | null | undefined): boolean => !!route.board.planche?.logo && !!logoFrom && route.board.planche.logo !== logoFrom;
 
@@ -217,6 +246,8 @@ export async function plancheEnVrai(o: {
   ligneDuLogo?: string | null;
   /** Le métier court écrit pour la recherche du logo (« les plantes d'intérieur »). */
   metierCourt?: string | null;
+  /** Les produits de la fiche du client ; sans eux, ceux gardés avec la planche choisie (`produitsDeLaPlanche`). */
+  produits?: readonly string[] | null;
 }): Promise<EtatPlancheEnVrai> {
   const { ctx, ai, route } = o, pl = route.board.planche;
   if (!pl?.image) throw new Error("Aucune planche de démonstration choisie.");
@@ -266,7 +297,8 @@ export async function plancheEnVrai(o: {
       items.flatMap((it) => [{ data: it.apercu, label: `${it.element} aperçu` }, { data: it.image, label: `${it.element} refaite` }, ...(it.photo ? [{ data: it.photo, label: `${it.element} produit` }] : [])]),
       demande, `relecture-${groupe}${tour > 1 ? "-r1" : ""}`)),
     aLaChargeDuStudio: (fn) => aLaChargeDuStudio(fn),
-  }, { nom, personnes: o.personnes, logo: logoSurBlanc, symbole: symboleSurBlanc, photo, apercus: decoupe.apercus, inventaire, debordes: decoupe.debordes });
+  }, { nom, personnes: o.personnes, logo: logoSurBlanc, symbole: symboleSurBlanc, photo, apercus: decoupe.apercus, inventaire, debordes: decoupe.debordes,
+    produits: o.produits?.length ? o.produits : produitsDeLaPlanche(pl.image.id), phrase: lignesDeLaPhrase(o.ligneDuLogo) });
 
   // Les images gardées, rangées en haute définition ; les produits sans photo du client sont marqués « image d'ambiance ».
   for (const n of NOMS_DES_ELEMENTS) for (const e of res.get(n)?.essais ?? []) if (e.raisons.length) notes.push(`${n}, essai ${e.tour} refusé : ${e.raisons.join(" ; ")}`);
@@ -646,7 +678,7 @@ export async function refaireLesProduitsEnVrai(o: { ctx: Etape; ai: PlancheEnVra
     },
     relire: (groupe, items, demande, tour) => o.ctx.step(`brand:envrai:relecture:${groupe}:photo${tour > 1 ? ":r1" : ""}`, () => o.ai.relire(items.flatMap((it) => [{ data: it.apercu, label: `${it.element} aperçu` }, { data: it.image, label: `${it.element} refaite` }, ...(it.photo ? [{ data: it.photo, label: `${it.element} produit` }] : [])]), demande, `relecture-${groupe}-photo`)),
     aLaChargeDuStudio: (fn) => aLaChargeDuStudio(fn),
-  }, { nom: o.route.name.trim(), personnes: o.personnes, logo, photo, apercus: decoupe.apercus, inventaire, elements: aRefaire, debordes: decoupe.debordes });
+  }, { nom: o.route.name.trim(), personnes: o.personnes, logo, photo, apercus: decoupe.apercus, inventaire, elements: aRefaire, debordes: decoupe.debordes, produits: produitsDeLaPlanche(ev.demo) });
   const elements = [...ev.elements], issues: string[] = [];
   for (const n of aRefaire) {
     const r = res.get(n);
@@ -800,6 +832,8 @@ export async function plancheEnVraiParLeCode(o: {
 export async function reprendreDesCasesEnVrai(o: {
   ai: PlancheEnVraiAi; nom: string; personnes: boolean; logo: Buffer; separation: Separation; inventaire: Inventaire; decoupe: Decoupe;
   elements: readonly NomElement[]; raisons: ReadonlyMap<NomElement, readonly string[]>;
+  /** Les produits de la fiche et la phrase du logo (la ligne des étiquettes, les textes du logo jamais en trop). */
+  produits?: readonly string[]; phrase?: readonly string[];
   /** Les cases dont l'aperçu LU PAR L'INVENTAIRE touchait la bande d'un titre (sinon, celles de la découpe d'aujourd'hui). */
   debordes?: readonly string[];
 }) {
@@ -809,5 +843,5 @@ export async function reprendreDesCasesEnVrai(o: {
     refaire: async (d) => (await o.ai.refaire(d, `${d.element}-reprise`)).png,
     relire: (g, items, demande) => o.ai.relire(items.flatMap((it) => [{ data: it.apercu, label: `${it.element} aperçu` }, { data: it.image, label: `${it.element} refaite` }, ...(it.photo ? [{ data: it.photo, label: `${it.element} produit` }] : [])]), demande, `relecture-${g}-reprise`),
     aLaChargeDuStudio: (fn) => aLaChargeDuStudio(fn),
-  }, { nom: o.nom, personnes: o.personnes, logo: logoSurBlanc, symbole, photo: null, apercus: o.decoupe.apercus, inventaire: o.inventaire, debordes: o.debordes ?? o.decoupe.debordes, elements: o.elements, reprise: o.raisons });
+  }, { nom: o.nom, personnes: o.personnes, logo: logoSurBlanc, symbole, photo: null, apercus: o.decoupe.apercus, inventaire: o.inventaire, debordes: o.debordes ?? o.decoupe.debordes, elements: o.elements, reprise: o.raisons, produits: o.produits, phrase: o.phrase });
 }

@@ -375,6 +375,8 @@ export type PassePrecedente = {
   depenseMicro: number; incertainMicro: number;
   /** Ce que les passes déjà archivées (passe-1/, passe-2/…) ont compté : une deuxième reprise les compte aussi dans « en tout ». */
   depenseDesPassesArchiveesMicro: number;
+  /** Le rejugement gratuit de cette passe (REJUGER=1, rejugement.json), s'il a été fait : les images déclarées périmées. */
+  rejugement?: Rejugement;
 };
 
 const lireJson = (f: string): unknown => { try { return JSON.parse(fs.readFileSync(f, "utf8")); } catch { return null; } };
@@ -421,7 +423,8 @@ export function passePrecedente(sortie: string): PassePrecedente | null {
   const archivees = liste(".").filter((d) => /^passe-\d+$/.test(d));
   const numero = 1 + archivees.length;
   const depenseDesPassesArchiveesMicro = archivees.reduce((s, d) => s + ((lireJson(f(d, "depense.json")) as { reelMicro?: number | null; reserveMicro?: number }[] | null) ?? []).reduce((t, a) => t + (a.reelMicro ?? a.reserveMicro ?? 0), 0), 0);
-  return { numero, inventaire, demandeDeLInventaire, images, relectures, logosHd, sansReponse: sansReponse.sort(), plancheSha, logoSha, depenseMicro, incertainMicro, depenseDesPassesArchiveesMicro };
+  const rj = lireJson(f("rejugement.json")) as Rejugement | null;
+  return { numero, inventaire, demandeDeLInventaire, images, relectures, logosHd, sansReponse: sansReponse.sort(), plancheSha, logoSha, depenseMicro, incertainMicro, depenseDesPassesArchiveesMicro, ...(rj && rj.passe === numero && Array.isArray(rj.perimees) ? { rejugement: rj } : {}) };
 }
 
 /**
@@ -433,6 +436,23 @@ export async function devisDeLaReprise(prec: PassePrecedente, o: { logoHd?: bool
   const T = await import("../../src/lib/syna-agent/planche-en-vrai-tache");
   const P = await import("../../src/lib/syna-agent/planche-en-vrai");
   const { plafondConseilleMicro } = await import("./plafond-des-essais");
+  // Après REJUGER=1 : ce qui reste est ce que le rejugement a compté (les reprises des images à refaire, leurs relectures,
+  // LOGO_HD), recompté ici avec les fonctions du devis du Studio.
+  if (prec.rejugement) {
+    const rj = prec.rejugement, reprises = T.devisDesReprisesEnVrai(rj.aRefaire.map((x) => x.element)), logos = o.logoHd ? T.devisDesLogosEnHd() : null;
+    const probableMicro = reprises.probableMicro + (logos?.probableMicro ?? 0), plafondMinimalMicro = reprises.maxMicro + (logos?.maxMicro ?? 0);
+    return {
+      faits: [], probableMicro, probableAvecReprisesMicro: probableMicro + (logos ? logos.siToutEstRefaitMicro - logos.probableMicro : 0), plafondMinimalMicro, plafondConseilleMicro: plafondConseilleMicro(probableMicro),
+      texte: [
+        `Reprise de la passe ${prec.numero} après le rejugement gratuit (REJUGER=1, rejugement.txt) : gardées sans appel ${rj.gardees.map((g) => g.element).join(", ") || "aucune"}.`,
+        `Restent : ${reprises.images} image(s) refaite(s) une fois à la charge du Studio (${rj.aRefaire.map((x) => x.element).join(", ") || "aucune"}), ${reprises.relectures} relecture(s)${logos ? ", puis LOGO_HD (4 images et 1 relecture, à la charge du Studio)" : ""}.`,
+        ...(rj.perimees.length ? [`Images reçues avec la consigne d'avant, périmées, rangées à part et refaites : ${rj.perimees.join(", ")}.`] : []),
+        ...(prec.sansReponse.length ? [`Appel(s) parti(s) sans réponse à la passe ${prec.numero} (résultat incertain, coût maximal retenu : ${euros(prec.incertainMicro)}) : ${prec.sansReponse.join(", ")}. Jamais relancé tout seul : refait seulement parce que tu relances toi-même avec REPRENDRE=1.`] : []),
+        `Probable de ce qui reste : ${euros(probableMicro)} ; somme des maxima de ce qui reste : ${euros(plafondMinimalMicro)}.`,
+        `Plafond conseillé : ${euros(plafondConseilleMicro(probableMicro))} (deux fois le probable, arrondi). Déjà compté : ${euros(prec.depenseDesPassesArchiveesMicro + prec.depenseMicro)} en tout.`,
+      ],
+    };
+  }
   const faits = [
     ...(prec.inventaire ? ["brand:envrai:inventaire"] : []),
     ...P.NOMS_DES_ELEMENTS.filter((n) => prec.images.has(`${n}-1`)).map((n) => `brand:envrai:${n}`),
@@ -458,6 +478,90 @@ export async function devisDeLaReprise(prec: PassePrecedente, o: { logoHd?: bool
 
 /** La reprise refusée avant tout appel (la planche, le logo ou une demande ont changé depuis la passe d'avant). */
 export class RepriseRefusee extends Error { constructor(m: string) { super(m); this.name = "RepriseRefusee"; } }
+
+// ---------------------------------------------------------------- le rejugement gratuit (REJUGER=1)
+
+/**
+ * LE REJUGEMENT GRATUIT D'UNE PASSE (REJUGER=1, 26 novembre 2026, essai réel de Mouture, étape 5). Aucun appel : les images
+ * déjà reçues et les verdicts déjà reçus sont relus, et chaque image est jugée de nouveau par le code d'aujourd'hui
+ * (`raisonsDuRefusEnVrai` : les textes du logo jamais en trop, les faits et les produits inventés reconnus). Ce qu'il peut
+ * rejuger : tout ce que le relecteur a écrit (ses textes lus, sa note, ses cases cochées). Ce qu'il ne peut pas : un texte
+ * que le relecteur n'a pas recopié, ou un défaut qu'il n'a pas vu ; pour cela, `aLOeil` marque à refaire une image vue au
+ * contrôle, avec sa raison. Il écrit rejugement.json : les images gardées, celles à refaire (avec leurs raisons
+ * d'aujourd'hui et celles d'alors), celles refusées deux fois (l'aperçu garde sa case) et les images reçues avec la
+ * consigne d'avant et jamais relues, déclarées périmées : la reprise suivante (REPRENDRE=1) les range à part et les refait
+ * avec la consigne d'aujourd'hui, parce que le propriétaire relance lui-même. Le devis de ce qui reste suit.
+ */
+export type Rejugement = {
+  passe: number; at: number;
+  gardees: { element: NomElement; tour: number }[];
+  aRefaire: { element: NomElement; raisons: string[]; raisonsAvant: string[] }[];
+  refuseesDeuxFois: { element: NomElement; raisons: string[] }[];
+  /** Les images reçues avec la consigne d'avant et jamais relues (« case-tour ») : jamais reprises telles quelles. */
+  perimees: string[];
+  /** Les textes inventés vus au contrôle sur une image du premier essai (A_REFAIRE), ajoutés à son verdict comme le relecteur les aurait relevés. */
+  aLOeil: Record<string, string>;
+  devis: { probableMicro: number; maxMicro: number; plafondConseilleMicro: number; images: number; relectures: number; logoHd: boolean };
+  texte: string[];
+};
+/** Un verdict reçu, complété du texte inventé vu au contrôle (dans `inventes`, comme le relecteur l'aurait relevé). */
+export function avecLOeil<V extends { inventes?: { ou: string; texte: string }[] }>(v: V, texte: string | undefined): V {
+  return texte?.trim() ? { ...v, inventes: [...(v.inventes ?? []), { ou: "vu au contrôle", texte: texte.trim() }] } : v;
+}
+/** `A_REFAIRE="case:texte inventé lu;case:texte"` : les images marquées à refaire au contrôle, avec le texte inventé vu. */
+export function lireALOeil(v: string | undefined): Map<NomElement, string> {
+  const m = new Map<NomElement, string>();
+  for (const morceau of (v ?? "").split(";")) { const i = morceau.indexOf(":"); if (i > 0) m.set(morceau.slice(0, i).trim() as NomElement, morceau.slice(i + 1).trim()); }
+  return m;
+}
+export async function rejugerLEssaiEnVrai(o: { sortie: string; client: ClientDeLEssai; donnees: DonneesDeLaPlanche; personnes?: boolean; logoHd?: boolean; aLOeil?: ReadonlyMap<NomElement, string> }): Promise<Rejugement> {
+  const P = await import("../../src/lib/syna-agent/planche-en-vrai");
+  const T = await import("../../src/lib/syna-agent/planche-en-vrai-tache");
+  const { plafondConseilleMicro } = await import("./plafond-des-essais");
+  const prec = passePrecedente(o.sortie);
+  if (!prec?.inventaire) throw new Error(`REJUGER=1 : rien à rejuger dans ${o.sortie} (aucun inventaire reçu). Rien n'est fait.`);
+  for (const n of o.aLOeil?.keys() ?? []) if (!(P.NOMS_DES_ELEMENTS as string[]).includes(n)) throw new Error(`A_REFAIRE : « ${n} » n'est pas une case de la planche en vrai. Rien n'est fait.`);
+  // La zone de chaque case, lue sur les boîtes de la passe (apercus/cases.json), comme le réassemblage : aucune découpe à refaire.
+  const boites = ((lireJson(path.join(o.sortie, "apercus", "cases.json")) as { boites?: Record<string, [number, number, number, number]> } | null)?.boites) ?? {};
+  const deborde = (n: string) => !!boites[n] && P.entreDansUneBandeDeTitre(o.donnees.disposition, boites[n]);
+  const logo = { nom: o.client.nom.trim(), phrase: lignesDuTexte(o.donnees.phrase) };
+  const raisonsDAlors = (g: string, tour: number, n: string): string[] => ((lireJson(path.join(o.sortie, "relectures", `${g}-${tour}-verdict.json`)) as { raisons?: Record<string, string[]> } | null)?.raisons?.[n]) ?? [];
+  const r: Rejugement = { passe: prec.numero, at: Date.now(), gardees: [], aRefaire: [], refuseesDeuxFois: [], perimees: [], aLOeil: Object.fromEntries(o.aLOeil ?? []), devis: { probableMicro: 0, maxMicro: 0, plafondConseilleMicro: 0, images: 0, relectures: 0, logoHd: !!o.logoHd }, texte: [] };
+  const lignes: string[] = [];
+  for (const n of P.NOMS_DES_ELEMENTS) {
+    const g = P.def(n).groupe;
+    const juge = (tour: number) => {
+      const lu = prec.relectures.get(`${g}-${tour}`)?.images.find((x) => x.case === n);
+      const v = lu && tour === 1 ? avecLOeil(lu, o.aLOeil?.get(n)) : lu;
+      if (!prec.images.has(`${n}-${tour}`) || !v) return null;
+      const raisons = P.raisonsDuRefusEnVrai(v, { inventaire: P.caseLue(prec.inventaire, n), personnes: !!o.personnes, photo: false, element: n, deborde: deborde(n), logo, produits: o.client.produits });
+      return raisons;
+    };
+    const t1 = juge(1), t2 = juge(2);
+    if (t1 && !t1.length) { r.gardees.push({ element: n, tour: 1 }); lignes.push(`  ${n} : GARDÉE (essai 1)${raisonsDAlors(g, 1, n).length ? ` ; refusée avant le rejugement pour : ${raisonsDAlors(g, 1, n).join(" ; ")}` : ""}`); continue; }
+    if (t2 && !t2.length) { r.gardees.push({ element: n, tour: 2 }); lignes.push(`  ${n} : GARDÉE (essai 2)`); continue; }
+    if (t2) { r.refuseesDeuxFois.push({ element: n, raisons: t2 }); lignes.push(`  ${n} : refusée deux fois, l'aperçu garde sa case : ${t2.join(" ; ")}`); continue; }
+    const raisons = t1 ?? [prec.images.has(`${n}-1`) ? "pas encore relue" : "pas encore reçue"];
+    r.aRefaire.push({ element: n, raisons, raisonsAvant: raisonsDAlors(g, 1, n) });
+    if (prec.images.has(`${n}-2`)) r.perimees.push(`${n}-2`);
+    lignes.push(`  ${n} : À REFAIRE : ${raisons.join(" ; ")}${prec.images.has(`${n}-2`) ? " (sa reprise reçue avec la consigne d'avant, jamais relue, est périmée)" : ""}${prec.sansReponse.includes(`${n}-2`) ? " (sa reprise est partie sans réponse : résultat incertain)" : ""}`);
+  }
+  const reprises = T.devisDesReprisesEnVrai(r.aRefaire.map((x) => x.element));
+  const logos = o.logoHd ? T.devisDesLogosEnHd() : null;
+  const probable = reprises.probableMicro + (logos?.probableMicro ?? 0), max = reprises.maxMicro + (logos?.maxMicro ?? 0);
+  r.devis = { probableMicro: probable, maxMicro: max, plafondConseilleMicro: plafondConseilleMicro(probable), images: reprises.images, relectures: reprises.relectures, logoHd: !!o.logoHd };
+  r.texte = [
+    `Rejugement gratuit de la passe ${prec.numero} (REJUGER=1, aucun appel) : ${r.gardees.length} image(s) gardée(s) sur ${P.NOMS_DES_ELEMENTS.length}, ${r.aRefaire.length} à refaire, ${r.refuseesDeuxFois.length} refusée(s) deux fois.`,
+    ...lignes,
+    `Ce que le code a pu rejuger : les textes lus, la note et les cases cochées par le relecteur. Ce qu'il ne peut pas : un texte que le relecteur n'a pas recopié ; les images gardées ont été regardées au contrôle${o.aLOeil?.size ? `, et ${[...o.aLOeil.keys()].join(", ")} marquée(s) à refaire` : ", aucune n'a été marquée à refaire"}.`,
+    ...(r.perimees.length ? [`Images reçues avec la consigne d'avant et jamais relues, périmées (rangées à part et refaites à la reprise) : ${r.perimees.join(", ")}.`] : []),
+    `Reste à faire (REPRENDRE=1, devis du Studio) : ${reprises.images} image(s) refaite(s) une fois à la charge du Studio, ${reprises.relectures} relecture(s) (${reprises.groupes.join(", ") || "aucune"})${logos ? `, puis LOGO_HD (${logos.images} images et ${logos.relectures} relecture, une reprise des refusées)` : ""}, puis les logos, la palette, les polices et l'assemblage par le code (gratuits).`,
+    `Probable : ${euros(probable)} ; somme des maxima : ${euros(max)} ; plafond conseillé : ${euros(r.devis.plafondConseilleMicro)} (deux fois le probable, arrondi).`,
+  ];
+  fs.writeFileSync(path.join(o.sortie, "rejugement.json"), `${JSON.stringify(r, null, 2)}\n`);
+  fs.writeFileSync(path.join(o.sortie, "rejugement.txt"), `${r.texte.join("\n")}\n`);
+  return r;
+}
 
 type Qui = { userId: string; projectId: string; jobId: string };
 
@@ -585,9 +689,22 @@ export async function essaiDeLaPlancheEnVrai(o: {
     refaire: async (d, cle) => {
       const tour = cle.endsWith("-r1") ? 2 : 1, e = essaiDe(d.element, tour), base = `cases/${d.element}-${tour}`;
       // Reprise : l'image reçue à la passe d'avant est reprise telle quelle, jamais redemandée ; son texte doit être le même.
-      const recue = prec?.images.get(`${d.element}-${tour}`);
+      let recue = prec?.images.get(`${d.element}-${tour}`);
+      // REJUGER=1 a déclaré cette image périmée (reçue avec la consigne d'avant les corrections, jamais gardée) : elle est
+      // rangée dans passe-N/cases-perimees/ et refaite avec la consigne d'aujourd'hui, parce que le propriétaire relance.
+      if (recue && prec?.rejugement?.perimees.includes(`${d.element}-${tour}`)) {
+        const dossier = path.join(o.sortie, `passe-${prec.numero}`, "cases-perimees");
+        fs.mkdirSync(dossier, { recursive: true });
+        for (const nom of fs.readdirSync(path.join(o.sortie, "cases"))) if (nom.startsWith(`${d.element}-${tour}-`)) fs.renameSync(path.join(o.sortie, "cases", nom), path.join(dossier, nom));
+        res.reprise!.ecarts.push(`${d.element} (essai ${tour}) : image reçue avec la consigne d'avant, déclarée périmée par REJUGER=1, rangée dans passe-${prec.numero}/cases-perimees/ et refaite`);
+        recue = undefined;
+      }
       if (recue) {
-        if (recue.texte != null && recue.texte !== d.texte) throw (erreur ??= new RepriseRefusee(`le texte de ${d.element} (essai ${tour}) n'est plus celui de la passe d'avant : l'image reçue ne correspondrait plus ; rien de plus n'est lancé`));
+        // Une image reçue AVANT la ligne des étiquettes (même texte, cette ligne en moins) est reprise telle quelle : elle a
+        // été payée, et son verdict est recompté par le code d'aujourd'hui.
+        const avantLaLigne = recue.texte != null && recue.texte !== d.texte && recue.texte === P.texteSansLaLigneDesTextes(d.texte, client.produits);
+        if (avantLaLigne) res.reprise!.ecarts.push(`${d.element} (essai ${tour}) : image reçue avant la ligne des étiquettes, reprise telle quelle et rejugée par le code`);
+        else if (recue.texte != null && recue.texte !== d.texte) throw (erreur ??= new RepriseRefusee(`le texte de ${d.element} (essai ${tour}) n'est plus celui de la passe d'avant : l'image reçue ne correspondrait plus ; rien de plus n'est lancé (REJUGER=1 dit lesquelles refaire)`));
         const differentes = d.jointes.filter((j) => recue.jointes.get(j.role) && recue.jointes.get(j.role) !== sha(j.data)).map((j) => j.role);
         if (differentes.length) res.reprise!.ecarts.push(`${d.element} (essai ${tour}) : image(s) jointe(s) ${differentes.join(", ")} aux octets différents de la passe d'avant`);
         e.texte = `${base}-texte-envoye.txt`;
@@ -608,7 +725,10 @@ export async function essaiDeLaPlancheEnVrai(o: {
     relire: async (images, demande, cle) => {
       const tour = cle.endsWith("-r1") ? 2 : 1, groupe = cle.replace(/^relecture-/, "").replace(/-r1$/, ""), base = `relectures/${groupe}-${tour}`;
       // Reprise : la relecture reçue à la passe d'avant est reprise telle quelle (ses raisons sont recomptées par le code).
-      const relue = prec?.relectures.get(`${groupe}-${tour}`);
+      const recueTelle = prec?.relectures.get(`${groupe}-${tour}`);
+      // Les textes inventés vus au contrôle (REJUGER=1 avec A_REFAIRE) s'ajoutent au verdict du premier essai, comme au rejugement.
+      const oeil = tour === 1 ? prec?.rejugement?.aLOeil ?? {} : {};
+      const relue = recueTelle && { ...recueTelle, images: recueTelle.images.map((x) => avecLOeil(x, oeil[x.case])) };
       if (relue) { repris(`relecture ${groupe}${tour > 1 ? " (reprise)" : ""}`); return comptee(images, relue, cle, groupe, tour, base, false); }
       ecrireFichier(`${base}-demande.txt`, `${P.RELECTEUR_EN_VRAI}\n\n--- demande ---\n${demande}\n\n--- images jointes, dans l'ordre (${images.length}) ---\n${images.map((im, i) => `${i + 1}. ${im.label} (${im.data.length} octets, sha256 ${sha(im.data)})`).join("\n")}\n`);
       const v = await garder(() => brut.relire(images, demande, cle));
@@ -622,7 +742,7 @@ export async function essaiDeLaPlancheEnVrai(o: {
     const raisons: Record<string, string[]> = {};
     for (const n of relues) {
       const photo = images.some((im) => im.label === `${n} produit`);
-      raisons[n] = P.raisonsDuRefusEnVrai(v.images.find((x) => x.case === n), { inventaire: P.caseLue(res.inventaire, n), personnes, photo });
+      raisons[n] = P.raisonsDuRefusEnVrai(v.images.find((x) => x.case === n), { inventaire: P.caseLue(res.inventaire, n), personnes, photo, element: n, deborde: decoupe.debordes?.includes(n), logo: { nom: client.nom, phrase: lignesDuTexte(donnees.phrase) }, produits: client.produits });
       const e = essaiDe(n, tour);
       e.raisons = raisons[n]; e.verdict = v.images.find((x) => x.case === n) ?? null;
     }
@@ -734,7 +854,7 @@ export async function essaiDeLaPlancheEnVrai(o: {
   return runWithLang({ ui: "fr", content: "fr" }, () => runForUser(u.id, () => withTrace({ jobId, projectId, costCapMicro: devis.devisDuStudio.maxMicro, studioCapMicro: devis.devisDuStudio.studioMaxMicro + (devisLogos?.maxMicro ?? 0) }, async () => {
     let etat: EtatPlancheEnVrai;
     try {
-      etat = await T.plancheEnVrai({ ctx, ai, who: { userId: u.id, projectId }, route: route as never, logoAssetId: logoAsset.id, personnes, phrase: donnees.phrase, ligneDuLogo, metierCourt });
+      etat = await T.plancheEnVrai({ ctx, ai, who: { userId: u.id, projectId }, route: route as never, logoAssetId: logoAsset.id, personnes, phrase: donnees.phrase, ligneDuLogo, metierCourt, produits: client.produits });
     } catch (e) { res.arret = raisonDeLArret(erreur ?? e); return ecrire(); }
     // LOGO_HD sur le chemin normal (26 novembre 2026) : après la planche en vrai, les versions reprises de l'aperçu sont
     // refaites en haute définition par la fonction du Studio (`refaireLesLogosEnHdEnVrai`), à la charge du Studio, chaque
@@ -907,7 +1027,7 @@ export async function reassemblerLEssaiEnVrai(o: {
       const v = r.verdict.images.find((x) => x.case === n);
       if (!v && !r.raisons?.[n]) continue;
       const photo = fs.readdirSync(path.join(o.dossier, "cases")).some((f) => f.startsWith(`${n}-${tour}-jointe-`) && f.endsWith("-produit.png"));
-      const apres = P.raisonsDuRefusEnVrai(v, { inventaire: P.caseLue(inventaire, n), personnes, photo, element: n, deborde });
+      const apres = P.raisonsDuRefusEnVrai(v, { inventaire: P.caseLue(inventaire, n), personnes, photo, element: n, deborde, logo: { nom, phrase: lignesDuTexte(donnees.phrase) }, produits: client.produits });
       c.essais.push({ tour, note: v?.note ?? null, raisonsAvant: r.raisons?.[n] ?? [], raisonsApres: apres });
       if (!apres.length && c.gardee == null) {
         const p = await formater(n, fs.readFileSync(hd));

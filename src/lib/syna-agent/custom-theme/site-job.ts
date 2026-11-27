@@ -49,6 +49,7 @@ import { clientNotes } from "./site-facts";
 import { controleParImage, ligneControle, type ControleImage } from "./controle-image";
 import { SEUIL } from "./ressemblance";
 import { dossierPreuves, preuvesRepondues, buildKnowledge, buildTool, COPY_FIXES_TYPICAL, COPY_REVIEW_TYPICAL_MICRO, customPhotoDeps, designCost, keepWork, PHOTO_FIX_TYPICAL_MICRO, PHOTO_REVIEW_TYPICAL_MICRO, photoUnit, runDesign, SECTION_TEXT_TYPICAL_MICRO, SITE_PLAN_TYPICAL_MICRO, siteKind, type BuildArgs, type DesignRun } from "./tools";
+import { causePourLeClient } from "../../ai/phrase-pour-le-client";
 
 export const SINA_SITE_JOB = "syna.site";
 export type SitePayload = { projectId: string; userId: string; conversationId: string; runId: string; capMicro: number; consigne?: string | null; /** Numéro de la relance accordée par le client (création coupée en plein appel payant). */ relance?: number };
@@ -447,7 +448,7 @@ export async function runSinaSiteJob(ctx: JobContext) {
   const image = await ctx.step("site:image", async (): Promise<ControleImage> => {
     const families = (() => { try { return new Set(listProducts(p.id).flatMap((x) => x.data.categories.map((c) => c.trim()).filter(Boolean))).size; } catch { return 0; } })();
     try { return await (siteJobDeps.image ?? controleParImage)(p.id, siteKind(tc), { families }); }
-    catch (e) { return { statut: "non-fait", avant: null, note: null, seuil: SEUIL, compares: 0, nonCompares: 0, changements: [], raison: `contrôle interrompu (${(e as Error).message.slice(0, 160)})` }; }
+    catch (e) { return { statut: "non-fait", avant: null, note: null, seuil: SEUIL, compares: 0, nonCompares: 0, changements: [], raison: `contrôle interrompu (${causePourLeClient(e).slice(0, 160)})` }; }
   });
   const tropProche = image.statut === "trop-proche";
 

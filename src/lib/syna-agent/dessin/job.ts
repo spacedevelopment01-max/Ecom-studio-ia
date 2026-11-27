@@ -36,6 +36,7 @@ import { contentFromInput, libraryFiller } from "../../theme/library-fill";
 import { localCopy } from "../../engine/local-copy";
 import { emptyProduct } from "../../project-types";
 import { appliquerJugement, insecables, FIDELE_SYSTEM, FideleSchema, morceauxSurs, nettoyerPlan, corrigerFichiers, textesDuCode, CODE_SYSTEM, CodeSchema, cheminSur, consignesDessins, demandeCode, JUGE_SYSTEM, JugementSchema, PLAN_SYSTEM, PlanSchema, slugMarque, type Identite, type PlanPage } from "./methode";
+import { causePourLeClient } from "../../ai/phrase-pour-le-client";
 
 export const SINA_DESSIN_JOB = "syna.dessin";
 export type DessinPayload = { projectId: string; userId: string; conversationId: string; runId: string; capMicro: number; consigne?: string | null; /** Numéro de la relance d'une création coupée (le Studio renvoie alors, une fois, l'appel coupé). */ relance?: number };
@@ -200,7 +201,7 @@ export async function runDessinJob(ctx: JobContext) {
             const deux = [{ data: await sharp(assetData(getAsset(prod.photo!)!)).resize(768, 768, { fit: "inside" }).png().toBuffer(), label: "vraie photo" }, { data: await sharp(img as Buffer).resize(768, 768, { fit: "inside" }).png().toBuffer(), label: "photo créée" }];
             const v = await withTrace(trace(`dessin-fidele-${n}`, DESSIN_COUTS.fidele.max), () => llmJson({ nouvelleSiChangee: true, sansRelanceCoupee: true, task: "quality_control", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: FIDELE_SYSTEM, promptKey: "syna-dessin-fidele-1", prompt: `Produit : « ${prod.titre} ». Image 1 : sa VRAIE photo. Image 2 : la photo créée pour le site, qui doit le mettre en scène.`, images: deux, maxTokens: 1_000, maxOutputTokens: 1_000, usageKey: `${ctx.job.id}:fidele:${n}`, routing: { difficulty: "standard", prefer: { provider: "anthropic", model: "claude-sonnet-5-5" } } }, FideleSchema, { strict: true }));
             if (!v.fidele) refusee = v.defaut || "produit différent de sa vraie photo";
-          } catch (e) { refusee = `contrôle de fidélité non fait (${(e as Error).message.slice(0, 80)}) : la vraie photo est posée par prudence`; }
+          } catch (e) { refusee = `contrôle de fidélité non fait (${causePourLeClient(e).slice(0, 80)}) : la vraie photo est posée par prudence`; }
         }
         out.push({ n, id: asset.id, description: s.photo!, produit: prod?.titre ?? null, ...(refusee ? { refusee, produitPhoto: prod!.photo! } : {}) });
       } catch (e) { out.push({ n, id: null, description: `${s.photo} (création ratée : ${(e as Error).message.slice(0, 120)})`, produit: null }); }

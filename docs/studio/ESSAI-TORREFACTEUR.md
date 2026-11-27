@@ -224,6 +224,98 @@ reste est une relecture, 0,27 € au plus.
 Ce qu'elle écrit en plus dans `5-planche-en-vrai` : `logos-hd/` (pour chaque version et chaque tour : le texte envoyé, la
 tuile et le logo joints, l'image reçue, la demande et le verdict de la relecture).
 
+### L'état au 26 novembre 2026 au soir : trois passes, 1,77 €, rien d'assemblé
+
+La deuxième reprise s'est arrêtée sur une troisième coupure, pendant la reprise de produit-3 : « Connection error ← TypeError:
+fetch failed ← read ECONNRESET ». Dépense comptée en tout : 1,7685 € (0,4465 €, 0,5828 € et 0,7392 €). Fichiers :
+`docs/studio/essais-complets/images/torrefacteur/5-planche-en-vrai/` (branche `claude/essais-complets`).
+
+**La cause des coupures : le proxy du conteneur d'essai.** Les 40 appels des trois passes comparés (usage.json) :
+
+| | Octets envoyés | Durée avant la coupure ou la réponse |
+|---|---|---|
+| Coupure 1, site-ordinateur (passe 1) | 1,12 Mo | 8,5 s |
+| Coupure 2, reference-6 (passe 2) | 0,87 Mo | 0,5 s |
+| Coupure 3, reprise de produit-3 (passe 3, connexion neuve) | 0,90 Mo | 25 s |
+| 37 réussites | de 0,12 à 1,41 Mo (emballage, le plus gros, est passé) | de 12 à 55 s |
+
+Aucun seuil de taille ni de durée : les coupures sont plus légères et plus courtes que bien des réussites. Les deux premières
+partaient sur une connexion déjà servie (corrigé le 26 novembre, une connexion neuve par image). La troisième, sur une
+connexion neuve, tombe pendant l'attente muette de l'image : une remise à zéro nue, ce que le guide du proxy du conteneur
+(`/root/.ccr/README.md`) décrit quand son tunnel vers la sortie est perdu en cours de route ; il n'indique aucun autre
+chemin et interdit de le contourner. **Le Studio en ligne n'a pas de proxy : il n'est pas touché.** La parade construite,
+gratuite et sûre, modèle inchangé : les images jointes partent allégées sans perte (chaque point identique, vérifié par le
+code, sinon l'original part) ; le logo joint à 13 images sur 17 passe de 718 173 à 565 449 octets. Elle réduit le temps
+d'envoi dans le tunnel, elle ne garantit rien : une coupure pendant l'attente reste possible, elle n'est jamais relancée
+toute seule, et la reprise garde tout ce qui est reçu.
+
+**Deux faux pas du jugement, corrigés sans dépense** (épreuve `planche-en-vrai-textes-du-logo-et-faits-inventes`) :
+- la phrase du logo, imprimée sous le logo sur les sachets, était comptée « en trop » quand l'inventaire ne l'avait pas
+  relevée dans l'aperçu : le nom et la phrase du logo sont désormais attendus partout où le logo apparaît ;
+- les images refaites inventaient des produits et des faits sur les étiquettes (« L'ARABY DE PÉROU », « 100% ARABICA »,
+  Brésil, Éthiopie, « CAFÉ DEPUIS 1928 ») : la ligne de l'élément dit maintenant que les étiquettes et les emballages ne
+  portent que les textes de l'aperçu, le nom, la phrase du logo et les noms des produits de la fiche, sans date, origine
+  ni chiffre ; le relecteur reçoit la fiche et relève les inventions à part ; le code refuse ; la reprise ne renvoie jamais
+  un texte inventé au dessinateur.
+
+**Le rejugement gratuit (`REJUGER=1`, aucun appel, aucune clé)** relit les images et les verdicts reçus et les juge de
+nouveau par le code corrigé. Il écrit `rejugement.json` et `rejugement.txt`. Ce qu'il peut rejuger : tout ce que le
+relecteur a écrit (textes lus, note, cases cochées). Ce qu'il ne peut pas : un texte que le relecteur n'a pas recopié ;
+pour cela, les images gardées ont été regardées une à une, et `A_REFAIRE="case:texte inventé lu"` en marquerait une à
+refaire (aucune ne l'est). Essayé sur les vrais fichiers, copiés : **8 images gardées sur 17** (publication-1x1,
+publication-9x16, ouverture-site, ouverture-planche, site-ordinateur, reference-1, reference-2, reference-3). **9 à
+refaire** :
+
+| Image | Raison |
+|---|---|
+| publication-4x5 | mots inventés sur l'étiquette du sachet (« Une torréfaction de caractère », « ÉQUILIBRE & INTENSITÉ ») |
+| site-telephone | texte coupé, fidélité 7/10 |
+| produit-1 | « CLASSÉ \| 500 g \| 100% ARABICA » et d'autres mots inventés sur l'étiquette |
+| produit-2 | mots inventés sur l'étiquette (« ÉQUILIBRÉ », « DES ARÔMES RICHES ET GÉNÉREUX »…) |
+| produit-3 | « L'ARABY DE PÉROU », « 100% ARABICA », fidélité 6/10 (sa reprise est partie sans réponse) |
+| emballage | « Grains \| 250 g », « L'Instart franc », logo foncé sur la tasse sombre, fidélité 6/10 |
+| reference-4 | « 100% ARABICA », « 250G », noms inventés, sachet coupé, fidélité 6/10 |
+| reference-5 | « DEPUIS 1928 » sur la plaque du moulin |
+| reference-6 | « L'ARABICA PUR BRÉSIL », « LE MOKA ÉTHIOPIE - BIO », « TORRÉFIÉ EN FRANCE » |
+
+Les quatre reprises reçues à la passe 3 avec la consigne d'avant (publication-4x5, site-telephone, produit-1, produit-2)
+n'ont jamais été relues ; vues au contrôle, trois portent encore des inventions (« 100% ARABICA DE QUALITÉ », « 250 g »,
+« ARABICA EN GRAINS »). Elles sont déclarées périmées : la reprise les range dans `passe-3/cases-perimees/` et les refait.
+
+**Ce qui reste** : 9 images refaites une fois, à la charge du Studio, avec la consigne corrigée ; 4 relectures ; LOGO_HD
+(4 images, 1 relecture, une reprise des refusées) ; puis les logos, la palette, les polices et l'assemblage par le code
+(gratuits). Devis du code : **probable 1,26 €** (1,2589 €), somme des maxima 3,77 € (3,7716 €), **plafond conseillé
+3 €**. Une image refusée de nouveau garde son aperçu agrandi : il n'y a pas d'autre tour.
+
+Les commandes, dans l'ordre :
+
+```
+# 1. Le rejugement, gratuit (aucun appel, aucune clé)
+DEBUT CLIENT_NOM="Mouture" REJUGER=1 LOGO_HD=1 \
+  RESULTAT_PLANCHE=data/essai-torrefacteur/4-planches/planche-A-resultat.json \
+  PHRASE="$(cat data/essai-torrefacteur/3-finalisation/esquisse-11-phrase-du-logo.txt)" \
+  node_modules/.bin/tsx scripts/syna-recette/essai-planche-en-vrai.mts data/essai-torrefacteur/5-planche-en-vrai \
+  data/essai-torrefacteur/4-planches/planche-A-gardee.png data/essai-torrefacteur/3-finalisation/esquisse-11-logo-garde.png
+
+# 2. Le devis de ce qui reste, gratuit
+DEVIS_SEULEMENT=1 REPRENDRE=1 LOGO_HD=1 DATA_DIR=data/essai-torrefacteur/studio \
+  node_modules/.bin/tsx scripts/syna-recette/essai-planche-en-vrai.mts data/essai-torrefacteur/5-planche-en-vrai
+
+# 3. La reprise, payante (seulement après son « oui » et après avoir vérifié la consommation chez le fournisseur)
+DEBUT CLIENT_NOM="Mouture" PLAFOND_ESSAI_EUR=3 LOGO_HD=1 REPRENDRE=1 \
+  RESULTAT_PLANCHE=data/essai-torrefacteur/4-planches/planche-A-resultat.json \
+  PHRASE="$(cat data/essai-torrefacteur/3-finalisation/esquisse-11-phrase-du-logo.txt)" \
+  METIER_COURT="$(node -p "require('./data/essai-torrefacteur/2-esquisses/esquisses.json').metier.court")" \
+  node_modules/.bin/tsx scripts/syna-recette/essai-planche-en-vrai.mts data/essai-torrefacteur/5-planche-en-vrai \
+  data/essai-torrefacteur/4-planches/planche-A-gardee.png data/essai-torrefacteur/3-finalisation/esquisse-11-logo-garde.png
+```
+
+Sans le rejugement, la reprise refuse avant tout appel (les reprises reçues ne correspondent plus) et dit de lancer
+`REJUGER=1`. Les images gardées ne sont jamais redemandées : reçues avant la ligne des étiquettes, elles sont reprises
+telles quelles et rejugées par le code. Vérifié sans dépense, de bout en bout, avec des appels simulés sur l'inventaire et
+les verdicts réels (`tests/planche-en-vrai-rejuger-puis-reprendre.test.ts`) : 9 images et 4 relectures redemandées, aucune
+autre, aucune n'emportant un texte inventé.
+
 ## Étape 6 — l'écran (gratuit)
 
 ```

@@ -18,7 +18,8 @@ import { dessinCoupe, ouArrete } from "./dessin/tools";
 import { SINA_DESSIN_JOB } from "./dessin/job";
 import { z } from "zod";
 import { HttpError, type User } from "../auth";
-import { one, all, json, run as sql, id as newId, tx } from "../db";
+import { one, all, json, logError, run as sql, id as newId, tx } from "../db";
+import { erreurTechniqueDeLIA, pourLeClient } from "../ai/phrase-pour-le-client";
 import { budgetPctTu, coutProbableTu } from "../ai/budget-pct";
 import { balance } from "../billing";
 import { activityGaps, COMPANY_FIELDS } from "./activity";
@@ -220,7 +221,7 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
     updateRun(r.id, { status: json<string[]>(r.waiting_jobs, []).length ? "waiting_jobs" : "running", error: null });
     tctx = toolContext(user, r);
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
+    const msg = messageDeLArret(e, r);
     addMessage(r.conversation_id, "event", { kind: "error", message: clip(msg, 500) }, r.id);
     updateRun(runId, { status: "failed", error: clip(msg, 1000) as string });
     return { runId, failed: msg };
@@ -263,7 +264,7 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
       const compteRendu = waited.some((jid) => getJob(jid)?.type === "syna.site" && getJob(jid)?.status === "done") ? journeyOf(r.conversation_id).site?.report ?? null : null;
       // Ce que la tâche a coûté AU CLIENT : une dépense à la charge du Studio n'y est jamais (essai réel de Nadia, 23 novembre
       // 2026 : la carte disait « À ma charge : 0 % », le coût de la tâche était lu en entier).
-      const results = waited.map((jid) => { const j = getJob(jid); const d = depensesDeLaTache(jid), spent = d.client; return { job: jid, type: j?.type, status: j?.status, message: j?.message, result: clip(j?.result ? json(j.result, j.result) : null, 1500), error: j?.error ? clip(j.error, 400) : undefined, coutReel: j?.user_id ? budgetPctTu(j.user_id, spent, j.project_id) : null, coutReelMicro: spent, ...(d.studio > 0 || tacheDuStudio(json(j?.payload ?? "{}", {})) ? { aMaCharge: true } : {}) }; });
+      const results = waited.map((jid) => { const j = getJob(jid); const d = depensesDeLaTache(jid), spent = d.client; return { job: jid, type: j?.type, status: j?.status, message: j?.message, result: clip(j?.result ? json(j.result, j.result) : null, 1500), error: j?.error ? clip(erreurTechniqueDeLIA(j.error) ? j.message : j.error, 400) : undefined, coutReel: j?.user_id ? budgetPctTu(j.user_id, spent, j.project_id) : null, coutReelMicro: spent, ...(d.studio > 0 || tacheDuStudio(json(j?.payload ?? "{}", {})) ? { aMaCharge: true } : {}) }; });
       const failedSpent = results.filter((x) => x.status !== "done" && x.coutReelMicro > 0);
       // Les planches finies ou refaites par la tâche (montrées au client) : SINA les présente toutes, d'elle-même (essai réel
       // de Nadia : deux annoncées, une seule présentée). Le contrôle du message et le Studio s'en assurent.
@@ -409,11 +410,21 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
       if (out.question && !stepFailed) { updateRun(r.id, { status: "waiting_user" }); return { runId, steps: step + 1 }; }
     }
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
+    const msg = messageDeLArret(e, r!);
     addMessage(r!.conversation_id, "event", { kind: "error", message: clip(msg, 500) }, r!.id);
     updateRun(runId, { status: "failed", error: clip(msg, 1000) as string });
     throw e;
   }
+}
+
+/**
+ * Le texte d'arrêt d'une demande à SINA, lu par le client dans le fil : la phrase de SINA quand un appel à l'IA est tombé sur
+ * un résultat incertain ou une coupure (le détail technique va au journal des erreurs du Studio), sinon le message tel quel.
+ */
+function messageDeLArret(e: unknown, r: SynaRun): string {
+  if (!erreurTechniqueDeLIA(e)) return e instanceof Error ? e.message : String(e);
+  logError("sina:demande", e, { userId: r.user_id, projectId: r.project_id ?? undefined, details: { demande: r.id } });
+  return pourLeClient(e);
 }
 
 function suspend(r: SynaRun, jobs: string[]) {
@@ -466,7 +477,9 @@ async function execute(t: AgentTool, args: unknown, ctx: ToolContext, key: strin
     res = await t.run(ctx, args);
   } catch (e) {
     const msg = e instanceof HttpError || e instanceof Error ? e.message : String(e);
-    res = { ok: false, summary: L("Échec de l'outil : ", "Tool failed: ") + clip(msg, 600) };
+    // Un appel à l'IA tombé sur un résultat incertain ou une coupure : la phrase de SINA, le détail au journal du Studio.
+    if (erreurTechniqueDeLIA(e)) { logError(`sina:outil:${t.name}`, e, { userId: r.user_id, projectId: r.project_id ?? undefined }); res = { ok: false, summary: pourLeClient(e) }; }
+    else res = { ok: false, summary: L("Échec de l'outil : ", "Tool failed: ") + clip(msg, 600) };
   }
   // Après une validation réussie et confirmée par le parcours relu, le Studio pose le verrou lui-même.
   if (!locked) { try { apresValidation(r.conversation_id, t.name, res); } catch { /* registre illisible : rien n'est verrouillé */ } }

@@ -390,6 +390,18 @@ const MOTS_DE_GAMME = /(?<![a-z])(origines?|variete\w*|(?<!(?:haut|bas|milieu|en
 const PAYS = "afghanistan afrique allemagne algerie amerique andorre angola antigua arabie argentine armenie australie autriche bali bangladesh belgique belize benin bhoutan bolivie bresil bulgarie burundi cambodge cameroun canada chili chine chypre colombie congo coree costa rica croatie cuba danemark ecosse egypte equateur espagne estonie etats unis ethiopie finlande france gabon georgie ghana grece guadeloupe guatemala guinee haiti hawai honduras hongrie inde indonesie irak iran irlande islande israel italie jamaique japon java jordanie kenya laos liban liberia lituanie luxembourg madagascar malaisie malawi mali maroc martinique mexique monaco mongolie mozambique myanmar namibie nepal nicaragua niger nigeria norvege nouvelle zelande ouganda panama papouasie paraguay pays bas perou philippines pologne portugal roumanie royaume uni russie rwanda salvador senegal serbie sri lanka suede suisse sumatra tanzanie tchad thailande togo tunisie turquie ukraine uruguay venezuela vietnam yemen zambie zimbabwe".split(" ");
 const PAYS_COMPOSES = ["costa rica", "etats unis", "nouvelle zelande", "pays bas", "royaume uni", "sri lanka"];
 /**
+ * Un mot lu sur une image dit-il un fait que seul le client peut donner (26 novembre 2026, planche en vrai du torréfacteur) :
+ * un chiffre (« 100% », « 1928 », « 250g »), un pays, ou un mot d'origine, de variété ou de gamme ? Utilisé par la planche
+ * en vrai pour reconnaître, parmi les mots en trop, ce qui est inventé.
+ */
+export function motQuiDitUnFait(mot: string): boolean {
+  const p = plat(mot).replace(/[^a-z0-9 ]+/g, " ").trim();
+  if (!p) return false;
+  if (/\d/.test(p)) return true;
+  if (PAYS_COMPOSES.some((c) => ` ${p} `.includes(` ${c} `))) return true;
+  return p.split(/\s+/).some((w) => (PAYS.includes(w) && !PAYS_COMPOSES.some((c) => c.split(" ").includes(w))) || MOTS_DE_GAMME.test(w));
+}
+/**
  * Les inventions d'un texte écrit par l'appel des valeurs : un mot d'origine, de variété ou de gamme, un pays, ou un nom
  * propre (une capitale au milieu d'une valeur, qui doit être en minuscules), absents de la fiche du client et du nom de la
  * marque. Rend les mots trouvés, tels qu'ils sont écrits.
