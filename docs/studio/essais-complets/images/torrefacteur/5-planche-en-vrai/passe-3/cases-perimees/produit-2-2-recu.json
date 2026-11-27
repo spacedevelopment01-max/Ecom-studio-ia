@@ -1,0 +1,49 @@
+{
+  "adresse": "POST https://api.openai.com/v1/images/edits (multipart)",
+  "champs": {
+    "model": "gpt-image-2.5-sunburst",
+    "prompt": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est une photo produit de la marque. Aucune personne n'apparaît.\n\nÀ corriger : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « ÉQUILIBRÉ », « DES », « ARÔMES », « RICHES », « ET », « GÉNÉREUX »).",
+    "quality": "high",
+    "size": "912x1088",
+    "background": "opaque",
+    "output_format": "png",
+    "n": 1
+  },
+  "jointes": [
+    {
+      "role": "apercu",
+      "assetId": null,
+      "sha256": "de5e843f8edc29d55f9a7c0c2b37212c80dc920bcfe5c20d10584269a0c32c9b",
+      "octets": 157177
+    },
+    {
+      "role": "logo",
+      "assetId": null,
+      "sha256": "eaa188c7e9639535b9a1b117d5dd5629030e1158da6b841f14c228222e146ec2",
+      "octets": 718173
+    }
+  ],
+  "tailleRecue": "912x1088",
+  "requestId": "req_b64feee367944e61b4e8afccb96fdca3",
+  "usage": {
+    "input_tokens": 1680,
+    "input_tokens_details": {
+      "image_tokens": 1460,
+      "text_tokens": 220
+    },
+    "output_tokens": 1437,
+    "output_tokens_details": {
+      "image_tokens": 1437,
+      "text_tokens": 0
+    },
+    "total_tokens": 3117
+  },
+  "renvoye": {
+    "quality": "high",
+    "size": "912x1088",
+    "background": "opaque",
+    "output_format": "png"
+  },
+  "coutMicro": 48065,
+  "dureeMs": 28210
+}

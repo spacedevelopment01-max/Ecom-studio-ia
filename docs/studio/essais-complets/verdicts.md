@@ -67,6 +67,7 @@ du propriétaire, mot pour mot. Ce carnet servira à régler les juges.
 | 26/11 | Mouture | Planche A (logo 11, hexagone) | 9/10 : « Planche complète et soignée … Seuls les alphabets des spécimens et quelques micro-étiquettes sont déformés, ce qui reste décoratif » | Oui | [en attente] |
 | 26/11 | Mouture | Planche B (logo 4, tasse), 1er essai | 6,5/10 : « caractere » sans accent, phrase du logo déformée sur la tasse, le sachet et la publication | Non | [en attente] |
 | 26/11 | Mouture | Planche B, reprise à la charge du Studio | 8/10 mais refusée : virgule fautive « Le bon café, commence ici. », un signe parasite (compté comme faute), « 100% Arabica » compté comme chiffre inventé | Non | [en attente] |
+| 27/11 | Mouture | Planche A en vrai, après deux coupures et deux reprises | 9 images gardées sur 17 ; refusées : surtout « Cafés en grains / Cafés moulus » écrits sur les sachets, comptés comme texte en trop ; « EXCELLENCE » inventé ; texte du téléphone coupé ; quatre petits logos refaits en haute définition, gardés ; monochromes et inversé du logo illisibles ; police des textes « Montserrat » remplacée par « Nunito » | 9 sur 17 | [en attente] |
 
 ## Photos de départ des clients inventés (pas des images de SINA)
 

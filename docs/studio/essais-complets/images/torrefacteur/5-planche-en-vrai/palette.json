@@ -1,0 +1,59 @@
+{
+  "couleurs": [
+    {
+      "hex": "#2E1A12",
+      "nom": "Brun café",
+      "mots": [
+        "Authenticité",
+        "Profondeur"
+      ]
+    },
+    {
+      "hex": "#A86B3A",
+      "nom": "Cuivre",
+      "mots": [
+        "Chaleur",
+        "Artisanat"
+      ]
+    },
+    {
+      "hex": "#C89B6B",
+      "nom": "Caramel",
+      "mots": [
+        "Gourmandise",
+        "Convivialité"
+      ]
+    },
+    {
+      "hex": "#F6E9D7",
+      "nom": "Crème",
+      "mots": [
+        "Douceur",
+        "Équilibre"
+      ]
+    },
+    {
+      "hex": "#7B8470",
+      "nom": "Sauge",
+      "mots": [
+        "Nature",
+        "Élégance"
+      ]
+    }
+  ],
+  "roles": {
+    "light": "#F6E9D7",
+    "dark": "#2E1A12",
+    "primary": "#A86B3A",
+    "secondary": "#C89B6B",
+    "accent": "#7B8470"
+  },
+  "couleursDuLogo": {
+    "dark": "#2B140E",
+    "primary": "#CA9460",
+    "secondary": "#F8F0E9",
+    "accent": "#FCF2D6",
+    "light": "#FCFAF7"
+  },
+  "encre": "#2B140E"
+}

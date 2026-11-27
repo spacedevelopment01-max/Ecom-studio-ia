@@ -1,0 +1,51 @@
+{
+  "adresse": "POST https://api.openai.com/v1/images/edits (multipart)",
+  "champs": {
+    "model": "gpt-image-2.5-sunburst",
+    "prompt": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est une photo produit de la marque. Les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : « Cafés en grains », « Cafés moulus », « Coffrets » ; aucune date, aucune origine, aucun chiffre n'y est ajouté. Aucune personne n'apparaît.\n\nÀ corriger : un texte absent de l'aperçu est écrit sur une étiquette, un emballage ou un objet : retire-le ; les étiquettes ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : « Cafés en grains », « Cafés moulus », « Coffrets » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (des mots absents de l'aperçu sont écrits : garde seulement ses textes, lettre pour lettre) ; sa fidélité n'est pas au niveau (6/10, il faut 8).",
+    "quality": "high",
+    "size": "912x1088",
+    "background": "opaque",
+    "output_format": "png",
+    "n": 1
+  },
+  "jointes": [
+    {
+      "role": "apercu",
+      "assetId": null,
+      "sha256": "962f538ccb3ddcf556a5e363068577bb9eaf90e9c267b048da27f559fe5025e1",
+      "octets": 130320,
+      "octetsAvantAllegement": 176946
+    },
+    {
+      "role": "logo",
+      "assetId": null,
+      "sha256": "0b08cf147cd003ba1f4cdf766092a5baf5376f7623a4fedfd3babb4cb4b14439",
+      "octets": 565449,
+      "octetsAvantAllegement": 718173
+    }
+  ],
+  "tailleRecue": "912x1088",
+  "requestId": "req_74cb779b0b7149a8bb7b6dd92ca0a3b9",
+  "usage": {
+    "input_tokens": 1812,
+    "input_tokens_details": {
+      "image_tokens": 1460,
+      "text_tokens": 352
+    },
+    "output_tokens": 1437,
+    "output_tokens_details": {
+      "image_tokens": 1437,
+      "text_tokens": 0
+    },
+    "total_tokens": 3249
+  },
+  "renvoye": {
+    "quality": "high",
+    "size": "912x1088",
+    "background": "opaque",
+    "output_format": "png"
+  },
+  "coutMicro": 48633,
+  "dureeMs": 27930
+}

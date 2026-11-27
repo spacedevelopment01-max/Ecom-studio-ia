@@ -1,258 +1,28 @@
 [
   {
-    "etape": "envrai-reference-6",
-    "fournisseur": "openai",
-    "modeleDemande": "gpt-image-2.5-sunburst",
-    "modeleServi": null,
-    "unite": "tokens",
-    "jetonsEntree": 1563,
-    "jetonsCacheLus": 0,
-    "jetonsCacheEcrits": 0,
-    "jetonsSortie": 1514,
-    "quantite": 1,
-    "effort": null,
-    "fin": null,
-    "dureeMs": 33382,
-    "coutMicro": 49430,
-    "estime": false,
-    "statut": "ok",
-    "cle": "essai-planche-en-vrai-fxob9n0vxhm2ijaq:envrai:reference-6",
-    "heure": 1795734834994,
-    "details": {
-      "methode": "planche-en-vrai",
-      "element": "reference-6",
-      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est une photo d'ambiance de la marque. Aucune personne n'apparaît.",
-      "requestId": "req_1c06aabaedb547cf98d4d811e2a6dfa4",
-      "reglages": {
-        "model": "gpt-image-2.5-sunburst",
-        "quality": "high",
-        "size": "1024x912",
-        "background": "opaque",
-        "output_format": "png",
-        "n": 1
-      },
-      "jointes": [
-        {
-          "role": "apercu",
-          "assetId": null,
-          "sha256": "d1fb618891ad565f4c2110f5afb36decff467bb617f1ade697e2256e44530e65",
-          "octets": 152566
-        },
-        {
-          "role": "logo",
-          "assetId": null,
-          "sha256": "eaa188c7e9639535b9a1b117d5dd5629030e1158da6b841f14c228222e146ec2",
-          "octets": 718173
-        }
-      ],
-      "usage": {
-        "input_tokens": 1563,
-        "input_tokens_details": {
-          "image_tokens": 1414,
-          "text_tokens": 149
-        },
-        "output_tokens": 1514,
-        "output_tokens_details": {
-          "image_tokens": 1514,
-          "text_tokens": 0
-        },
-        "total_tokens": 3077
-      },
-      "renvoye": {
-        "quality": "high",
-        "size": "1024x912",
-        "background": "opaque",
-        "output_format": "png"
-      }
-    }
-  },
-  {
-    "etape": "envrai-relecture-publications",
-    "fournisseur": "anthropic",
-    "modeleDemande": "claude-opus-5-5",
-    "modeleServi": "claude-opus-5-5",
-    "unite": "tokens",
-    "jetonsEntree": 5786,
-    "jetonsCacheLus": 0,
-    "jetonsCacheEcrits": 1874,
-    "jetonsSortie": 1369,
-    "quantite": 0,
-    "effort": "high",
-    "fin": "end_turn",
-    "dureeMs": 12866,
-    "coutMicro": 51509,
-    "estime": false,
-    "statut": "ok",
-    "cle": "essai-planche-en-vrai-fxob9n0vxhm2ijaq:envrai:relecture-publications",
-    "heure": 1795734848265,
-    "details": {
-      "placeDemandee": 8000,
-      "sortie": "stricte"
-    }
-  },
-  {
-    "etape": "envrai-relecture-site",
-    "fournisseur": "anthropic",
-    "modeleDemande": "claude-opus-5-5",
-    "modeleServi": "claude-opus-5-5",
-    "unite": "tokens",
-    "jetonsEntree": 7057,
-    "jetonsCacheLus": 1874,
-    "jetonsCacheEcrits": 0,
-    "jetonsSortie": 2001,
-    "quantite": 0,
-    "effort": "high",
-    "fin": "end_turn",
-    "dureeMs": 17429,
-    "coutMicro": 59016,
-    "estime": false,
-    "statut": "ok",
-    "cle": "essai-planche-en-vrai-fxob9n0vxhm2ijaq:envrai:relecture-site",
-    "heure": 1795734866194,
-    "details": {
-      "placeDemandee": 8000,
-      "sortie": "stricte"
-    }
-  },
-  {
-    "etape": "envrai-relecture-produits",
-    "fournisseur": "anthropic",
-    "modeleDemande": "claude-opus-5-5",
-    "modeleServi": "claude-opus-5-5",
-    "unite": "tokens",
-    "jetonsEntree": 6509,
-    "jetonsCacheLus": 1874,
-    "jetonsCacheEcrits": 0,
-    "jetonsSortie": 2413,
-    "quantite": 0,
-    "effort": "high",
-    "fin": "end_turn",
-    "dureeMs": 19262,
-    "coutMicro": 64217,
-    "estime": false,
-    "statut": "ok",
-    "cle": "essai-planche-en-vrai-fxob9n0vxhm2ijaq:envrai:relecture-produits",
-    "heure": 1795734885828,
-    "details": {
-      "placeDemandee": 8000,
-      "sortie": "stricte"
-    }
-  },
-  {
-    "etape": "envrai-relecture-references",
-    "fournisseur": "anthropic",
-    "modeleDemande": "claude-opus-5-5",
-    "modeleServi": "claude-opus-5-5",
-    "unite": "tokens",
-    "jetonsEntree": 8085,
-    "jetonsCacheLus": 1874,
-    "jetonsCacheEcrits": 0,
-    "jetonsSortie": 2210,
-    "quantite": 0,
-    "effort": "high",
-    "fin": "end_turn",
-    "dureeMs": 17458,
-    "coutMicro": 66147,
-    "estime": false,
-    "statut": "ok",
-    "cle": "essai-planche-en-vrai-fxob9n0vxhm2ijaq:envrai:relecture-references",
-    "heure": 1795734903649,
-    "details": {
-      "placeDemandee": 8000,
-      "sortie": "stricte"
-    }
-  },
-  {
-    "etape": "envrai-publication-1x1-r1",
-    "fournisseur": "openai",
-    "modeleDemande": "gpt-image-2.5-sunburst",
-    "modeleServi": null,
-    "unite": "tokens",
-    "jetonsEntree": 1745,
-    "jetonsCacheLus": 0,
-    "jetonsCacheEcrits": 0,
-    "jetonsSortie": 1834,
-    "quantite": 1,
-    "effort": null,
-    "fin": null,
-    "dureeMs": 35948,
-    "coutMicro": 58812,
-    "estime": false,
-    "statut": "ok",
-    "cle": "essai-planche-en-vrai-fxob9n0vxhm2ijaq:envrai:publication-1x1-r1",
-    "heure": 1795734939607,
-    "details": {
-      "methode": "planche-en-vrai",
-      "element": "publication-1x1",
-      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est une publication carrée pour les réseaux sociaux, 1080 × 1080. Aucune personne n'apparaît.\n\nÀ corriger : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE »).",
-      "requestId": "req_33e34ec87e0c481f857e007f84ce526d",
-      "reglages": {
-        "model": "gpt-image-2.5-sunburst",
-        "quality": "high",
-        "size": "1088x1088",
-        "background": "opaque",
-        "output_format": "png",
-        "n": 1
-      },
-      "jointes": [
-        {
-          "role": "apercu",
-          "assetId": null,
-          "sha256": "52fc7abc7b06d545ade290b8de019cf153e9cbf2fe365208332fb999e0e7bb68",
-          "octets": 197895
-        },
-        {
-          "role": "logo",
-          "assetId": null,
-          "sha256": "eaa188c7e9639535b9a1b117d5dd5629030e1158da6b841f14c228222e146ec2",
-          "octets": 718173
-        }
-      ],
-      "usage": {
-        "input_tokens": 1745,
-        "input_tokens_details": {
-          "image_tokens": 1547,
-          "text_tokens": 198
-        },
-        "output_tokens": 1834,
-        "output_tokens_details": {
-          "image_tokens": 1834,
-          "text_tokens": 0
-        },
-        "total_tokens": 3579
-      },
-      "renvoye": {
-        "quality": "high",
-        "size": "1088x1088",
-        "background": "opaque",
-        "output_format": "png"
-      }
-    }
-  },
-  {
     "etape": "envrai-publication-4x5-r1",
     "fournisseur": "openai",
     "modeleDemande": "gpt-image-2.5-sunburst",
     "modeleServi": null,
     "unite": "tokens",
-    "jetonsEntree": 1778,
+    "jetonsEntree": 1830,
     "jetonsCacheLus": 0,
     "jetonsCacheEcrits": 0,
     "jetonsSortie": 1587,
     "quantite": 1,
     "effort": null,
     "fin": null,
-    "dureeMs": 29679,
-    "coutMicro": 52625,
+    "dureeMs": 35256,
+    "coutMicro": 52849,
     "estime": false,
     "statut": "ok",
-    "cle": "essai-planche-en-vrai-fxob9n0vxhm2ijaq:envrai:publication-4x5-r1",
-    "heure": 1795734969485,
+    "cle": "essai-planche-en-vrai-mhyezjq6tfjugwn9:envrai:publication-4x5-r1",
+    "heure": 1795739278388,
     "details": {
       "methode": "planche-en-vrai",
       "element": "publication-4x5",
-      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est une publication portrait pour les réseaux sociaux, 1080 × 1350. Aucune personne n'apparaît.\n\nÀ corriger : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Une », « torréfaction », « de », « caractère », « ÉQUILIBRE », « & », « INTENSITÉ »).",
-      "requestId": "req_bd3a22936f664188bc0a9ad1db389887",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est une publication portrait pour les réseaux sociaux, 1080 × 1350. Les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : « Cafés en grains », « Cafés moulus », « Coffrets » ; aucune date, aucune origine, aucun chiffre n'y est ajouté. Aucune personne n'apparaît.\n\nÀ corriger : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (des mots absents de l'aperçu sont écrits : garde seulement ses textes, lettre pour lettre).",
+      "requestId": "req_0c4d9d7698af4947986314b85c07b9d8",
       "reglages": {
         "model": "gpt-image-2.5-sunburst",
         "quality": "high",
@@ -265,227 +35,34 @@
         {
           "role": "apercu",
           "assetId": null,
-          "sha256": "cc71d9ab7898baae9f33cebee49983d6334c64e05a8e453fff72498db549db3d",
-          "octets": 215870
+          "sha256": "a419d6ee944e89f9493d97eb1704cc1f9f379ba7f9e0990f0b42b770aa57062d",
+          "octets": 147161,
+          "octetsAvantAllegement": 215870
         },
         {
           "role": "logo",
           "assetId": null,
-          "sha256": "eaa188c7e9639535b9a1b117d5dd5629030e1158da6b841f14c228222e146ec2",
-          "octets": 718173
+          "sha256": "0b08cf147cd003ba1f4cdf766092a5baf5376f7623a4fedfd3babb4cb4b14439",
+          "octets": 565449,
+          "octetsAvantAllegement": 718173
         }
       ],
       "usage": {
-        "input_tokens": 1778,
+        "input_tokens": 1830,
         "input_tokens_details": {
           "image_tokens": 1564,
-          "text_tokens": 214
+          "text_tokens": 266
         },
         "output_tokens": 1587,
         "output_tokens_details": {
           "image_tokens": 1587,
           "text_tokens": 0
         },
-        "total_tokens": 3365
+        "total_tokens": 3417
       },
       "renvoye": {
         "quality": "high",
         "size": "1088x1360",
-        "background": "opaque",
-        "output_format": "png"
-      }
-    }
-  },
-  {
-    "etape": "envrai-publication-9x16-r1",
-    "fournisseur": "openai",
-    "modeleDemande": "gpt-image-2.5-sunburst",
-    "modeleServi": null,
-    "unite": "tokens",
-    "jetonsEntree": 1698,
-    "jetonsCacheLus": 0,
-    "jetonsCacheEcrits": 0,
-    "jetonsSortie": 1331,
-    "quantite": 1,
-    "effort": null,
-    "fin": null,
-    "dureeMs": 24626,
-    "coutMicro": 45516,
-    "estime": false,
-    "statut": "ok",
-    "cle": "essai-planche-en-vrai-fxob9n0vxhm2ijaq:envrai:publication-9x16-r1",
-    "heure": 1795734994301,
-    "details": {
-      "methode": "planche-en-vrai",
-      "element": "publication-9x16",
-      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est une story pour les réseaux sociaux, 1080 × 1920. Aucune personne n'apparaît.\n\nÀ corriger : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE »).",
-      "requestId": "req_68c246216d8c4e03bd1f6447e996f34c",
-      "reglages": {
-        "model": "gpt-image-2.5-sunburst",
-        "quality": "high",
-        "size": "1088x1936",
-        "background": "opaque",
-        "output_format": "png",
-        "n": 1
-      },
-      "jointes": [
-        {
-          "role": "apercu",
-          "assetId": null,
-          "sha256": "40a83ccf7df1409405cd568c5776e37ec98a0047455444b8d052503bf4329c80",
-          "octets": 165749
-        },
-        {
-          "role": "logo",
-          "assetId": null,
-          "sha256": "eaa188c7e9639535b9a1b117d5dd5629030e1158da6b841f14c228222e146ec2",
-          "octets": 718173
-        }
-      ],
-      "usage": {
-        "input_tokens": 1698,
-        "input_tokens_details": {
-          "image_tokens": 1502,
-          "text_tokens": 196
-        },
-        "output_tokens": 1331,
-        "output_tokens_details": {
-          "image_tokens": 1331,
-          "text_tokens": 0
-        },
-        "total_tokens": 3029
-      },
-      "renvoye": {
-        "quality": "high",
-        "size": "1088x1936",
-        "background": "opaque",
-        "output_format": "png"
-      }
-    }
-  },
-  {
-    "etape": "envrai-ouverture-planche-r1",
-    "fournisseur": "openai",
-    "modeleDemande": "gpt-image-2.5-sunburst",
-    "modeleServi": null,
-    "unite": "tokens",
-    "jetonsEntree": 525,
-    "jetonsCacheLus": 0,
-    "jetonsCacheEcrits": 0,
-    "jetonsSortie": 724,
-    "quantite": 1,
-    "effort": null,
-    "fin": null,
-    "dureeMs": 17699,
-    "coutMicro": 21873,
-    "estime": false,
-    "statut": "ok",
-    "cle": "essai-planche-en-vrai-fxob9n0vxhm2ijaq:envrai:ouverture-planche-r1",
-    "heure": 1795735012261,
-    "details": {
-      "methode": "planche-en-vrai",
-      "element": "ouverture-planche",
-      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est le bandeau d'ouverture de la planche ; garde des marges généreuses en haut et en bas, rien ne touche les bords. Aucune personne n'apparaît.\n\nÀ corriger : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « à »).",
-      "requestId": "req_28b6c6957ac748b4b0292b421f57fbf1",
-      "reglages": {
-        "model": "gpt-image-2.5-sunburst",
-        "quality": "high",
-        "size": "2304x768",
-        "background": "opaque",
-        "output_format": "png",
-        "n": 1
-      },
-      "jointes": [
-        {
-          "role": "apercu",
-          "assetId": null,
-          "sha256": "10c2d735aef252d57cc0f76126b95e0d55646200aa03921f031e64773369239c",
-          "octets": 671223
-        }
-      ],
-      "usage": {
-        "input_tokens": 525,
-        "input_tokens_details": {
-          "image_tokens": 363,
-          "text_tokens": 162
-        },
-        "output_tokens": 724,
-        "output_tokens_details": {
-          "image_tokens": 724,
-          "text_tokens": 0
-        },
-        "total_tokens": 1249
-      },
-      "renvoye": {
-        "quality": "high",
-        "size": "2304x768",
-        "background": "opaque",
-        "output_format": "png"
-      }
-    }
-  },
-  {
-    "etape": "envrai-site-ordinateur-r1",
-    "fournisseur": "openai",
-    "modeleDemande": "gpt-image-2.5-sunburst",
-    "modeleServi": null,
-    "unite": "tokens",
-    "jetonsEntree": 2101,
-    "jetonsCacheLus": 0,
-    "jetonsCacheEcrits": 0,
-    "jetonsSortie": 1366,
-    "quantite": 1,
-    "effort": null,
-    "fin": null,
-    "dureeMs": 26375,
-    "coutMicro": 49164,
-    "estime": false,
-    "statut": "ok",
-    "cle": "essai-planche-en-vrai-fxob9n0vxhm2ijaq:envrai:site-ordinateur-r1",
-    "heure": 1795735038787,
-    "details": {
-      "methode": "planche-en-vrai",
-      "element": "site-ordinateur",
-      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est la page d'accueil du site, montrée sur un ordinateur portable ; tous les textes de l'écran restent nets et lisibles. Aucune personne n'apparaît.\n\nÀ corriger : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE »).",
-      "requestId": "req_7e6a65ba763f4fc180f41b797f37a7de",
-      "reglages": {
-        "model": "gpt-image-2.5-sunburst",
-        "quality": "high",
-        "size": "1520x1024",
-        "background": "opaque",
-        "output_format": "png",
-        "n": 1
-      },
-      "jointes": [
-        {
-          "role": "apercu",
-          "assetId": null,
-          "sha256": "74c25a50cfcc5630c21918689a2ae71bab840c49761093bb2024b867219d8f29",
-          "octets": 401257
-        },
-        {
-          "role": "logo",
-          "assetId": null,
-          "sha256": "eaa188c7e9639535b9a1b117d5dd5629030e1158da6b841f14c228222e146ec2",
-          "octets": 718173
-        }
-      ],
-      "usage": {
-        "input_tokens": 2101,
-        "input_tokens_details": {
-          "image_tokens": 1894,
-          "text_tokens": 207
-        },
-        "output_tokens": 1366,
-        "output_tokens_details": {
-          "image_tokens": 1366,
-          "text_tokens": 0
-        },
-        "total_tokens": 3467
-      },
-      "renvoye": {
-        "quality": "high",
-        "size": "1520x1024",
         "background": "opaque",
         "output_format": "png"
       }
@@ -497,24 +74,24 @@
     "modeleDemande": "gpt-image-2.5-sunburst",
     "modeleServi": null,
     "unite": "tokens",
-    "jetonsEntree": 1786,
+    "jetonsEntree": 1780,
     "jetonsCacheLus": 0,
     "jetonsCacheEcrits": 0,
     "jetonsSortie": 876,
     "quantite": 1,
     "effort": null,
     "fin": null,
-    "dureeMs": 21234,
-    "coutMicro": 34187,
+    "dureeMs": 26629,
+    "coutMicro": 34161,
     "estime": false,
     "statut": "ok",
-    "cle": "essai-planche-en-vrai-fxob9n0vxhm2ijaq:envrai:site-telephone-r1",
-    "heure": 1795735060125,
+    "cle": "essai-planche-en-vrai-mhyezjq6tfjugwn9:envrai:site-telephone-r1",
+    "heure": 1795739305203,
     "details": {
       "methode": "planche-en-vrai",
       "element": "site-telephone",
-      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est la page d'accueil du site, montrée sur un téléphone ; tous les textes de l'écran restent nets et lisibles. Aucune personne n'apparaît.\n\nÀ corriger : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « MOUTURE », « TORRÉFACTION », « ARTISANALE », « MOUTURE », « TORRÉFACTION », « ARTISANALE ») ; un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (7/10, il faut 8).",
-      "requestId": "req_1c33f8afb2e74050941838e9174ae932",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est la page d'accueil du site, montrée sur un téléphone ; tous les textes de l'écran restent nets et lisibles. Les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : « Cafés en grains », « Cafés moulus », « Coffrets » ; aucune date, aucune origine, aucun chiffre n'y est ajouté. Aucune personne n'apparaît.\n\nÀ corriger : un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (7/10, il faut 8).",
+      "requestId": "req_f19400d53e104b0d9f5156e54b35dd48",
       "reglages": {
         "model": "gpt-image-2.5-sunburst",
         "quality": "high",
@@ -527,28 +104,30 @@
         {
           "role": "apercu",
           "assetId": null,
-          "sha256": "0ae86290c2cd5e06ec4f7c29f3069776f65e97276d9f839ad4894af2d0180c84",
-          "octets": 144982
+          "sha256": "82b4f56903ac4abd2c5f22ac783b4a48ba64ed3af5bf684b06f3020ba43470c5",
+          "octets": 107305,
+          "octetsAvantAllegement": 144982
         },
         {
           "role": "logo",
           "assetId": null,
-          "sha256": "eaa188c7e9639535b9a1b117d5dd5629030e1158da6b841f14c228222e146ec2",
-          "octets": 718173
+          "sha256": "0b08cf147cd003ba1f4cdf766092a5baf5376f7623a4fedfd3babb4cb4b14439",
+          "octets": 565449,
+          "octetsAvantAllegement": 718173
         }
       ],
       "usage": {
-        "input_tokens": 1786,
+        "input_tokens": 1780,
         "input_tokens_details": {
           "image_tokens": 1514,
-          "text_tokens": 272
+          "text_tokens": 266
         },
         "output_tokens": 876,
         "output_tokens_details": {
           "image_tokens": 876,
           "text_tokens": 0
         },
-        "total_tokens": 2662
+        "total_tokens": 2656
       },
       "renvoye": {
         "quality": "high",
@@ -564,24 +143,24 @@
     "modeleDemande": "gpt-image-2.5-sunburst",
     "modeleServi": null,
     "unite": "tokens",
-    "jetonsEntree": 1682,
+    "jetonsEntree": 1793,
     "jetonsCacheLus": 0,
     "jetonsCacheEcrits": 0,
     "jetonsSortie": 1437,
     "quantite": 1,
     "effort": null,
     "fin": null,
-    "dureeMs": 29186,
-    "coutMicro": 48074,
+    "dureeMs": 29568,
+    "coutMicro": 48551,
     "estime": false,
     "statut": "ok",
-    "cle": "essai-planche-en-vrai-fxob9n0vxhm2ijaq:envrai:produit-1-r1",
-    "heure": 1795735089392,
+    "cle": "essai-planche-en-vrai-mhyezjq6tfjugwn9:envrai:produit-1-r1",
+    "heure": 1795739334853,
     "details": {
       "methode": "planche-en-vrai",
       "element": "produit-1",
-      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est une photo produit de la marque. Aucune personne n'apparaît.\n\nÀ corriger : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « L'EXCELLENCE », « ARABICA », « SÉLECTIONNÉ », « AVEC », « PASSION », « TORRÉFIÉ »).",
-      "requestId": "req_0f773fc7491e4d75bde2471e0b7b83a7",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est une photo produit de la marque. Les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : « Cafés en grains », « Cafés moulus », « Coffrets » ; aucune date, aucune origine, aucun chiffre n'y est ajouté. Aucune personne n'apparaît.\n\nÀ corriger : un texte absent de l'aperçu est écrit sur une étiquette, un emballage ou un objet : retire-le ; les étiquettes ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : « Cafés en grains », « Cafés moulus », « Coffrets » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (des mots absents de l'aperçu sont écrits : garde seulement ses textes, lettre pour lettre).",
+      "requestId": "req_056dc7d544664587bf117bfd27b595d7",
       "reglages": {
         "model": "gpt-image-2.5-sunburst",
         "quality": "high",
@@ -594,28 +173,30 @@
         {
           "role": "apercu",
           "assetId": null,
-          "sha256": "c6d5a8efb2540710a503af743afc1b9ac7ada9fc4b68b5a030fdf863bf50eecc",
-          "octets": 175526
+          "sha256": "73087f2eacec75dcda4063923dcad35d885dfd487c300347aed25be9d2f1b3c2",
+          "octets": 116626,
+          "octetsAvantAllegement": 175526
         },
         {
           "role": "logo",
           "assetId": null,
-          "sha256": "eaa188c7e9639535b9a1b117d5dd5629030e1158da6b841f14c228222e146ec2",
-          "octets": 718173
+          "sha256": "0b08cf147cd003ba1f4cdf766092a5baf5376f7623a4fedfd3babb4cb4b14439",
+          "octets": 565449,
+          "octetsAvantAllegement": 718173
         }
       ],
       "usage": {
-        "input_tokens": 1682,
+        "input_tokens": 1793,
         "input_tokens_details": {
           "image_tokens": 1460,
-          "text_tokens": 222
+          "text_tokens": 333
         },
         "output_tokens": 1437,
         "output_tokens_details": {
           "image_tokens": 1437,
           "text_tokens": 0
         },
-        "total_tokens": 3119
+        "total_tokens": 3230
       },
       "renvoye": {
         "quality": "high",
@@ -631,24 +212,24 @@
     "modeleDemande": "gpt-image-2.5-sunburst",
     "modeleServi": null,
     "unite": "tokens",
-    "jetonsEntree": 1680,
+    "jetonsEntree": 1717,
     "jetonsCacheLus": 0,
     "jetonsCacheEcrits": 0,
     "jetonsSortie": 1437,
     "quantite": 1,
     "effort": null,
     "fin": null,
-    "dureeMs": 28213,
-    "coutMicro": 48065,
+    "dureeMs": 27645,
+    "coutMicro": 48225,
     "estime": false,
     "statut": "ok",
-    "cle": "essai-planche-en-vrai-fxob9n0vxhm2ijaq:envrai:produit-2-r1",
-    "heure": 1795735117689,
+    "cle": "essai-planche-en-vrai-mhyezjq6tfjugwn9:envrai:produit-2-r1",
+    "heure": 1795739362588,
     "details": {
       "methode": "planche-en-vrai",
       "element": "produit-2",
-      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est une photo produit de la marque. Aucune personne n'apparaît.\n\nÀ corriger : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « ÉQUILIBRÉ », « DES », « ARÔMES », « RICHES », « ET », « GÉNÉREUX »).",
-      "requestId": "req_b64feee367944e61b4e8afccb96fdca3",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est une photo produit de la marque. Les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : « Cafés en grains », « Cafés moulus », « Coffrets » ; aucune date, aucune origine, aucun chiffre n'y est ajouté. Aucune personne n'apparaît.\n\nÀ corriger : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (des mots absents de l'aperçu sont écrits : garde seulement ses textes, lettre pour lettre).",
+      "requestId": "req_66215f46a1bb488ea5e30c964a16194a",
       "reglages": {
         "model": "gpt-image-2.5-sunburst",
         "quality": "high",
@@ -661,28 +242,30 @@
         {
           "role": "apercu",
           "assetId": null,
-          "sha256": "de5e843f8edc29d55f9a7c0c2b37212c80dc920bcfe5c20d10584269a0c32c9b",
-          "octets": 157177
+          "sha256": "fa8d5967c44b81dcedf5d8ede041cc84d186c070c4d4d5ca5932a0aac1766942",
+          "octets": 100090,
+          "octetsAvantAllegement": 157177
         },
         {
           "role": "logo",
           "assetId": null,
-          "sha256": "eaa188c7e9639535b9a1b117d5dd5629030e1158da6b841f14c228222e146ec2",
-          "octets": 718173
+          "sha256": "0b08cf147cd003ba1f4cdf766092a5baf5376f7623a4fedfd3babb4cb4b14439",
+          "octets": 565449,
+          "octetsAvantAllegement": 718173
         }
       ],
       "usage": {
-        "input_tokens": 1680,
+        "input_tokens": 1717,
         "input_tokens_details": {
           "image_tokens": 1460,
-          "text_tokens": 220
+          "text_tokens": 257
         },
         "output_tokens": 1437,
         "output_tokens_details": {
           "image_tokens": 1437,
           "text_tokens": 0
         },
-        "total_tokens": 3117
+        "total_tokens": 3154
       },
       "renvoye": {
         "quality": "high",
@@ -698,20 +281,732 @@
     "modeleDemande": "gpt-image-2.5-sunburst",
     "modeleServi": null,
     "unite": "tokens",
-    "jetonsEntree": 0,
+    "jetonsEntree": 1812,
     "jetonsCacheLus": 0,
     "jetonsCacheEcrits": 0,
-    "jetonsSortie": 0,
-    "quantite": 0,
+    "jetonsSortie": 1437,
+    "quantite": 1,
     "effort": null,
     "fin": null,
-    "dureeMs": 25073,
-    "coutMicro": 0,
-    "estime": true,
-    "statut": "error",
-    "cle": "essai-planche-en-vrai-fxob9n0vxhm2ijaq:envrai:produit-3-r1",
-    "heure": 1795735142883,
-    "erreur": "Error: Connection error. ← cause : TypeError: fetch failed ← cause : read ECONNRESET [ECONNRESET]",
-    "details": null
+    "dureeMs": 28951,
+    "coutMicro": 48633,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-mhyezjq6tfjugwn9:envrai:produit-3-r1",
+    "heure": 1795739391627,
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "produit-3",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est une photo produit de la marque. Les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : « Cafés en grains », « Cafés moulus », « Coffrets » ; aucune date, aucune origine, aucun chiffre n'y est ajouté. Aucune personne n'apparaît.\n\nÀ corriger : un texte absent de l'aperçu est écrit sur une étiquette, un emballage ou un objet : retire-le ; les étiquettes ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : « Cafés en grains », « Cafés moulus », « Coffrets » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (des mots absents de l'aperçu sont écrits : garde seulement ses textes, lettre pour lettre) ; sa fidélité n'est pas au niveau (6/10, il faut 8).",
+      "requestId": "req_74cb779b0b7149a8bb7b6dd92ca0a3b9",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "912x1088",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "962f538ccb3ddcf556a5e363068577bb9eaf90e9c267b048da27f559fe5025e1",
+          "octets": 130320,
+          "octetsAvantAllegement": 176946
+        },
+        {
+          "role": "logo",
+          "assetId": null,
+          "sha256": "0b08cf147cd003ba1f4cdf766092a5baf5376f7623a4fedfd3babb4cb4b14439",
+          "octets": 565449,
+          "octetsAvantAllegement": 718173
+        }
+      ],
+      "usage": {
+        "input_tokens": 1812,
+        "input_tokens_details": {
+          "image_tokens": 1460,
+          "text_tokens": 352
+        },
+        "output_tokens": 1437,
+        "output_tokens_details": {
+          "image_tokens": 1437,
+          "text_tokens": 0
+        },
+        "total_tokens": 3249
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "912x1088",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-emballage-r1",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 2376,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1500,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 32075,
+    "coutMicro": 54051,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-mhyezjq6tfjugwn9:envrai:emballage-r1",
+    "heure": 1795739423796,
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "emballage",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est la photo des supports de marque (carton, sac, ruban adhésif, carte de remerciement). Les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : « Cafés en grains », « Cafés moulus », « Coffrets » ; aucune date, aucune origine, aucun chiffre n'y est ajouté. Aucune personne n'apparaît.\n\nÀ corriger : un texte absent de l'aperçu est écrit sur une étiquette, un emballage ou un objet : retire-le ; les étiquettes ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : « Cafés en grains », « Cafés moulus », « Coffrets » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (des mots absents de l'aperçu sont écrits : garde seulement ses textes, lettre pour lettre) ; un logo foncé est posé sur un fond sombre : il doit y être clair ; sa fidélité n'est pas au niveau (6/10, il faut 8).",
+      "requestId": "req_eafe0fe51f8349a0b0347c769e75d77c",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "1344x1024",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "2f26c7fe45dce1ff8ccba1c99478440910866439201cff59363da8473699855c",
+          "octets": 453136,
+          "octetsAvantAllegement": 688899
+        },
+        {
+          "role": "logo",
+          "assetId": null,
+          "sha256": "0b08cf147cd003ba1f4cdf766092a5baf5376f7623a4fedfd3babb4cb4b14439",
+          "octets": 565449,
+          "octetsAvantAllegement": 718173
+        }
+      ],
+      "usage": {
+        "input_tokens": 2376,
+        "input_tokens_details": {
+          "image_tokens": 1990,
+          "text_tokens": 386
+        },
+        "output_tokens": 1500,
+        "output_tokens_details": {
+          "image_tokens": 1500,
+          "text_tokens": 0
+        },
+        "total_tokens": 3876
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "1344x1024",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-reference-4-r1",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 1786,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1514,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 30294,
+    "coutMicro": 50353,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-mhyezjq6tfjugwn9:envrai:reference-4-r1",
+    "heure": 1795739454193,
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "reference-4",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est une photo d'ambiance de la marque. Les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : « Cafés en grains », « Cafés moulus », « Coffrets » ; aucune date, aucune origine, aucun chiffre n'y est ajouté. Aucune personne n'apparaît.\n\nÀ corriger : un texte absent de l'aperçu est écrit sur une étiquette, un emballage ou un objet : retire-le ; les étiquettes ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : « Cafés en grains », « Cafés moulus », « Coffrets » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « EN », « EN », « GRAINS », « GRAINS ») (des mots absents de l'aperçu sont écrits : garde seulement ses textes, lettre pour lettre) ; un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (6/10, il faut 8).",
+      "requestId": "req_04e21bdabd9b446895279d0e6d3198b0",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "1024x912",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "2a5958565e4a27ff0c0032ce6ac057a9460765790d9a6c358c05513cf8eb8f32",
+          "octets": 87770,
+          "octetsAvantAllegement": 140018
+        },
+        {
+          "role": "logo",
+          "assetId": null,
+          "sha256": "0b08cf147cd003ba1f4cdf766092a5baf5376f7623a4fedfd3babb4cb4b14439",
+          "octets": 565449,
+          "octetsAvantAllegement": 718173
+        }
+      ],
+      "usage": {
+        "input_tokens": 1786,
+        "input_tokens_details": {
+          "image_tokens": 1400,
+          "text_tokens": 386
+        },
+        "output_tokens": 1514,
+        "output_tokens_details": {
+          "image_tokens": 1514,
+          "text_tokens": 0
+        },
+        "total_tokens": 3300
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "1024x912",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-reference-5-r1",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 507,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1514,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 29633,
+    "coutMicro": 41783,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-mhyezjq6tfjugwn9:envrai:reference-5-r1",
+    "heure": 1795739483908,
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "reference-5",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une photo d'ambiance de la marque. Les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : « Cafés en grains », « Cafés moulus », « Coffrets » ; aucune date, aucune origine, aucun chiffre n'y est ajouté. Aucune personne n'apparaît.\n\nÀ corriger : un texte absent de l'aperçu est écrit sur une étiquette, un emballage ou un objet : retire-le ; les étiquettes ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : « Cafés en grains », « Cafés moulus », « Coffrets » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (des mots absents de l'aperçu sont écrits : garde seulement ses textes, lettre pour lettre).",
+      "requestId": "req_c0179c995b87420787fd670e1e4cd0ad",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "1024x912",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "8b49d64fab3d6e79ae9d87e72b056bcc1e49ff340f6eacd3a40f9ec01f32d376",
+          "octets": 86464,
+          "octetsAvantAllegement": 137591
+        }
+      ],
+      "usage": {
+        "input_tokens": 507,
+        "input_tokens_details": {
+          "image_tokens": 210,
+          "text_tokens": 297
+        },
+        "output_tokens": 1514,
+        "output_tokens_details": {
+          "image_tokens": 1514,
+          "text_tokens": 0
+        },
+        "total_tokens": 2021
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "1024x912",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-reference-6-r1",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 1749,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1514,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 30930,
+    "coutMicro": 50230,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-mhyezjq6tfjugwn9:envrai:reference-6-r1",
+    "heure": 1795739514933,
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "reference-6",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est une photo d'ambiance de la marque. Les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : « Cafés en grains », « Cafés moulus », « Coffrets » ; aucune date, aucune origine, aucun chiffre n'y est ajouté. Aucune personne n'apparaît.\n\nÀ corriger : un texte absent de l'aperçu est écrit sur une étiquette, un emballage ou un objet : retire-le ; les étiquettes ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : « Cafés en grains », « Cafés moulus », « Coffrets » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (des mots absents de l'aperçu sont écrits : garde seulement ses textes, lettre pour lettre).",
+      "requestId": "req_df8aaf1ac0b54a5b9a56e31d75dd8866",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "1024x912",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "63007fa5a650d11f14ef1b89be46e6fe2890ccb8b8981e00a167d3bb73711507",
+          "octets": 118698,
+          "octetsAvantAllegement": 152566
+        },
+        {
+          "role": "logo",
+          "assetId": null,
+          "sha256": "0b08cf147cd003ba1f4cdf766092a5baf5376f7623a4fedfd3babb4cb4b14439",
+          "octets": 565449,
+          "octetsAvantAllegement": 718173
+        }
+      ],
+      "usage": {
+        "input_tokens": 1749,
+        "input_tokens_details": {
+          "image_tokens": 1414,
+          "text_tokens": 335
+        },
+        "output_tokens": 1514,
+        "output_tokens_details": {
+          "image_tokens": 1514,
+          "text_tokens": 0
+        },
+        "total_tokens": 3263
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "1024x912",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-relecture-publications-r1",
+    "fournisseur": "anthropic",
+    "modeleDemande": "claude-opus-5-5",
+    "modeleServi": "claude-opus-5-5",
+    "unite": "tokens",
+    "jetonsEntree": 2302,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 2260,
+    "jetonsSortie": 679,
+    "quantite": 0,
+    "effort": "high",
+    "fin": "end_turn",
+    "dureeMs": 8040,
+    "coutMicro": 29316,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-mhyezjq6tfjugwn9:envrai:relecture-publications-r1",
+    "heure": 1795739523248,
+    "details": {
+      "placeDemandee": 8000,
+      "sortie": "stricte"
+    }
+  },
+  {
+    "etape": "envrai-relecture-site-r1",
+    "fournisseur": "anthropic",
+    "modeleDemande": "claude-opus-5-5",
+    "modeleServi": "claude-opus-5-5",
+    "unite": "tokens",
+    "jetonsEntree": 1822,
+    "jetonsCacheLus": 2260,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 921,
+    "quantite": 0,
+    "effort": "high",
+    "fin": "end_turn",
+    "dureeMs": 10049,
+    "coutMicro": 22498,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-mhyezjq6tfjugwn9:envrai:relecture-site-r1",
+    "heure": 1795739533476,
+    "details": {
+      "placeDemandee": 8000,
+      "sortie": "stricte"
+    }
+  },
+  {
+    "etape": "envrai-relecture-produits-r1",
+    "fournisseur": "anthropic",
+    "modeleDemande": "claude-opus-5-5",
+    "modeleServi": "claude-opus-5-5",
+    "unite": "tokens",
+    "jetonsEntree": 6656,
+    "jetonsCacheLus": 2260,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1808,
+    "quantite": 0,
+    "effort": "high",
+    "fin": "end_turn",
+    "dureeMs": 16044,
+    "coutMicro": 54383,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-mhyezjq6tfjugwn9:envrai:relecture-produits-r1",
+    "heure": 1795739549789,
+    "details": {
+      "placeDemandee": 8000,
+      "sortie": "stricte"
+    }
+  },
+  {
+    "etape": "envrai-relecture-references-r1",
+    "fournisseur": "anthropic",
+    "modeleDemande": "claude-opus-5-5",
+    "modeleServi": "claude-opus-5-5",
+    "unite": "tokens",
+    "jetonsEntree": 4221,
+    "jetonsCacheLus": 2260,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1127,
+    "quantite": 0,
+    "effort": "high",
+    "fin": "end_turn",
+    "dureeMs": 10366,
+    "coutMicro": 34293,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-mhyezjq6tfjugwn9:envrai:relecture-references-r1",
+    "heure": 1795739560529,
+    "details": {
+      "placeDemandee": 8000,
+      "sortie": "stricte"
+    }
+  },
+  {
+    "etape": "envrai-logo-hd-logo-compact",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 1416,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1834,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 27475,
+    "coutMicro": 56683,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-mhyezjq6tfjugwn9:envrai:logo-hd-logo-compact",
+    "heure": 1795739600127,
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "logo-compact",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est la version compacte du logo. Aucune personne n'apparaît.",
+      "requestId": "req_5411fdcaac814f899c4a766294363bd0",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "1088x1088",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "dc585302c3db51734f8df93a8045c6739e2abb98d23a1c69ad169caf055e405a",
+          "octets": 17668,
+          "octetsAvantAllegement": 22494
+        },
+        {
+          "role": "logo",
+          "assetId": null,
+          "sha256": "0b08cf147cd003ba1f4cdf766092a5baf5376f7623a4fedfd3babb4cb4b14439",
+          "octets": 565449,
+          "octetsAvantAllegement": 718173
+        }
+      ],
+      "usage": {
+        "input_tokens": 1416,
+        "input_tokens_details": {
+          "image_tokens": 1270,
+          "text_tokens": 146
+        },
+        "output_tokens": 1834,
+        "output_tokens_details": {
+          "image_tokens": 1834,
+          "text_tokens": 0
+        },
+        "total_tokens": 3250
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "1088x1088",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-logo-hd-icone",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 1416,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1834,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 25613,
+    "coutMicro": 56683,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-mhyezjq6tfjugwn9:envrai:logo-hd-icone",
+    "heure": 1795739626358,
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "icone",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est l'icône seule. Aucune personne n'apparaît.",
+      "requestId": "req_08419ceda2a4454aa1230831e8bfc6e6",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "1088x1088",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "0cf093237a9eba9014bdead7b22640308f2515fee1ddfea42503445b15a61ab6",
+          "octets": 12872,
+          "octetsAvantAllegement": 18668
+        },
+        {
+          "role": "logo",
+          "assetId": null,
+          "sha256": "0b08cf147cd003ba1f4cdf766092a5baf5376f7623a4fedfd3babb4cb4b14439",
+          "octets": 565449,
+          "octetsAvantAllegement": 718173
+        }
+      ],
+      "usage": {
+        "input_tokens": 1416,
+        "input_tokens_details": {
+          "image_tokens": 1270,
+          "text_tokens": 146
+        },
+        "output_tokens": 1834,
+        "output_tokens_details": {
+          "image_tokens": 1834,
+          "text_tokens": 0
+        },
+        "total_tokens": 3250
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "1088x1088",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-logo-hd-favicon",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 1413,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1834,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 24393,
+    "coutMicro": 56670,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-mhyezjq6tfjugwn9:envrai:logo-hd-favicon",
+    "heure": 1795739651350,
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "favicon",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est le favicon. Aucune personne n'apparaît.",
+      "requestId": "req_e79fa9fb454b498f8e3e63ae2dbfa0bf",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "1088x1088",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "724439df73fc1dff36b301ed40be14a42dbd854275704a61359d50237f716162",
+          "octets": 11672,
+          "octetsAvantAllegement": 15812
+        },
+        {
+          "role": "logo",
+          "assetId": null,
+          "sha256": "0b08cf147cd003ba1f4cdf766092a5baf5376f7623a4fedfd3babb4cb4b14439",
+          "octets": 565449,
+          "octetsAvantAllegement": 718173
+        }
+      ],
+      "usage": {
+        "input_tokens": 1413,
+        "input_tokens_details": {
+          "image_tokens": 1270,
+          "text_tokens": 143
+        },
+        "output_tokens": 1834,
+        "output_tokens_details": {
+          "image_tokens": 1834,
+          "text_tokens": 0
+        },
+        "total_tokens": 3247
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "1088x1088",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-logo-hd-badge",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 1434,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1834,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 30426,
+    "coutMicro": 56812,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-mhyezjq6tfjugwn9:envrai:logo-hd-badge",
+    "heure": 1795739682342,
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "badge",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est le badge rond. Aucune personne n'apparaît.",
+      "requestId": "req_8ed480fead7d4189a60fa038eaa90544",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "1088x1088",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "6ec456d56eaaa4f6348ab384dc66bdc7c9a40cf057ce9900eb991b7cffa6dad1",
+          "octets": 31812,
+          "octetsAvantAllegement": 35007
+        },
+        {
+          "role": "logo",
+          "assetId": null,
+          "sha256": "0b08cf147cd003ba1f4cdf766092a5baf5376f7623a4fedfd3babb4cb4b14439",
+          "octets": 565449,
+          "octetsAvantAllegement": 718173
+        }
+      ],
+      "usage": {
+        "input_tokens": 1434,
+        "input_tokens_details": {
+          "image_tokens": 1290,
+          "text_tokens": 144
+        },
+        "output_tokens": 1834,
+        "output_tokens_details": {
+          "image_tokens": 1834,
+          "text_tokens": 0
+        },
+        "total_tokens": 3268
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "1088x1088",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-relecture-logos-hd",
+    "fournisseur": "anthropic",
+    "modeleDemande": "claude-opus-5-5",
+    "modeleServi": "claude-opus-5-5",
+    "unite": "tokens",
+    "jetonsEntree": 6415,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 2248,
+    "jetonsSortie": 1644,
+    "quantite": 0,
+    "effort": "high",
+    "fin": "end_turn",
+    "dureeMs": 17212,
+    "coutMicro": 60011,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-mhyezjq6tfjugwn9:envrai:relecture-logos-hd",
+    "heure": 1795739700535,
+    "details": {
+      "placeDemandee": 8000,
+      "sortie": "stricte"
+    }
   }
 ]

@@ -1,0 +1,2 @@
+Marque : « Mouture ».
+Versions : logo-compact (la version compacte du logo), icone (l'icône seule), favicon (le favicon), badge (le badge rond).

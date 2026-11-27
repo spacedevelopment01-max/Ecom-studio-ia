@@ -1,7 +1,7 @@
 Essai de la planche en vrai — client « Mouture » (petit torréfacteur artisanal qui vend en ligne des cafés en grains et moulus, et des coffrets), type « produits »
 Produits ou prestations de sa fiche : cafés en grains ; cafés moulus ; coffrets
 Photos de produit du client : 0 (les produits de la planche restent des images d'ambiance sans elles)
-Plafond de l'essai : 2,0000 €
+Plafond de l'essai : 3,0000 €
 Personnes permises : non (aucune photo de personne ni accord)
 Planche choisie : /home/user/Ecom-studio-ia/data/essai-torrefacteur/4-planches/planche-A-gardee.png (sha256 856a34f62b55ceb914abda84e5c349d71eaf4f5daa823d3de475865d0cbd8ce7) ; disposition standard
 Logo fini : /home/user/Ecom-studio-ia/data/essai-torrefacteur/3-finalisation/esquisse-11-logo-garde.png (sha256 83a13c64a6eda4b43e5a84c42e9f1e8e17bea6fde6deec588350566029347f48)
@@ -36,6 +36,8 @@ Plafond conseillé (plafond minimal, une réparation de l'inventaire et une de r
 
 Découpe : 42 aperçus (apercus/) ; aucune case refusée
 
+LOGO_HD (à la charge du Studio) : logo-compact, icone, favicon, badge ; gardées en haute définition : logo-compact, icone, favicon, badge ; refusées deux fois (l'agrandissement de l'aperçu reste, et SINA le dit) : aucune ; détail dans logos-hd/
+
 Inventaire (inventaire-demande.txt, inventaire-reponse.json) :
   polices lues : titres « Playfair Display » (serif), textes « Montserrat » (sans)
   couleurs lues : Brun café (Authenticité, Profondeur) ; Cuivre (Chaleur, Artisanat) ; Caramel (Gourmandise, Convivialité) ; Crème (Douceur, Équilibre) ; Sauge (Nature, Élégance)
@@ -59,115 +61,185 @@ Inventaire (inventaire-demande.txt, inventaire-reponse.json) :
   reference-6 : logo oui, produit oui, personne non ; textes : « MOUTURE » « MOUTURE »
 
 Les images, case par case (cases/ : texte envoyé, images jointes, image HD reçue, refusées comprises) :
-  publication-1x1 : non terminée
+  publication-1x1 : GARDÉE (cases/publication-1x1-gardee-hd.png)
     essai 1 : jointes apercu, logo ; image HD cases/publication-1x1-1-hd.png
       relecture : note 9/10 — Même composition que l'aperçu : titre en haut à gauche, tasse fumante à droite, grains et badge clair sur bois. L'anse de la tasse touche le bord droit, comme sur l'aperçu, mais aucun texte n'est coupé.
-      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE »)
-    essai 2 (reprise à la charge du Studio) : jointes apercu, logo ; image HD cases/publication-1x1-2-hd.png
-  publication-4x5 : non terminée
+      raisons du refus : aucune
+  publication-4x5 : NON gardée, l'aperçu garde sa case (ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Saveurs », « intenses »))
     essai 1 : jointes apercu, logo ; image HD cases/publication-4x5-1-hd.png
       relecture : note 8/10 — Fidèle à l'aperçu : titre, trois arguments, bouton et sachet kraft aux mêmes places. Le point de « quotidien. » frôle le sachet et l'icône « Saveurs intenses » est un peu étrange.
-      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Une », « torréfaction », « de », « caractère », « ÉQUILIBRE », « & », « INTENSITÉ »)
+      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Une », « de », « caractère », « ÉQUILIBRE », « & », « INTENSITÉ »)
     essai 2 (reprise à la charge du Studio) : jointes apercu, logo ; image HD cases/publication-4x5-2-hd.png
-  publication-9x16 : non terminée
+      relecture : note 9/10 — L'image refaite reprend fidèlement l'aperçu : même titre, mêmes trois atouts avec leurs pictos, même bouton, même sachet kraft avec le logo Mouture sur fond de grains. Le rendu est net et l'étiquette affiche seulement « Saveurs intenses », sans aucune mention inventée.
+      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Saveurs », « intenses »)
+  publication-9x16 : GARDÉE (cases/publication-9x16-gardee-hd.png)
     essai 1 : jointes apercu, logo ; image HD cases/publication-9x16-1-hd.png
       relecture : note 9/10 — Reprend fidèlement l'aperçu : question manuscrite, quatre choix en pastilles, café moulu et grains, badge en bas au centre. L'ensemble est net et bien lisible.
-      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE »)
-    essai 2 (reprise à la charge du Studio) : jointes apercu, logo ; image HD cases/publication-9x16-2-hd.png
-  ouverture-site : non terminée
+      raisons du refus : aucune
+  ouverture-site : GARDÉE (cases/ouverture-site-gardee-hd.png)
     essai 1 : jointes apercu ; image HD cases/ouverture-site-1-hd.png
       relecture : note 9/10 — Même composition que l'aperçu (sac de toile, grains, titre blanc à gauche, bouton cuivré), image nette et textes bien placés. Le bout de logo visible en haut de l'aperçu vient du découpage de la planche.
       raisons du refus : aucune
-  ouverture-planche : non terminée
+  ouverture-planche : GARDÉE (cases/ouverture-planche-gardee-hd.png)
     essai 1 : jointes apercu ; image HD cases/ouverture-planche-1-hd.png
       relecture : note 9/10 — Fidèle à l'aperçu : tasse fumante, grains, sac de toile et mêmes textes. Le titre, coupé à gauche dans l'aperçu à cause du découpage, est ici entier avec une bonne marge.
-      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « à »)
-    essai 2 (reprise à la charge du Studio) : jointes apercu ; image HD cases/ouverture-planche-2-hd.png
-  site-ordinateur : non terminée
+      raisons du refus : aucune
+  site-ordinateur : GARDÉE (cases/site-ordinateur-gardee-hd.png)
     essai 1 : jointes apercu, logo ; image HD cases/site-ordinateur-1-hd.png
       relecture : note 9/10 — Maquette d'ordinateur conforme à l'aperçu : même en-tête avec le logo Mouture sur fond blanc, même bandeau et mêmes quatre atouts. Seule la flèche dessinée à droite de l'aperçu a disparu, ce qui reste mineur.
-      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE »)
-    essai 2 (reprise à la charge du Studio) : jointes apercu, logo ; image HD cases/site-ordinateur-2-hd.png
-  site-telephone : non terminée
+      raisons du refus : aucune
+  site-telephone : NON gardée, l'aperçu garde sa case (elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « Une », « boutiq », « toujours », « avec », « vous ») (en trop ou mal écrits : « Cafés », « en », « grains », « Cafés », « moulus », « Coffrets ») ; sa fidélité n'est pas au niveau (7/10, il faut 8))
     essai 1 : jointes apercu, logo ; image HD cases/site-telephone-1-hd.png
       relecture : note 7/10 — La mise en page reprend l'aperçu, mais la phrase manuscrite du haut est coupée (« Une boutiq… »). La tasse en bas du bandeau a une forme étrange, sans anse visible et avec un grain incrusté, ce qui la rend peu crédible.
-      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « MOUTURE », « TORRÉFACTION », « ARTISANALE », « MOUTURE », « TORRÉFACTION », « ARTISANALE ») ; un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (7/10, il faut 8)
+      raisons du refus : un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (7/10, il faut 8)
     essai 2 (reprise à la charge du Studio) : jointes apercu, logo ; image HD cases/site-telephone-2-hd.png
-  produit-1 : non terminée
+      relecture : note 7/10 — L'écran du téléphone reprend fidèlement l'aperçu : même titre, même bouton, même tasse fumante et mêmes sachets kraft. En revanche, la phrase manuscrite « Une boutique toujours avec vous » au-dessus du téléphone a disparu et le cadrage est différent.
+      raisons du refus : elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « Une », « boutiq », « toujours », « avec », « vous ») (en trop ou mal écrits : « Cafés », « en », « grains », « Cafés », « moulus », « Coffrets ») ; sa fidélité n'est pas au niveau (7/10, il faut 8)
+  produit-1 : GARDÉE (cases/produit-1-gardee-hd.png) — image d'ambiance, ce n'est pas son produit
     essai 1 : jointes apercu, logo ; image HD cases/produit-1-1-hd.png
       relecture : note 8.5/10 — L'image reprend fidèlement l'aperçu : sachet kraft, logo, étiquette, bol et grains. Elle est nette. Seul le mot « CLASSÉ » sur l'étiquette sonne un peu étrange.
-      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « L'EXCELLENCE », « ARABICA », « SÉLECTIONNÉ », « AVEC », « PASSION », « TORRÉFIÉ »)
+      raisons du refus : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « CLASSÉ | 500 g | 100% ARABICA » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « L'EXCELLENCE », « SÉLECTIONNÉ », « AVEC », « PASSION », « TORRÉFIÉ », « EN », « PETITES », « QUANTITÉS »)
     essai 2 (reprise à la charge du Studio) : jointes apercu, logo ; image HD cases/produit-1-2-hd.png
-  produit-2 : non terminée
+      relecture : note 9/10 — Même sachet kraft, même bol de grains et même décor que l'aperçu. Le logo est complet et l'étiquette est propre, sans texte inventé.
+      raisons du refus : aucune
+  produit-2 : NON gardée, l'aperçu garde sa case (faits ou produits inventés, absents de l'aperçu et de la fiche du client : « EXCELLENCE » ; sa fidélité n'est pas au niveau (7/10, il faut 8))
     essai 1 : jointes apercu, logo ; image HD cases/produit-2-1-hd.png
       relecture : note 9/10 — Composition, couleurs et mise en scène identiques à l'aperçu, avec le sachet et le tas de café moulu. Les textes sont propres et sans faute visible.
-      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « ÉQUILIBRÉ », « DES », « ARÔMES », « RICHES », « ET », « GÉNÉREUX »)
+      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « ÉQUILIBRÉ », « DES », « ARÔMES », « RICHES », « ET », « GÉNÉREUX », « POUR », « UN »)
     essai 2 (reprise à la charge du Studio) : jointes apercu, logo ; image HD cases/produit-2-2-hd.png
-  produit-3 : non terminée
+      relecture : note 7/10 — La composition est fidèle : sachet kraft, tas de café moulu, table en bois. Mais l'étiquette ajoute « EXCELLENCE », un nom de gamme absent de l'aperçu et des produits de la marque.
+      raisons du refus : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « EXCELLENCE » ; sa fidélité n'est pas au niveau (7/10, il faut 8)
+  produit-3 : NON gardée, l'aperçu garde sa case (ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « CAFÉS », « EN », « GRAINS », « CAFÉS », « MOULUS »))
     essai 1 : jointes apercu, logo ; image HD cases/produit-3-1-hd.png
       relecture : note 6/10 — La mise en scène du coffret est fidèle à l'aperçu. En revanche, l'étiquette de gauche porte une faute visible (« L'ARABY DE PÉROU »), et la mention « 100% ARABICA » du second sachet est en partie masquée par la tasse.
-      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « L'ARABY », « DE », « PÉROU », « 100% », « ARABICA », « NOTES ») ; sa fidélité n'est pas au niveau (6/10, il faut 8)
-    essai 2 (reprise à la charge du Studio) : jointes apercu, logo ; image HD —
-  emballage : non terminée
+      raisons du refus : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « L'ARABY DE PÉROU », « 100% ARABICA » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « NOTES », « CHOCOLATÉES », « ET », « FRUITÉES », « L'ARABICA », « SIGNATURE ») ; sa fidélité n'est pas au niveau (6/10, il faut 8)
+    essai 2 (reprise à la charge du Studio) : jointes apercu, logo ; image HD cases/produit-3-2-hd.png
+      relecture : note 9/10 — On retrouve le même coffret ouvert avec deux sachets et la tasse blanche, comme dans l'aperçu. Les étiquettes reprennent les produits de la marque et les logos sont nets.
+      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « CAFÉS », « EN », « GRAINS », « CAFÉS », « MOULUS »)
+  emballage : NON gardée, l'aperçu garde sa case (ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Cafés », « moulus »))
     essai 1 : jointes apercu, logo ; image HD cases/emballage-1-hd.png
       relecture : note 6/10 — La scène est fidèle à l'aperçu, mais l'étiquette du sachet contient une faute (« L'Instart franc ») et des inscriptions illisibles apparaissent sur le dessus et le flanc de la boîte. Le logo brun foncé de la tasse se fond dans l'émail sombre : il faudrait y mettre une version claire.
-      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « L'Instart », « franc », « - », « MÉLANGE », « Notes », « de », « chocolat », « noir ») ; un logo foncé est posé sur un fond sombre : il doit y être clair ; sa fidélité n'est pas au niveau (6/10, il faut 8)
-  reference-1 : non terminée
+      raisons du refus : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « Grains | 250 g » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « L'Instart », « franc », « - », « MÉLANGE », « Notes », « de », « chocolat », « noir ») ; un logo foncé est posé sur un fond sombre : il doit y être clair ; sa fidélité n'est pas au niveau (6/10, il faut 8)
+    essai 2 (reprise à la charge du Studio) : jointes apercu, logo ; image HD cases/emballage-2-hd.png
+      relecture : note 9/10 — La mise en scène est identique à l'aperçu : carton illustré, sachet, carte et mug émaillé. Sur le mug sombre, le logo reste lisible grâce à son liseré et à son texte clairs.
+      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Cafés », « moulus »)
+  reference-1 : GARDÉE (cases/reference-1-gardee-hd.png)
     essai 1 : jointes apercu ; image HD cases/reference-1-1-hd.png
       relecture : note 8/10 — Même torréfacteur, même axe métallique et mêmes grains, avec un cadrage et des tons fidèles. La forme floue en haut à droite reste indistincte, comme sur l'aperçu.
       raisons du refus : aucune
-  reference-2 : non terminée
+  reference-2 : GARDÉE (cases/reference-2-gardee-hd.png)
     essai 1 : jointes apercu ; image HD cases/reference-2-1-hd.png
       relecture : note 9/10 — Le sac de jute ouvert sur les grains verts reprend fidèlement l'aperçu, avec plus de netteté et sans défaut visible.
       raisons du refus : aucune
-  reference-3 : non terminée
+  reference-3 : GARDÉE (cases/reference-3-gardee-hd.png)
     essai 1 : jointes apercu ; image HD cases/reference-3-1-hd.png
       relecture : note 9/10 — La tasse fumante, les grains et le fond boisé correspondent à l'aperçu. Le rendu est net et chaleureux.
       raisons du refus : aucune
-  reference-4 : non terminée
+  reference-4 : NON gardée, l'aperçu garde sa case (ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « CAFÉ », « CAFÉ », « GRAINS ») (en trop ou mal écrits : « COFFRETS », « CAFÉS », « MOULUS », « CAFÉS », « CAFÉS ») ; un texte est coupé ou collé au bord)
     essai 1 : jointes apercu, logo ; image HD cases/reference-4-1-hd.png
       relecture : note 6/10 — La composition correspond à l'aperçu, mais plusieurs textes sont fautifs (« CAFÉ DU CHALNC », « 250G e »). Le sachet de droite est coupé par le bord, ce qui tronque le logo et l'étiquette.
-      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « EN », « EN », « GRAINS », « GRAINS ») (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « ERRANO », « 100% », « ARABICA », « CHOCOLAT », « - », « NOISETTE ») ; un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (6/10, il faut 8)
-  reference-5 : non terminée
+      raisons du refus : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « 100% ARABICA », « 250G e », « 100% ARAI », « 250 » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « EN », « EN », « GRAINS », « GRAINS ») (en trop ou mal écrits : « ERRANO », « CHOCOLAT », « - », « NOISETTE », « DE », « CERROAZUL », « AGRUMES », « - ») ; un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (6/10, il faut 8)
+    essai 2 (reprise à la charge du Studio) : jointes apercu, logo ; image HD cases/reference-4-2-hd.png
+      relecture : note 8/10 — Même étagère, mêmes sachets kraft et même logo que l'aperçu, en plus net. Sur le sachet de droite, l'étiquette et la phrase du logo sont coupées par le bord, comme dans l'aperçu.
+      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « CAFÉ », « CAFÉ », « GRAINS ») (en trop ou mal écrits : « COFFRETS », « CAFÉS », « MOULUS », « CAFÉS », « CAFÉS ») ; un texte est coupé ou collé au bord
+  reference-5 : NON gardée, l'aperçu garde sa case (ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Café », « de », « Qualité »))
     essai 1 : jointes apercu ; image HD cases/reference-5-1-hd.png
       relecture : note 8/10 — Le moulin en bois, le bol métallique, les grains et la mouture sont fidèles à l'aperçu. La plaque affiche désormais un texte lisible et cohérent.
-      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « CAFÉ », « DEPUIS », « 1928 »)
-  reference-6 : non terminée
+      raisons du refus : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « DEPUIS 1928 » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « CAFÉ »)
+    essai 2 (reprise à la charge du Studio) : jointes apercu ; image HD cases/reference-5-2-hd.png
+      relecture : note 8/10 — Le moulin en bois, son bol métallique, les grains et le café moulu reprennent fidèlement l'aperçu. La plaque porte un texte générique lisible, sans nom de produit ni chiffre.
+      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Café », « de », « Qualité »)
+  reference-6 : NON gardée, l'aperçu garde sa case (ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Cafés », « en », « grains », « Cafés », « moulus »))
     essai 1 : jointes apercu, logo ; image HD cases/reference-6-1-hd.png
       relecture : note 9/10 — Le coffret avec ses deux sachets kraft reprend l'aperçu à l'identique. Le logo Mouture est net sur fond clair et les textes sont corrects.
-      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « L'ARABICA », « PUR », « BRÉSIL », « ARÔMES », « DOUX », « ET »)
+      raisons du refus : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « L'ARABICA PUR BRÉSIL », « TORRÉFIÉ EN FRANCE », « 250 G », « LE MOKA ÉTHIOPIE - BIO » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « ARÔMES », « DOUX », « ET », « ÉQUILIBRÉS », « NOTES », « FRUITÉES », « ET », « FLORALES »)
+    essai 2 (reprise à la charge du Studio) : jointes apercu, logo ; image HD cases/reference-6-2-hd.png
+      relecture : note 9/10 — Le coffret kraft, ses deux sachets et le papier frisé sont fidèles à l'aperçu. Les textes sont propres et correspondent aux produits de la marque.
+      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Cafés », « en », « grains », « Cafés », « moulus »)
 
-Relectures : publications (essai 1, relectures/publications-1-verdict.json) ; site (essai 1, relectures/site-1-verdict.json) ; produits (essai 1, relectures/produits-1-verdict.json) ; references (essai 1, relectures/references-1-verdict.json)
+Relectures : publications (essai 1, relectures/publications-1-verdict.json) ; site (essai 1, relectures/site-1-verdict.json) ; produits (essai 1, relectures/produits-1-verdict.json) ; references (essai 1, relectures/references-1-verdict.json) ; publications (essai 2, relectures/publications-2-verdict.json) ; site (essai 2, relectures/site-2-verdict.json) ; produits (essai 2, relectures/produits-2-verdict.json) ; references (essai 2, relectures/references-2-verdict.json)
 
-Étapes : Je découpe ta planche choisie → Je fais l'inventaire de ta planche → Je refais chaque image de ta planche en haute définition
+Logos (logos/) : logos/logo-principal.png, logos/logo-horizontal.png, logos/logo-empile.png, logos/logo-compact.png, logos/icone.png, logos/favicon.png, logos/monochrome-fonce.png, logos/monochrome-clair.png, logos/inverse.png, logos/badge.png, logos/favicon-32.png, logos/favicon-64.png, logos/icone-512.png, logos/avatar-reseaux.png, logos/symbole.png — symbole complet (séparation non fiable ou icône qui ne reprend pas le logo)
+Palette mesurée (palette.json) : #2E1A12 Brun café ; #A86B3A Cuivre ; #C89B6B Caramel ; #F6E9D7 Crème ; #7B8470 Sauge
+Police des titres (polices.json) : lue « Playfair Display », prise « Playfair Display » (PlayfairDisplay-700.ttf, 700)
+Police des textes (polices.json) : lue « Montserrat », prise « Nunito » (Nunito-400.ttf, 400) — REMPLACÉE par la plus proche du catalogue
+Publications pour le calendrier : publication-1x1 (compréhensible) ; publication-9x16 (compréhensible)
+  note : publication-4x5, essai 1 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Une », « de », « caractère », « ÉQUILIBRE », « & », « INTENSITÉ »)
+  note : publication-4x5, essai 2 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Saveurs », « intenses »)
+  note : site-telephone, essai 1 refusé : un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (7/10, il faut 8)
+  note : site-telephone, essai 2 refusé : elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « Une », « boutiq », « toujours », « avec », « vous ») (en trop ou mal écrits : « Cafés », « en », « grains », « Cafés », « moulus », « Coffrets ») ; sa fidélité n'est pas au niveau (7/10, il faut 8)
+  note : produit-1, essai 1 refusé : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « CLASSÉ | 500 g | 100% ARABICA » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « L'EXCELLENCE », « SÉLECTIONNÉ », « AVEC », « PASSION », « TORRÉFIÉ », « EN », « PETITES », « QUANTITÉS »)
+  note : produit-2, essai 1 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « ÉQUILIBRÉ », « DES », « ARÔMES », « RICHES », « ET », « GÉNÉREUX », « POUR », « UN »)
+  note : produit-2, essai 2 refusé : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « EXCELLENCE » ; sa fidélité n'est pas au niveau (7/10, il faut 8)
+  note : produit-3, essai 1 refusé : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « L'ARABY DE PÉROU », « 100% ARABICA » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « NOTES », « CHOCOLATÉES », « ET », « FRUITÉES », « L'ARABICA », « SIGNATURE ») ; sa fidélité n'est pas au niveau (6/10, il faut 8)
+  note : produit-3, essai 2 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « CAFÉS », « EN », « GRAINS », « CAFÉS », « MOULUS »)
+  note : emballage, essai 1 refusé : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « Grains | 250 g » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « L'Instart », « franc », « - », « MÉLANGE », « Notes », « de », « chocolat », « noir ») ; un logo foncé est posé sur un fond sombre : il doit y être clair ; sa fidélité n'est pas au niveau (6/10, il faut 8)
+  note : emballage, essai 2 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Cafés », « moulus »)
+  note : reference-4, essai 1 refusé : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « 100% ARABICA », « 250G e », « 100% ARAI », « 250 » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « EN », « EN », « GRAINS », « GRAINS ») (en trop ou mal écrits : « ERRANO », « CHOCOLAT », « - », « NOISETTE », « DE », « CERROAZUL », « AGRUMES », « - ») ; un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (6/10, il faut 8)
+  note : reference-4, essai 2 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « CAFÉ », « CAFÉ », « GRAINS ») (en trop ou mal écrits : « COFFRETS », « CAFÉS », « MOULUS », « CAFÉS », « CAFÉS ») ; un texte est coupé ou collé au bord
+  note : reference-5, essai 1 refusé : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « DEPUIS 1928 » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « CAFÉ »)
+  note : reference-5, essai 2 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Café », « de », « Qualité »)
+  note : reference-6, essai 1 refusé : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « L'ARABICA PUR BRÉSIL », « TORRÉFIÉ EN FRANCE », « 250 G », « LE MOKA ÉTHIOPIE - BIO » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « ARÔMES », « DOUX », « ET », « ÉQUILIBRÉS », « NOTES », « FRUITÉES », « ET », « FLORALES »)
+  note : reference-6, essai 2 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Cafés », « en », « grains », « Cafés », « moulus »)
+  note : palette : #2E1A12 (écrit sur l'aperçu, mesuré #32180B, écart 2.9) ; #A86B3A (écrit sur l'aperçu, mesuré #A95D28, écart 5) ; #C89B6B (écrit sur l'aperçu, mesuré #C58D59, écart 4.6) ; #F6E9D7 (écrit sur l'aperçu, mesuré #F7E9D5, écart 0.7) ; #7B8470 (écrit sur l'aperçu, mesuré #7D7F68, écart 3.5)
+  note : logos refaits par le code (séparation non fiable : aucune séparation nette entre un symbole et le nom ; en haute définition : logo-compact, icone, favicon, badge)
+  note : logo-compact en haute définition : gardée (essai 1)
+  note : icone en haute définition : gardée (essai 1)
+  note : favicon en haute définition : gardée (essai 1)
+  note : badge en haute définition : gardée (essai 1)
+  SINA dirait : Sur ta planche en vrai, 8 images n'ont pas passé ma relecture, même refaites (Publication portrait, Site sur téléphone, Produit 2, Produit 3, Emballage et supports, Image de référence 4, Image de référence 5, Image de référence 6) : leurs cases gardent l'aperçu de ta planche choisie, sans fichier en haute définition. Je peux les refaire à ma charge : rien n'est compté sur ton budget.
+  SINA dirait : Tes produits sur la planche en vrai sont des images d'ambiance (« image d'ambiance, ce n'est pas ton produit ») : ils ne vont jamais sur les emplacements produit de ton site, où « Ta photo ici » attend tes photos. Quand tu m'envoies tes photos, je peux refaire ces cases avec ton vrai produit, je t'annonce le prix avant.
+  SINA dirait : Sur ta planche, la police nommée « Montserrat » n'avait pas tout à fait le dessin montré : j'ai pris celle du catalogue du Studio qui ressemble le plus à ce que tu as vu, « Nunito ».
+
+Planche assemblée : planche-en-vrai.png (3072 × 4608)
+
+Étapes : Je découpe ta planche choisie → Je fais l'inventaire de ta planche → Je refais chaque image de ta planche en haute définition → Je prépare tes logos, tes couleurs et tes polices → J'assemble ta planche en vrai
 
 Dépense réelle comptée par le Studio, appel par appel (réservé au plus → réglé) :
-- 4644aed4d5fb404bc19878b03856c8466e8c5e65b235166a6c3c4f1d3dce6a25 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0904 € → réglé 0,0494 € (settled) · jetons 1563 en entrée, 1514 en sortie
-- c3e35de339b7981c4896aab9ca393fd2cb672566b274000b863ea9a6adaa09ab · anthropic:claude-opus-5-5 · charge du client · réservé 0,1842 € → réglé 0,0515 € (settled) · jetons 5786 en entrée, 1369 en sortie
-- 793d4c9c1464d171267ada341711031206df2e7c656533a92518cf82b9616616 · anthropic:claude-opus-5-5 · charge du client · réservé 0,1900 € → réglé 0,0590 € (settled) · jetons 7057 en entrée, 2001 en sortie
-- 7476fa5b6740a602d6481a83eea34329b78b63e2112fdf10c2888edb2d26d9cf · anthropic:claude-opus-5-5 · charge du client · réservé 0,1875 € → réglé 0,0642 € (settled) · jetons 6509 en entrée, 2413 en sortie
-- f67910003847d7531810a870b7765c35d5e3a7b8500db5adb95e655b4d9b6894 · anthropic:claude-opus-5-5 · charge du client · réservé 0,1948 € → réglé 0,0661 € (settled) · jetons 8085 en entrée, 2210 en sortie
-- e8b4a7d331631faecf161d28a85a5c623cde31d8d84a673b95047ecd53383f58 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,1022 € → réglé 0,0588 € (settled) · jetons 1745 en entrée, 1834 en sortie
-- 7e14ba3fb553ca51e923dd50da9aa7ebc6a25630fbdfd6ea6f3c78427a758649 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0957 € → réglé 0,0526 € (settled) · jetons 1778 en entrée, 1587 en sortie
-- 56ac62fba1ceb79c8a702848039b73be33965470f50af4651f7c578d6b9b9225 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0851 € → réglé 0,0455 € (settled) · jetons 1698 en entrée, 1331 en sortie
-- d41698a14f4c754d793a1729fa24532cfae30561dc88d7ea843459e49637c8e6 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0460 € → réglé 0,0219 € (settled) · jetons 525 en entrée, 724 en sortie
-- 4dc405318224a764c82c70d9ae0b2757a2e3078eaa1047fc31826553ed0b7f88 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0881 € → réglé 0,0492 € (settled) · jetons 2101 en entrée, 1366 en sortie
-- 83c14612dc6fbfe2324c8f33024a642bfa1edcfdd9759fb1834a19169b1a4a3e · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0712 € → réglé 0,0342 € (settled) · jetons 1786 en entrée, 876 en sortie
-- f209e21a632c61569e818af0dd5ad267ef27aa25542229d695511a605ca97d85 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0904 € → réglé 0,0481 € (settled) · jetons 1682 en entrée, 1437 en sortie
-- 8d14f4e591965f32a8d230257be47be0e02dc920ec16ba14fbb360f7f056fba0 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0903 € → réglé 0,0481 € (settled) · jetons 1680 en entrée, 1437 en sortie
-- 1dade1e02f4b48a1a73a1c040b8c54601f5827c43325c4270968856a15f0bd39 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0906 € → réglé 0,0906 € (uncertain)
+- 3aec880a829494b5fbe56b45add642fa985033cabb2466eeade761baf8e070b2 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0970 € → réglé 0,0528 € (settled) · jetons 1830 en entrée, 1587 en sortie
+- 238ceb172fd1ae7aa48738aa775b18f97023386dca0db01c554b7a881ff185f5 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0714 € → réglé 0,0342 € (settled) · jetons 1780 en entrée, 876 en sortie
+- 13cd0f7c58c73b6b3d90d6cb04c843d18f5388391da747a34aefc0086621ad1f · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0932 € → réglé 0,0486 € (settled) · jetons 1793 en entrée, 1437 en sortie
+- 2dd6d97db279bf124015a76bc9c723e409be7ff9821fa68e0cae849306b2d94b · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0915 € → réglé 0,0482 € (settled) · jetons 1717 en entrée, 1437 en sortie
+- 9bbdba337fd45771883a9b13e2c818412af92801cd3e43c388ac4300a8ef432d · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0935 € → réglé 0,0486 € (settled) · jetons 1812 en entrée, 1437 en sortie
+- 61fb09f4dc9b8b6fdd4314d1faa22f92ac4fceceae7c25b1ba73e481517aab72 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0951 € → réglé 0,0541 € (settled) · jetons 2376 en entrée, 1500 en sortie
+- 3e58237fda9aca4d06cd05fae4c810a6aa4663f12e1d46193b0aa9e59a4baac6 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0955 € → réglé 0,0504 € (settled) · jetons 1786 en entrée, 1514 en sortie
+- 2385dba0089a0d2921098bdedd562a83aa32ca43bf8757c83600728cac1a98e0 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0759 € → réglé 0,0418 € (settled) · jetons 507 en entrée, 1514 en sortie
+- c23a786a8619974203beff11753f917fb7b94b69e2b733d8ef8339df2e0e2231 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0946 € → réglé 0,0502 € (settled) · jetons 1749 en entrée, 1514 en sortie
+- bfbb096475ad60459028d717ed6bd23f6d0afa18a3f861715dc24545ba65f8b0 · anthropic:claude-opus-5-5 · charge du Studio · réservé 0,1705 € → réglé 0,0293 € (settled) · jetons 2302 en entrée, 679 en sortie
+- 587c6877c1660b135db1e0a9495d38f63beab521c13886bd50ba0b51ac6ce16e · anthropic:claude-opus-5-5 · charge du Studio · réservé 0,1683 € → réglé 0,0225 € (settled) · jetons 1822 en entrée, 921 en sortie
+- 18c3f9c8a3e4e8a9db191432a44c68a76fe52088194212195ba9325925e76ae3 · anthropic:claude-opus-5-5 · charge du Studio · réservé 0,1906 € → réglé 0,0544 € (settled) · jetons 6656 en entrée, 1808 en sortie
+- 1d0fbd551d39d1dfdf6a56a5cae3b6e438221fa0c609e36051e4e95a68844b47 · anthropic:claude-opus-5-5 · charge du Studio · réservé 0,1794 € → réglé 0,0343 € (settled) · jetons 4221 en entrée, 1127 en sortie
+- 26e1aa2a6497a87d882b508ba108a2dd8bddd82949608725bd5334540b0c218b · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,1012 € → réglé 0,0567 € (settled) · jetons 1416 en entrée, 1834 en sortie
+- 17bc9d8e53d4d75f9e850207d47a4b06438249f7cd4adb047b1f3782319e32c1 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,1011 € → réglé 0,0567 € (settled) · jetons 1416 en entrée, 1834 en sortie
+- 28894b1ed3e3adba4bbd950b28a63f8112ecb9959a73eafdc7f2210df56bb4ac · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,1011 € → réglé 0,0567 € (settled) · jetons 1413 en entrée, 1834 en sortie
+- 9612715a24aded0a704a4dac4117fc6672fa22cf85692585c3d250e3d0f3c1ba · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,1011 € → réglé 0,0568 € (settled) · jetons 1434 en entrée, 1834 en sortie
+- 5ef427e1da26dde923e2532b2dc7d29c53fccbaeaed5cf92eac13c6acf7f7f31 · anthropic:claude-opus-5-5 · charge du Studio · réservé 0,1893 € → réglé 0,0600 € (settled) · jetons 6415 en entrée, 1644 en sortie
 
-Dépense réelle comptée par le Studio : 0,7392 €
+Dépense réelle comptée par le Studio : 0,8562 €
 Détail complet : depense.json (appel par appel), usage.json (jetons, qualité, taille, fond, format renvoyés).
 
-REPRISE de la passe 2 (REPRENDRE=1 ; son rapport et sa dépense sont dans passe-2/) :
-  repris tels quels, sans appel : l'inventaire, publication-1x1, publication-4x5, publication-9x16, ouverture-site, ouverture-planche, site-ordinateur, site-telephone, produit-1, produit-2, produit-3, emballage, reference-1, reference-2, reference-3, reference-4, reference-5
-  appel(s) parti(s) sans réponse à la passe 2 (résultat incertain, coût maximal retenu : 0,0904 €) : reference-6-1 ; refait(s) cette fois : reference-6, seulement parce que le propriétaire a relancé lui-même avec REPRENDRE=1 (jamais tout seul)
-  dépense comptée à la passe 2 : 0,5828 € ; à cette passe : 0,7392 € ; aux passes d'avant (passe-1/) : 0,4465 € ; en tout : 1,7685 €
-
-ARRÊT : un appel a échoué, jamais relancé : Résultat incertain chez openai:gpt-image-2.5-sunburst (Connection error.) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer. ← cause : Connection error. ← cause : TypeError: fetch failed ← cause : read ECONNRESET [ECONNRESET]
-
-Comment reprendre : la même commande, même dossier de sortie, avec REPRENDRE=1 en plus (et un plafond pour ce qui reste ; devis gratuit : DEVIS_SEULEMENT=1 REPRENDRE=1, même commande).
-  Gardé, jamais redemandé ni repayé : l'inventaire, l'image publication-1x1, l'image publication-4x5, l'image publication-9x16, l'image ouverture-site, l'image ouverture-planche, l'image site-ordinateur, l'image site-telephone, l'image produit-1, l'image produit-2, l'image produit-3, l'image emballage, l'image reference-1, l'image reference-2, l'image reference-3, l'image reference-4, l'image reference-5, l'image reference-6, la relecture publications (essai 1), la relecture site (essai 1), la relecture produits (essai 1), la relecture references (essai 1).
-  Fait à la reprise : les relectures qui manquent, les reprises éventuelles, LOGO_HD s'il est demandé, puis les logos, la palette, les polices, l'assemblage, etat.json, essai.json et le parcours.
-  Résultat incertain : l'appel de produit-3 est parti sans réponse ; son coût maximal est retenu. Il n'est jamais relancé tout seul : il ne sera refait que si tu relances toi-même avec REPRENDRE=1, après avoir vérifié la consommation chez le fournisseur.
+REPRISE de la passe 3 (REPRENDRE=1 ; son rapport et sa dépense sont dans passe-3/) :
+  repris tels quels, sans appel : l'inventaire, publication-1x1, publication-4x5, publication-9x16, ouverture-site, ouverture-planche, site-ordinateur, site-telephone, produit-1, produit-2, produit-3, emballage, reference-1, reference-2, reference-3, reference-4, reference-5, reference-6, relecture publications, relecture site, relecture produits, relecture references
+  appel(s) parti(s) sans réponse à la passe 3 (résultat incertain, coût maximal retenu : 0,0906 €) : produit-3-2 ; refait(s) cette fois : produit-3, seulement parce que le propriétaire a relancé lui-même avec REPRENDRE=1 (jamais tout seul)
+  écart noté : publication-1x1 (essai 1) : image reçue avant la ligne des étiquettes, reprise telle quelle et rejugée par le code
+  écart noté : publication-4x5 (essai 1) : image reçue avant la ligne des étiquettes, reprise telle quelle et rejugée par le code
+  écart noté : publication-9x16 (essai 1) : image reçue avant la ligne des étiquettes, reprise telle quelle et rejugée par le code
+  écart noté : ouverture-site (essai 1) : image reçue avant la ligne des étiquettes, reprise telle quelle et rejugée par le code
+  écart noté : ouverture-planche (essai 1) : image reçue avant la ligne des étiquettes, reprise telle quelle et rejugée par le code
+  écart noté : site-ordinateur (essai 1) : image reçue avant la ligne des étiquettes, reprise telle quelle et rejugée par le code
+  écart noté : site-telephone (essai 1) : image reçue avant la ligne des étiquettes, reprise telle quelle et rejugée par le code
+  écart noté : produit-1 (essai 1) : image reçue avant la ligne des étiquettes, reprise telle quelle et rejugée par le code
+  écart noté : produit-2 (essai 1) : image reçue avant la ligne des étiquettes, reprise telle quelle et rejugée par le code
+  écart noté : produit-3 (essai 1) : image reçue avant la ligne des étiquettes, reprise telle quelle et rejugée par le code
+  écart noté : emballage (essai 1) : image reçue avant la ligne des étiquettes, reprise telle quelle et rejugée par le code
+  écart noté : reference-1 (essai 1) : image reçue avant la ligne des étiquettes, reprise telle quelle et rejugée par le code
+  écart noté : reference-2 (essai 1) : image reçue avant la ligne des étiquettes, reprise telle quelle et rejugée par le code
+  écart noté : reference-3 (essai 1) : image reçue avant la ligne des étiquettes, reprise telle quelle et rejugée par le code
+  écart noté : reference-4 (essai 1) : image reçue avant la ligne des étiquettes, reprise telle quelle et rejugée par le code
+  écart noté : reference-5 (essai 1) : image reçue avant la ligne des étiquettes, reprise telle quelle et rejugée par le code
+  écart noté : reference-6 (essai 1) : image reçue avant la ligne des étiquettes, reprise telle quelle et rejugée par le code
+  écart noté : publication-4x5 (essai 2) : image reçue avec la consigne d'avant, déclarée périmée par REJUGER=1, rangée dans passe-3/cases-perimees/ et refaite
+  écart noté : site-telephone (essai 2) : image reçue avec la consigne d'avant, déclarée périmée par REJUGER=1, rangée dans passe-3/cases-perimees/ et refaite
+  écart noté : produit-1 (essai 2) : image reçue avec la consigne d'avant, déclarée périmée par REJUGER=1, rangée dans passe-3/cases-perimees/ et refaite
+  écart noté : produit-2 (essai 2) : image reçue avec la consigne d'avant, déclarée périmée par REJUGER=1, rangée dans passe-3/cases-perimees/ et refaite
+  dépense comptée à la passe 3 : 0,7392 € ; à cette passe : 0,8562 € ; aux passes d'avant (passe-1/, passe-2/) : 1,0293 € ; en tout : 2,6247 €

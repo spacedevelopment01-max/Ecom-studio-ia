@@ -1,0 +1,42 @@
+{
+  "lues": {
+    "titres": {
+      "nom": "Playfair Display",
+      "genre": "serif",
+      "procheDuCatalogue": "Playfair Display"
+    },
+    "textes": {
+      "nom": "Montserrat",
+      "genre": "sans",
+      "procheDuCatalogue": "Nunito"
+    }
+  },
+  "choisies": {
+    "titres": {
+      "cle": "playfair_display",
+      "famille": "Playfair Display",
+      "fichier": "PlayfairDisplay-700.ttf",
+      "poids": 700,
+      "handle": "playfair_display_n7",
+      "lue": "Playfair Display",
+      "remplacee": false
+    },
+    "textes": {
+      "cle": "nunito",
+      "famille": "Nunito",
+      "fichier": "Nunito-400.ttf",
+      "poids": 400,
+      "handle": "nunito_n4",
+      "lue": "Montserrat",
+      "remplacee": true,
+      "pourquoi": "apercu"
+    }
+  },
+  "remplacees": [
+    {
+      "quoi": "textes",
+      "lue": "Montserrat",
+      "prise": "Nunito"
+    }
+  ]
+}

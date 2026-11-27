@@ -1,0 +1,44 @@
+{
+  "adresse": "POST https://api.openai.com/v1/images/edits (multipart)",
+  "champs": {
+    "model": "gpt-image-2.5-sunburst",
+    "prompt": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une photo d'ambiance de la marque. Les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : « Cafés en grains », « Cafés moulus », « Coffrets » ; aucune date, aucune origine, aucun chiffre n'y est ajouté. Aucune personne n'apparaît.\n\nÀ corriger : un texte absent de l'aperçu est écrit sur une étiquette, un emballage ou un objet : retire-le ; les étiquettes ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : « Cafés en grains », « Cafés moulus », « Coffrets » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (des mots absents de l'aperçu sont écrits : garde seulement ses textes, lettre pour lettre).",
+    "quality": "high",
+    "size": "1024x912",
+    "background": "opaque",
+    "output_format": "png",
+    "n": 1
+  },
+  "jointes": [
+    {
+      "role": "apercu",
+      "assetId": null,
+      "sha256": "8b49d64fab3d6e79ae9d87e72b056bcc1e49ff340f6eacd3a40f9ec01f32d376",
+      "octets": 86464,
+      "octetsAvantAllegement": 137591
+    }
+  ],
+  "tailleRecue": "1024x912",
+  "requestId": "req_c0179c995b87420787fd670e1e4cd0ad",
+  "usage": {
+    "input_tokens": 507,
+    "input_tokens_details": {
+      "image_tokens": 210,
+      "text_tokens": 297
+    },
+    "output_tokens": 1514,
+    "output_tokens_details": {
+      "image_tokens": 1514,
+      "text_tokens": 0
+    },
+    "total_tokens": 2021
+  },
+  "renvoye": {
+    "quality": "high",
+    "size": "1024x912",
+    "background": "opaque",
+    "output_format": "png"
+  },
+  "coutMicro": 41783,
+  "dureeMs": 29593
+}

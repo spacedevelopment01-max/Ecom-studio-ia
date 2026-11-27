@@ -2,7 +2,7 @@
   "adresse": "POST https://api.openai.com/v1/images/edits (multipart)",
   "champs": {
     "model": "gpt-image-2.5-sunburst",
-    "prompt": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est la page d'accueil du site, montrée sur un téléphone ; tous les textes de l'écran restent nets et lisibles. Aucune personne n'apparaît.\n\nÀ corriger : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « MOUTURE », « TORRÉFACTION », « ARTISANALE », « MOUTURE », « TORRÉFACTION », « ARTISANALE ») ; un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (7/10, il faut 8).",
+    "prompt": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est la page d'accueil du site, montrée sur un téléphone ; tous les textes de l'écran restent nets et lisibles. Les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : « Cafés en grains », « Cafés moulus », « Coffrets » ; aucune date, aucune origine, aucun chiffre n'y est ajouté. Aucune personne n'apparaît.\n\nÀ corriger : un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (7/10, il faut 8).",
     "quality": "high",
     "size": "768x1712",
     "background": "opaque",
@@ -13,30 +13,32 @@
     {
       "role": "apercu",
       "assetId": null,
-      "sha256": "0ae86290c2cd5e06ec4f7c29f3069776f65e97276d9f839ad4894af2d0180c84",
-      "octets": 144982
+      "sha256": "82b4f56903ac4abd2c5f22ac783b4a48ba64ed3af5bf684b06f3020ba43470c5",
+      "octets": 107305,
+      "octetsAvantAllegement": 144982
     },
     {
       "role": "logo",
       "assetId": null,
-      "sha256": "eaa188c7e9639535b9a1b117d5dd5629030e1158da6b841f14c228222e146ec2",
-      "octets": 718173
+      "sha256": "0b08cf147cd003ba1f4cdf766092a5baf5376f7623a4fedfd3babb4cb4b14439",
+      "octets": 565449,
+      "octetsAvantAllegement": 718173
     }
   ],
   "tailleRecue": "768x1712",
-  "requestId": "req_1c33f8afb2e74050941838e9174ae932",
+  "requestId": "req_f19400d53e104b0d9f5156e54b35dd48",
   "usage": {
-    "input_tokens": 1786,
+    "input_tokens": 1780,
     "input_tokens_details": {
       "image_tokens": 1514,
-      "text_tokens": 272
+      "text_tokens": 266
     },
     "output_tokens": 876,
     "output_tokens_details": {
       "image_tokens": 876,
       "text_tokens": 0
     },
-    "total_tokens": 2662
+    "total_tokens": 2656
   },
   "renvoye": {
     "quality": "high",
@@ -44,6 +46,6 @@
     "background": "opaque",
     "output_format": "png"
   },
-  "coutMicro": 34187,
-  "dureeMs": 21230
+  "coutMicro": 34161,
+  "dureeMs": 25645
 }

@@ -1,0 +1,80 @@
+{
+  "verdict": {
+    "images": [
+      {
+        "case": "reference-4",
+        "identique": true,
+        "textesLus": [
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "COFFRETS",
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "CAFÉS MOULUS",
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "CAFÉS EN GRAINS",
+          "MOUTURE",
+          "TORRÉFACTION",
+          "CAFÉS EN"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": true,
+        "note": 8,
+        "pourquoi": "Même étagère, mêmes sachets kraft et même logo que l'aperçu, en plus net. Sur le sachet de droite, l'étiquette et la phrase du logo sont coupées par le bord, comme dans l'aperçu.",
+        "inventes": []
+      },
+      {
+        "case": "reference-5",
+        "identique": true,
+        "textesLus": [
+          "Café de Qualité"
+        ],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 8,
+        "pourquoi": "Le moulin en bois, son bol métallique, les grains et le café moulu reprennent fidèlement l'aperçu. La plaque porte un texte générique lisible, sans nom de produit ni chiffre.",
+        "inventes": []
+      },
+      {
+        "case": "reference-6",
+        "identique": true,
+        "textesLus": [
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "Cafés en grains",
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "Cafés moulus"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "Le coffret kraft, ses deux sachets et le papier frisé sont fidèles à l'aperçu. Les textes sont propres et correspondent aux produits de la marque.",
+        "inventes": []
+      }
+    ]
+  },
+  "raisons": {
+    "reference-4": [
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « CAFÉ », « CAFÉ », « GRAINS ») (en trop ou mal écrits : « COFFRETS », « CAFÉS », « MOULUS », « CAFÉS », « CAFÉS »)",
+      "un texte est coupé ou collé au bord"
+    ],
+    "reference-5": [
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Café », « de », « Qualité »)"
+    ],
+    "reference-6": [
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Cafés », « en », « grains », « Cafés », « moulus »)"
+    ]
+  },
+  "gardees": []
+}

@@ -2,7 +2,7 @@
   "adresse": "POST https://api.openai.com/v1/images/edits (multipart)",
   "champs": {
     "model": "gpt-image-2.5-sunburst",
-    "prompt": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est une photo produit de la marque. Aucune personne n'apparaît.\n\nÀ corriger : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « L'EXCELLENCE », « ARABICA », « SÉLECTIONNÉ », « AVEC », « PASSION », « TORRÉFIÉ »).",
+    "prompt": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est une photo produit de la marque. Les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : « Cafés en grains », « Cafés moulus », « Coffrets » ; aucune date, aucune origine, aucun chiffre n'y est ajouté. Aucune personne n'apparaît.\n\nÀ corriger : un texte absent de l'aperçu est écrit sur une étiquette, un emballage ou un objet : retire-le ; les étiquettes ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : « Cafés en grains », « Cafés moulus », « Coffrets » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (des mots absents de l'aperçu sont écrits : garde seulement ses textes, lettre pour lettre).",
     "quality": "high",
     "size": "912x1088",
     "background": "opaque",
@@ -13,30 +13,32 @@
     {
       "role": "apercu",
       "assetId": null,
-      "sha256": "c6d5a8efb2540710a503af743afc1b9ac7ada9fc4b68b5a030fdf863bf50eecc",
-      "octets": 175526
+      "sha256": "73087f2eacec75dcda4063923dcad35d885dfd487c300347aed25be9d2f1b3c2",
+      "octets": 116626,
+      "octetsAvantAllegement": 175526
     },
     {
       "role": "logo",
       "assetId": null,
-      "sha256": "eaa188c7e9639535b9a1b117d5dd5629030e1158da6b841f14c228222e146ec2",
-      "octets": 718173
+      "sha256": "0b08cf147cd003ba1f4cdf766092a5baf5376f7623a4fedfd3babb4cb4b14439",
+      "octets": 565449,
+      "octetsAvantAllegement": 718173
     }
   ],
   "tailleRecue": "912x1088",
-  "requestId": "req_0f773fc7491e4d75bde2471e0b7b83a7",
+  "requestId": "req_056dc7d544664587bf117bfd27b595d7",
   "usage": {
-    "input_tokens": 1682,
+    "input_tokens": 1793,
     "input_tokens_details": {
       "image_tokens": 1460,
-      "text_tokens": 222
+      "text_tokens": 333
     },
     "output_tokens": 1437,
     "output_tokens_details": {
       "image_tokens": 1437,
       "text_tokens": 0
     },
-    "total_tokens": 3119
+    "total_tokens": 3230
   },
   "renvoye": {
     "quality": "high",
@@ -44,6 +46,6 @@
     "background": "opaque",
     "output_format": "png"
   },
-  "coutMicro": 48074,
-  "dureeMs": 29183
+  "coutMicro": 48551,
+  "dureeMs": 28582
 }

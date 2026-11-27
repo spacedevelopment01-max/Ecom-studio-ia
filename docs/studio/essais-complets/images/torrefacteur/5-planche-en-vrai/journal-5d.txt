@@ -1,0 +1,19 @@
+(node:165) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:177) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Données de la planche : domaine mouturefrance.fr (disponible), année 2026, disposition standard, phrase « TORRÉFACTION ARTISANALE ».
+Reprise de la passe 3 après le rejugement gratuit (REJUGER=1, rejugement.txt) : gardées sans appel publication-1x1, publication-9x16, ouverture-site, ouverture-planche, site-ordinateur, reference-1, reference-2, reference-3.
+Restent : 9 image(s) refaite(s) une fois à la charge du Studio (publication-4x5, site-telephone, produit-1, produit-2, produit-3, emballage, reference-4, reference-5, reference-6), 4 relecture(s), puis LOGO_HD (4 images et 1 relecture, à la charge du Studio).
+Images reçues avec la consigne d'avant, périmées, rangées à part et refaites : publication-4x5-2, site-telephone-2, produit-1-2, produit-2-2.
+Appel(s) parti(s) sans réponse à la passe 3 (résultat incertain, coût maximal retenu : 0,0906 €) : produit-3-2. Jamais relancé tout seul : refait seulement parce que tu relances toi-même avec REPRENDRE=1.
+Probable de ce qui reste : 1,2589 € ; somme des maxima de ce qui reste : 3,7716 €.
+Plafond conseillé : 3,0000 € (deux fois le probable, arrondi). Déjà compté : 1,7685 € en tout.
+Le plafond 3,0000 € est sous la somme des maxima de ce qui reste 3,7716 € (probable 1,2589 €) : l'essai part quand même. Il s'arrête proprement avant tout appel dont le pire cas dépasserait ce qui reste, garde ses fichiers et dit ce qu'il faudrait pour finir.
+(node:177) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Logos en haute définition : gardés logo-compact, icone, favicon, badge ; refusés deux fois aucun
+9 image(s) gardée(s) sur 17, planche 3072 × 4608, dépense comptée 0,8562 €. Rapport : /home/user/Ecom-studio-ia/data/essai-torrefacteur/5-planche-en-vrai/rapport.txt
+Projet de l'essai : zfgqpwuieua1yq4c (essai.json et etat.json dans /home/user/Ecom-studio-ia/data/essai-torrefacteur/5-planche-en-vrai, pour ecran-planche-en-vrai.mts).
+Reprise de la passe 3 : repris sans appel l'inventaire, publication-1x1, publication-4x5, publication-9x16, ouverture-site, ouverture-planche, site-ordinateur, site-telephone, produit-1, produit-2, produit-3, emballage, reference-1, reference-2, reference-3, reference-4, reference-5, reference-6, relecture publications, relecture site, relecture produits, relecture references ; refait(s) parce que tu as relancé : produit-3 ; dépense en tout 2,6247 €.
+code 0

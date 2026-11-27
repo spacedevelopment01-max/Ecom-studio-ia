@@ -1,0 +1,51 @@
+{
+  "adresse": "POST https://api.openai.com/v1/images/edits (multipart)",
+  "champs": {
+    "model": "gpt-image-2.5-sunburst",
+    "prompt": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est la photo des supports de marque (carton, sac, ruban adhésif, carte de remerciement). Les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : « Cafés en grains », « Cafés moulus », « Coffrets » ; aucune date, aucune origine, aucun chiffre n'y est ajouté. Aucune personne n'apparaît.\n\nÀ corriger : un texte absent de l'aperçu est écrit sur une étiquette, un emballage ou un objet : retire-le ; les étiquettes ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : « Cafés en grains », « Cafés moulus », « Coffrets » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (des mots absents de l'aperçu sont écrits : garde seulement ses textes, lettre pour lettre) ; un logo foncé est posé sur un fond sombre : il doit y être clair ; sa fidélité n'est pas au niveau (6/10, il faut 8).",
+    "quality": "high",
+    "size": "1344x1024",
+    "background": "opaque",
+    "output_format": "png",
+    "n": 1
+  },
+  "jointes": [
+    {
+      "role": "apercu",
+      "assetId": null,
+      "sha256": "2f26c7fe45dce1ff8ccba1c99478440910866439201cff59363da8473699855c",
+      "octets": 453136,
+      "octetsAvantAllegement": 688899
+    },
+    {
+      "role": "logo",
+      "assetId": null,
+      "sha256": "0b08cf147cd003ba1f4cdf766092a5baf5376f7623a4fedfd3babb4cb4b14439",
+      "octets": 565449,
+      "octetsAvantAllegement": 718173
+    }
+  ],
+  "tailleRecue": "1344x1024",
+  "requestId": "req_eafe0fe51f8349a0b0347c769e75d77c",
+  "usage": {
+    "input_tokens": 2376,
+    "input_tokens_details": {
+      "image_tokens": 1990,
+      "text_tokens": 386
+    },
+    "output_tokens": 1500,
+    "output_tokens_details": {
+      "image_tokens": 1500,
+      "text_tokens": 0
+    },
+    "total_tokens": 3876
+  },
+  "renvoye": {
+    "quality": "high",
+    "size": "1344x1024",
+    "background": "opaque",
+    "output_format": "png"
+  },
+  "coutMicro": 54051,
+  "dureeMs": 31079
+}
