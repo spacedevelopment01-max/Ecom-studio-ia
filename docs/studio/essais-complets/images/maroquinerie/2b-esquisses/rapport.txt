@@ -1,0 +1,71 @@
+Essai des esquisses de logo — client « Havane » (maroquinerie artisanale qui fabrique et vend en ligne des sacs, des portefeuilles et des ceintures en cuir), type « produits »
+Plafond de l'essai : 1,0000 €
+Le plafond 1,0000 € est sous la somme des maxima 1,8269 € (probable 0,1464 €) : l'essai part quand même. Il s'arrête proprement avant tout appel dont le pire cas dépasserait ce qui reste, garde ses fichiers et dit ce qu'il faudrait pour finir.
+
+Devis de l'essai des esquisses (fonctions du devis du Studio, aucun appel) :
+- métier · anthropic:claude-opus-5-5 (effort low) · toujours · charge client · probable 0,0258 € · au plus 0,1572 €
+- métier réécrit (une fois) · anthropic:claude-opus-5-5 (effort low) · si le contrôle refuse le métier · charge Studio · probable 0,0258 € · au plus 0,1572 €
+- planche de six esquisses · openai:gpt-image-2.5-sunburst · toujours · charge client · probable 0,0098 € · au plus 0,0455 €
+- planche de six esquisses · openai:gpt-image-2.6-flare · toujours · charge client · probable 0,0300 € · au plus 0,0722 €
+- relecture des esquisses (un appel) · anthropic:claude-opus-5-5 (effort medium) · toujours · charge client · probable 0,0808 € · au plus 0,2605 €
+- remplacement 1 : nouvelle planche du même modèle · openai:gpt-image-2.5-sunburst · si une esquisse est écartée · charge Studio · probable 0,0098 € · au plus 0,0455 €
+- remplacement 1 : nouvelle planche du même modèle · openai:gpt-image-2.6-flare · si une esquisse est écartée · charge Studio · probable 0,0300 € · au plus 0,0722 €
+- relecture du remplacement 1 · anthropic:claude-opus-5-5 (effort medium) · si une esquisse est écartée · charge Studio · probable 0,0808 € · au plus 0,2605 €
+- remplacement 2 : nouvelle planche du même modèle · openai:gpt-image-2.5-sunburst · si une esquisse est encore écartée (tour 2) · charge Studio · probable 0,0098 € · au plus 0,0455 €
+- remplacement 2 : nouvelle planche du même modèle · openai:gpt-image-2.6-flare · si une esquisse est encore écartée (tour 2) · charge Studio · probable 0,0300 € · au plus 0,0722 €
+- relecture du remplacement 2 · anthropic:claude-opus-5-5 (effort medium) · si une esquisse est encore écartée (tour 2) · charge Studio · probable 0,0808 € · au plus 0,2605 €
+- remplacement 3 : nouvelle planche du même modèle · openai:gpt-image-2.5-sunburst · si une esquisse est encore écartée (tour 3) · charge Studio · probable 0,0098 € · au plus 0,0455 €
+- remplacement 3 : nouvelle planche du même modèle · openai:gpt-image-2.6-flare · si une esquisse est encore écartée (tour 3) · charge Studio · probable 0,0300 € · au plus 0,0722 €
+- relecture du remplacement 3 · anthropic:claude-opus-5-5 (effort medium) · si une esquisse est encore écartée (tour 3) · charge Studio · probable 0,0808 € · au plus 0,2605 €
+Probable, sans reprise : 0,1464 € (devis du Studio : 0,1464 €)
+Probable, si le métier est réécrit et un tour de remplacement fait (deux planches et leur relecture) : 0,2929 €
+Plafond minimal pour aller au bout à coup sûr (somme des maxima, remplacements compris jusqu'à la borne) : 1,8269 €
+  dont plafond du client de la tâche 0,5353 € et borne du Studio 1,2916 € (devisDeLaRecherche)
+Hors plafond : une réponse de texte mal formée à réparer coûterait au plus 1,6675 € de plus en tout.
+
+Phrase du métier : un atelier de maroquinerie qui fabrique et vend en ligne des sacs, des portefeuilles et des ceintures en cuir
+Ce que la piste explore : la maroquinerie (savoir-faire)
+
+Texte exact envoyé aux deux modèles (premier tour) :
+Crée une planche de recherche graphique pour Havane, un atelier de maroquinerie qui fabrique et vend en ligne des sacs, des portefeuilles et des ceintures en cuir. Présente six esquisses de logos contemporains sur une grille de trois colonnes et deux lignes. Explore différentes manières de traduire le savoir-faire de la maroquinerie dans le dessin des lettres et des signes graphiques. Chaque piste doit pouvoir devenir une véritable marque commerciale. Travaille sur fond blanc, sans maquette de présentation. Varie les couleurs d'une esquisse à l'autre.
+
+Vrai résultat : 11 esquisse(s) correcte(s) sur 12 dès les deux planches.
+Remplacées : 1 (en 1 tour(s) de remplacement, à la charge du Studio).
+- planche gpt-image-2.5-sunburst, case 4 : Le symbole en arche posé sur une base ne se lit pas : ni sac ni objet en cuir clairement reconnaissable, l'idée reste floue.
+
+Esquisses gardées par le relecteur : 12 (remplacements compris, à la charge du Studio) — planche-contact.png
+Esquisse 01 : esquisse-01.png ; piste « un H formé de sangles de cuir cousues et rivetées » ; phrase sous le nom : « MAROQUINERIE » (proposable telle quelle)
+Esquisse 02 : esquisse-02.png ; piste « un logotype à empattements avec une ligature AV en arabesque » ; phrase sous le nom : « MAROQUINERIE / SACS PORTEFEUILLES CEINTURES » (proposable telle quelle)
+Esquisse 03 : esquisse-03.png ; piste « un H dont la barre est une lanière surpiquée, dans un cercle » ; phrase sous le nom : « MAROQUINERIE » (proposable telle quelle)
+Esquisse 04 : esquisse-04.png ; piste « un H dont la barre est une feuille de tabac » ; phrase sous le nom : « MAROQUINERIE » (proposable telle quelle)
+Esquisse 05 : esquisse-05.png ; piste « une lanière de cuir cousue en forme d'infini » ; phrase sous le nom : « MAROQUINERIE » (proposable telle quelle)
+Esquisse 06 : esquisse-06.png ; piste « un H dont la barre centrale est un ruban de cuir qui se vrille » ; phrase sous le nom : « MAROQUINERIE » (proposable telle quelle)
+Esquisse 07 : esquisse-07.png ; piste « un H en pièces de cuir cousues avec une barre ondulée » ; phrase sous le nom : « MAROQUINERIE » (proposable telle quelle)
+Esquisse 08 : esquisse-08.png ; piste « le nom dans le contour d'une peau de cuir » ; phrase sous le nom : « MAROQUINERIE » (proposable telle quelle)
+Esquisse 09 : esquisse-09.png ; piste « un H enlacé par une ceinture à boucle » ; phrase sous le nom : « MAROQUINERIE » (proposable telle quelle)
+Esquisse 10 : esquisse-10.png ; piste « le nom traversant un cercle avec une petite peau de cuir » ; phrase sous le nom : « MAROQUINERIE » (proposable telle quelle)
+Esquisse 11 : esquisse-11.png ; piste « un sac à main dont le corps encadre le nom » ; phrase sous le nom : « MAROQUINERIE » (proposable telle quelle)
+Esquisse 12 : esquisse-12.png ; piste « un H barré d'une lanière de cuir cousue en vague » ; phrase sous le nom : « MAROQUINERIE » (proposable telle quelle)
+
+Esquisses écartées (jamais montrées au client) : 6 — planche-contact-complete.png
+- gpt-image-2.5-sunburst, case 4 : Le symbole en arche posé sur une base ne se lit pas : ni sac ni objet en cuir clairement reconnaissable, l'idée reste floue. (ecartee-gpt-image-2.5-sunburst-case-4.png)
+- remplacement 1, gpt-image-2.5-sunburst, case 4 : nom mal écrit : « HAYANE » (ecartee-remplacement-1-gpt-image-2.5-sunburst-case-4.png)
+- remplacement 1, gpt-image-2.5-sunburst, case 5 : Le monogramme se lit comme un H mêlé à un N et un D, des lettres absentes du nom, ce qui brouille l'initiale de la marque. (ecartee-remplacement-1-gpt-image-2.5-sunburst-case-5.png)
+- remplacement 1, gpt-image-2.5-sunburst, case 2 : correcte, mais pas nécessaire : les 6 de ce modèle étaient déjà là (ecartee-remplacement-1-gpt-image-2.5-sunburst-case-2.png)
+- remplacement 1, gpt-image-2.5-sunburst, case 3 : correcte, mais pas nécessaire : les 6 de ce modèle étaient déjà là (ecartee-remplacement-1-gpt-image-2.5-sunburst-case-3.png)
+- remplacement 1, gpt-image-2.5-sunburst, case 6 : correcte, mais pas nécessaire : les 6 de ce modèle étaient déjà là (ecartee-remplacement-1-gpt-image-2.5-sunburst-case-6.png)
+
+Verdict complet du relecteur : relecture-1-verdict.json, relecture-2-verdict.json
+
+Notes de la recherche :
+- remplacement 1 : 1 esquisse(s) de gpt-image-2.5-sunburst, à la charge du Studio
+
+Dépense réelle comptée par le Studio, appel par appel (réservé au plus → réglé) :
+- 4100889d55d3cdfdba575526f0ee4774d173654a7559aa498d38b28528fb76d6 · anthropic:claude-opus-5-5 · charge du client · réservé 0,1531 € → réglé 0,0068 € (settled)
+- 0fc4a7f77e8be85741053b763450b4a7fc2e3e9cbbcf454d162f3a06bc2250e3 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0148 € → réglé 0,0094 € (settled)
+- a58e59e0a9874033a50fcc17e0308d82994e72e6160e738cfc7a6b99cb0c8036 · openai:gpt-image-2.6-flare · charge du client · réservé 0,0415 € → réglé 0,0298 € (settled)
+- bc6fddce2369eb9914e5906eae422ce353e9601a30057c38283c470f61b6058d · anthropic:claude-opus-5-5 · charge du client · réservé 0,2512 € → réglé 0,0659 € (settled)
+- e6d057fc7ffaf8f71ca9575c9eb9b15575bc424c9ce7d3a97eb54fc2ae4fd124 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0183 € → réglé 0,0101 € (settled)
+- 0138b703160abfe01ac0bec1c14c1d0cdb64998f3a3665d1dd6bb558166da0ba · anthropic:claude-opus-5-5 · charge du Studio · réservé 0,2408 € → réglé 0,0362 € (settled)
+
+Dépense réelle comptée par le Studio : 0,1581 €

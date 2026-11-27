@@ -1,0 +1,161 @@
+{
+  "esquisses": [
+    {
+      "numero": 1,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "Un H en sangles de cuir surpiquées avec un rivet : l'idée de la maroquinerie se comprend tout de suite et le dessin est net.",
+      "piste": "un H formé de sangles de cuir cousues et rivetées",
+      "phraseSousLeNom": [
+        "MAROQUINERIE"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 2,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "Un logotype élégant dont la ligature AV, prolongée par un trait fin, donne une signature raffinée et lisible.",
+      "piste": "un logotype à empattements avec une ligature AV en arabesque",
+      "phraseSousLeNom": [
+        "MAROQUINERIE",
+        "SACS PORTEFEUILLES CEINTURES"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 3,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "Un H cerclé dont la barre devient une lanière cousue et incurvée : le dessin est simple, net et facile à décliner.",
+      "piste": "un H dont la barre est une lanière surpiquée, dans un cercle",
+      "phraseSousLeNom": [
+        "MAROQUINERIE"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 4,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": false,
+      "pourquoi": "Le symbole en arche posé sur une base ne se lit pas : ni sac ni objet en cuir clairement reconnaissable, l'idée reste floue.",
+      "piste": "une arche en trait fin au-dessus du nom",
+      "phraseSousLeNom": [
+        "MAROQUINERIE"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 5,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "Un H dont la barre devient une feuille de tabac, clin d'œil au nom Havane : l'idée est claire et le dessin sobre.",
+      "piste": "un H dont la barre est une feuille de tabac",
+      "phraseSousLeNom": [
+        "MAROQUINERIE"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 6,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "Une lanière de cuir surpiquée formant un infini : le symbole est fort et lisible, même si la couture peut évoquer une route.",
+      "piste": "une lanière de cuir cousue en forme d'infini",
+      "phraseSousLeNom": [
+        "MAROQUINERIE"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 7,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "Un H découpé dans des pièces de cuir surpiquées, à la barre ondulée : le lien avec la maroquinerie est évident et le dessin net.",
+      "piste": "un H en pièces de cuir cousues avec une barre ondulée",
+      "phraseSousLeNom": [
+        "MAROQUINERIE"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 8,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "Havane",
+      "ok": true,
+      "pourquoi": "Le contour de peau de cuir qui encadre un nom à empattements donne un emblème classique, clair et immédiatement associé au cuir.",
+      "piste": "le nom dans le contour d'une peau de cuir",
+      "phraseSousLeNom": [
+        "MAROQUINERIE"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 9,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "Un H traversé par une ceinture bouclée : l'idée est claire et percutante, malgré une boucle un peu sommaire.",
+      "piste": "un H enlacé par une ceinture à boucle",
+      "phraseSousLeNom": [
+        "MAROQUINERIE"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 10,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "Un nom posé dans un cercle avec un petit pictogramme de peau de cuir : le tout est sobre, net et facile à décliner.",
+      "piste": "le nom traversant un cercle avec une petite peau de cuir",
+      "phraseSousLeNom": [
+        "MAROQUINERIE"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 11,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "Un sac à main en aplat dont le corps laisse passer le nom en réserve : l'image est immédiate et lisible.",
+      "piste": "un sac à main dont le corps encadre le nom",
+      "phraseSousLeNom": [
+        "MAROQUINERIE"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 12,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "Un H à empattements traversé par une lanière surpiquée en diagonale : l'image est élégante et nette.",
+      "piste": "un H barré d'une lanière de cuir cousue en vague",
+      "phraseSousLeNom": [
+        "MAROQUINERIE"
+      ],
+      "phraseBienEcrite": true
+    }
+  ]
+}

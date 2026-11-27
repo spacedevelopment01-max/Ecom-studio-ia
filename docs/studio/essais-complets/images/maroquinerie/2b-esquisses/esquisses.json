@@ -1,0 +1,229 @@
+{
+  "nom": "Havane",
+  "metier": {
+    "metier": "un atelier de maroquinerie qui fabrique et vend en ligne des sacs, des portefeuilles et des ceintures en cuir",
+    "court": "la maroquinerie",
+    "piste": "savoir-faire"
+  },
+  "compte": {
+    "voulues": 12,
+    "correctesDesLesPlanches": 11,
+    "remplacees": 1,
+    "lesquelles": [
+      {
+        "modele": "gpt-image-2.5-sunburst",
+        "case": 4,
+        "raison": "Le symbole en arche posé sur une base ne se lit pas : ni sac ni objet en cuir clairement reconnaissable, l'idée reste floue."
+      }
+    ],
+    "toursDeRemplacement": 1,
+    "complete": true
+  },
+  "gardees": [
+    {
+      "numero": 1,
+      "fichier": "esquisse-01.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 1,
+      "piste": "un H formé de sangles de cuir cousues et rivetées",
+      "pourquoi": "Un H en sangles de cuir surpiquées avec un rivet : l'idée de la maroquinerie se comprend tout de suite et le dessin est net.",
+      "phrase": {
+        "texte": "MAROQUINERIE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 2,
+      "fichier": "esquisse-02.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 2,
+      "piste": "un logotype à empattements avec une ligature AV en arabesque",
+      "pourquoi": "Un logotype élégant dont la ligature AV, prolongée par un trait fin, donne une signature raffinée et lisible.",
+      "phrase": {
+        "texte": "MAROQUINERIE / SACS PORTEFEUILLES CEINTURES",
+        "lignes": [
+          "MAROQUINERIE",
+          "SACS PORTEFEUILLES CEINTURES"
+        ],
+        "ok": true
+      }
+    },
+    {
+      "numero": 3,
+      "fichier": "esquisse-03.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 3,
+      "piste": "un H dont la barre est une lanière surpiquée, dans un cercle",
+      "pourquoi": "Un H cerclé dont la barre devient une lanière cousue et incurvée : le dessin est simple, net et facile à décliner.",
+      "phrase": {
+        "texte": "MAROQUINERIE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 4,
+      "fichier": "esquisse-04.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 5,
+      "piste": "un H dont la barre est une feuille de tabac",
+      "pourquoi": "Un H dont la barre devient une feuille de tabac, clin d'œil au nom Havane : l'idée est claire et le dessin sobre.",
+      "phrase": {
+        "texte": "MAROQUINERIE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 5,
+      "fichier": "esquisse-05.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 6,
+      "piste": "une lanière de cuir cousue en forme d'infini",
+      "pourquoi": "Une lanière de cuir surpiquée formant un infini : le symbole est fort et lisible, même si la couture peut évoquer une route.",
+      "phrase": {
+        "texte": "MAROQUINERIE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 6,
+      "fichier": "esquisse-06.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 2,
+      "case": 1,
+      "piste": "un H dont la barre centrale est un ruban de cuir qui se vrille",
+      "pourquoi": "Le H dont la barre se plie comme une bande de cuir est net, lisible et parle tout de suite de maroquinerie.",
+      "phrase": {
+        "texte": "MAROQUINERIE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 7,
+      "fichier": "esquisse-07.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 1,
+      "piste": "un H en pièces de cuir cousues avec une barre ondulée",
+      "pourquoi": "Un H découpé dans des pièces de cuir surpiquées, à la barre ondulée : le lien avec la maroquinerie est évident et le dessin net.",
+      "phrase": {
+        "texte": "MAROQUINERIE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 8,
+      "fichier": "esquisse-08.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 2,
+      "piste": "le nom dans le contour d'une peau de cuir",
+      "pourquoi": "Le contour de peau de cuir qui encadre un nom à empattements donne un emblème classique, clair et immédiatement associé au cuir.",
+      "phrase": {
+        "texte": "MAROQUINERIE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 9,
+      "fichier": "esquisse-09.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 3,
+      "piste": "un H enlacé par une ceinture à boucle",
+      "pourquoi": "Un H traversé par une ceinture bouclée : l'idée est claire et percutante, malgré une boucle un peu sommaire.",
+      "phrase": {
+        "texte": "MAROQUINERIE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 10,
+      "fichier": "esquisse-10.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 4,
+      "piste": "le nom traversant un cercle avec une petite peau de cuir",
+      "pourquoi": "Un nom posé dans un cercle avec un petit pictogramme de peau de cuir : le tout est sobre, net et facile à décliner.",
+      "phrase": {
+        "texte": "MAROQUINERIE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 11,
+      "fichier": "esquisse-11.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 5,
+      "piste": "un sac à main dont le corps encadre le nom",
+      "pourquoi": "Un sac à main en aplat dont le corps laisse passer le nom en réserve : l'image est immédiate et lisible.",
+      "phrase": {
+        "texte": "MAROQUINERIE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 12,
+      "fichier": "esquisse-12.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 6,
+      "piste": "un H barré d'une lanière de cuir cousue en vague",
+      "pourquoi": "Un H à empattements traversé par une lanière surpiquée en diagonale : l'image est élégante et nette.",
+      "phrase": {
+        "texte": "MAROQUINERIE",
+        "ok": true
+      }
+    }
+  ],
+  "ecartees": [
+    {
+      "fichier": "ecartee-gpt-image-2.5-sunburst-case-4.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 4,
+      "raison": "Le symbole en arche posé sur une base ne se lit pas : ni sac ni objet en cuir clairement reconnaissable, l'idée reste floue."
+    },
+    {
+      "fichier": "ecartee-remplacement-1-gpt-image-2.5-sunburst-case-4.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 2,
+      "case": 4,
+      "raison": "nom mal écrit : « HAYANE »"
+    },
+    {
+      "fichier": "ecartee-remplacement-1-gpt-image-2.5-sunburst-case-5.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 2,
+      "case": 5,
+      "raison": "Le monogramme se lit comme un H mêlé à un N et un D, des lettres absentes du nom, ce qui brouille l'initiale de la marque."
+    },
+    {
+      "fichier": "ecartee-remplacement-1-gpt-image-2.5-sunburst-case-2.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 2,
+      "case": 2,
+      "raison": "correcte, mais pas nécessaire : les 6 de ce modèle étaient déjà là"
+    },
+    {
+      "fichier": "ecartee-remplacement-1-gpt-image-2.5-sunburst-case-3.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 2,
+      "case": 3,
+      "raison": "correcte, mais pas nécessaire : les 6 de ce modèle étaient déjà là"
+    },
+    {
+      "fichier": "ecartee-remplacement-1-gpt-image-2.5-sunburst-case-6.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 2,
+      "case": 6,
+      "raison": "correcte, mais pas nécessaire : les 6 de ce modèle étaient déjà là"
+    }
+  ],
+  "reprise": true
+}

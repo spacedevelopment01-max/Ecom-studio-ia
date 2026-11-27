@@ -1,0 +1,82 @@
+{
+  "esquisses": [
+    {
+      "numero": 1,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "Le H dont la barre se plie comme une bande de cuir est net, lisible et parle tout de suite de maroquinerie.",
+      "piste": "un H dont la barre centrale est un ruban de cuir qui se vrille",
+      "phraseSousLeNom": [
+        "MAROQUINERIE"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 2,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "Logotype sobre et lisible ; la goutte cuivrée dans le A apporte une touche chaleureuse et mémorisable.",
+      "piste": "un logotype dont le second A sans barre abrite une goutte cuivrée",
+      "phraseSousLeNom": [
+        "SACS • PORTEFEUILLES • CEINTURES"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 3,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "La pochette à rabat et bouton doré forme un pictogramme simple, net et immédiatement lié au métier.",
+      "piste": "une pochette à rabat avec bouton doré au-dessus du nom",
+      "phraseSousLeNom": [
+        "MAROQUINERIE DURABLE"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 4,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAYANE",
+      "ok": false,
+      "pourquoi": "Le V dessiné avec une boucle se lit comme un Y : on lit « HAYANE » et non « HAVANE ».",
+      "piste": "un V dont la pointe forme une boucle comme un lacet de cuir",
+      "phraseSousLeNom": [
+        "ATELIER DE MAROQUINERIE"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 5,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": false,
+      "pourquoi": "Le monogramme se lit comme un H mêlé à un N et un D, des lettres absentes du nom, ce qui brouille l'initiale de la marque.",
+      "piste": "un H à diagonale fermé par un demi-cercle à texture de cuir",
+      "phraseSousLeNom": [
+        "L’ART DU CUIR"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 6,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "Logotype à empattements élégant et très lisible, rehaussé d'un losange cuivré, simple mais assez classique.",
+      "piste": "un logotype à empattements souligné d'un filet et d'un losange cuivré",
+      "phraseSousLeNom": [
+        "SACS PORTEFEUILLES CEINTURES"
+      ],
+      "phraseBienEcrite": true
+    }
+  ]
+}
