@@ -13,7 +13,7 @@ import { planchesMontrees } from "./journey";
 import { caseDuDomaine } from "./planche-de-marque";
 import { L } from "../i18n-server";
 import { ETIQUETTE_AMBIANCE, LIBELLE_DU_SITE, imagesMontrees, type EtatPlancheEnVrai } from "./planche-en-vrai";
-import { LIBELLE_DES_VERSIONS } from "./planche-en-vrai-code";
+import { LIBELLE_DES_VERSIONS, estUneVersionDuLogo } from "./planche-en-vrai-code";
 import { libelleDeLElement, sansIdentifiantsDeCase } from "./planche-en-vrai-libelles";
 
 type Shot = { url: string; w: number; h: number };
@@ -36,7 +36,7 @@ export type BrandSheet = {
    */
   planches: { key: string; name: string; url: string; download: string; w: number; h: number; caseDuDomaine: string }[];
   /**
-   * La planche en vrai (25 novembre 2026) : les dix versions du logo en PNG haute définition sur fond transparent, chaque
+   * La planche en vrai (25 novembre 2026) : les huit versions du logo en PNG haute définition sur fond transparent, chaque
    * couleur avec son code à copier, les deux polices avec leur nom à copier et leur fichier, chaque image en haute
    * définition, la planche entière, et « Tout télécharger » (zip). Null sans planche en vrai.
    */
@@ -62,7 +62,8 @@ export function vueEnVrai(ev: EtatPlancheEnVrai | undefined, projectId: string, 
   const libelle = libelleDeLElement;
   return {
     planche: { url: url(ev.planche.id), download: url(ev.planche.id, true), w: ev.planche.w, h: ev.planche.h },
-    logos: ev.logos.map((x) => ({ version: x.version, label: L(LIBELLE_DES_VERSIONS[x.version].fr, LIBELLE_DES_VERSIONS[x.version].en), url: url(x.id), download: url(x.id, true) })),
+    // Ni logo compact ni logo empilé (27 novembre 2026) : un ancien projet qui a encore leurs fichiers ne les montre plus.
+    logos: ev.logos.filter((x) => estUneVersionDuLogo(x.version)).map((x) => ({ version: x.version, label: L(LIBELLE_DES_VERSIONS[x.version].fr, LIBELLE_DES_VERSIONS[x.version].en), url: url(x.id), download: url(x.id, true) })),
     couleurs: ev.palette.map((c) => ({ hex: c.hex, nom: c.nom, roles: [] })),
     polices: ev.polices ? (["titres", "textes"] as const).map((role) => { const p = ev.polices![role]; return { role, famille: p.famille, fichier: p.fichier, url: `/api/syna/fonts/${p.fichier}`, lue: p.lue, remplacee: p.remplacee }; }) : [],
     images: imagesMontrees(ev).map((e) => ({ element: e.element, label: e.ambiance ? `${libelle(e.element)} — ${L(ETIQUETTE_AMBIANCE.fr, ETIQUETTE_AMBIANCE.en)}` : e.element === "site" ? L(LIBELLE_DU_SITE.fr, LIBELLE_DU_SITE.en) : libelle(e.element as never), url: url(e.id!), download: url(e.id!, true), w: e.w ?? 0, h: e.h ?? 0, ambiance: !!e.ambiance })),
@@ -115,7 +116,7 @@ export function brandSheetOf(projectId: string): BrandSheet {
 
 /**
  * Avec la planche en vrai, une seule section des logos (25 novembre 2026 : « Ta charte et tes fichiers » répétait « Tes
- * logos ») : après les dix versions, le symbole seul, le favicon 32, l'icône 512, l'avatar des réseaux et le logo vectoriel,
+ * logos ») : après les huit versions, le symbole seul, le favicon 32, l'icône 512, l'avatar des réseaux et le logo vectoriel,
  * chacun en haute définition à télécharger seul ; jamais un fichier en double.
  */
 export function avecLesFichiersDuLogo(v: VueEnVrai | null, f: { symbole?: string | null; favicons?: { f32: string; f512: string; avatar: string } | null; svg?: string | null }, url: (id: string, download?: boolean) => string): VueEnVrai | null {

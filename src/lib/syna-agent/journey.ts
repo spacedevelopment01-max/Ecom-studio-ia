@@ -174,7 +174,7 @@ export type Journey = {
     studio?: boolean };
   /**
    * La planche en vrai de l'identité choisie (25 novembre 2026, réglage `sina.planche.envrai`) : la planche de
-   * démonstration refaite à l'identique en haute définition, ses dix versions du logo, sa palette mesurée et ses polices.
+   * démonstration refaite à l'identique en haute définition, ses huit versions du logo, sa palette mesurée et ses polices.
    */
   plancheEnVrai?: import("./planche-en-vrai").EtatPlancheEnVrai;
   /**

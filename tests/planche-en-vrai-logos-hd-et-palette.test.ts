@@ -1,7 +1,7 @@
 /**
  * LA PLANCHE EN VRAI D'ÉCUME, 26 NOVEMBRE 2026 (aucun appel payant : appels simulés, vrais fichiers de l'essai dans
  * tests/fixtures/ecume-planche-en-vrai) :
- *  1. les quatre petites versions du logo (compact, icône, favicon, badge) refaites en haute définition, en option, à partir
+ *  1. les petites versions du logo (icône, favicon, badge ; le compact est retiré le 27 novembre 2026) refaites en haute définition, en option, à partir
  *     de leur tuile de l'aperçu, logo officiel joint ; relues ; une reprise à la charge du Studio ; refusées deux fois,
  *     l'agrandissement reste et SINA le dit ; le fond retiré par le code ; leurs fichiers dans le zip ; sur la planche,
  *     seulement si la case ne change pas visiblement ;
@@ -23,7 +23,7 @@ const inv = P.InventaireSchema.parse(JSON.parse(fs.readFileSync(`${F}/inventaire
 const fidele = async (tuile: Buffer) => sharp(tuile).resize(1088, 1088, { fit: "contain", background: (await sharp(tuile).stats()).dominant, kernel: "lanczos3" }).png().toBuffer();
 const verdict = (version: string, o: Partial<P.LogoEnHdRelu> = {}): P.LogoEnHdRelu => ({ version, memeForme: true, memesLettres: true, texteCirculaire: "aucun", textesDeLApercu: [], textesLus: [], memesCouleurs: true, ajout: false, texteCoupe: false, note: 9, pourquoi: "", ...o });
 
-describe("1. les quatre petites versions du logo en haute définition", async () => {
+describe("1. les petites versions du logo en haute définition (sans le compact depuis le 27 novembre 2026)", async () => {
   const T = await import("@/lib/syna-agent/planche-en-vrai-tache");
   const { chargeDuStudio } = await import("@/lib/ai/trace");
   const { TAILLES_DE_LA_PLANCHE_EN_VRAI } = await import("@/lib/ai/media-providers");
@@ -47,8 +47,8 @@ describe("1. les quatre petites versions du logo en haute définition", async ()
   it("la requête de chaque version : sa tuile de l'aperçu puis le logo officiel joint, la règle mot pour mot et la ligne de l'élément, la taille carrée la plus grande permise", async () => {
     const s = simule();
     const res = await T.refaireLesLogosEnHdDeLaPlanche({ ai: s.ai, nom: "Écume", personnes: false, logo, tuiles: decoupe.apercus });
-    expect(s.demandes.map((x) => x.d.element)).toEqual(["logo-compact", "icone", "favicon", "badge"]);
-    const quoi = { "logo-compact": "C'est la version compacte du logo.", icone: "C'est l'icône seule.", favicon: "C'est le favicon.", badge: "C'est le badge rond." } as const;
+    expect(s.demandes.map((x) => x.d.element)).toEqual(["icone", "favicon", "badge"]);
+    const quoi = { icone: "C'est l'icône seule.", favicon: "C'est le favicon.", badge: "C'est le badge rond." } as const;
     const logoSurBlanc = await sharp(logo).flatten({ background: "#FFFFFF" }).png().toBuffer();
     for (const { d, cle } of s.demandes) {
       expect(cle).toBe(`logo-hd-${d.element}`);
@@ -61,9 +61,9 @@ describe("1. les quatre petites versions du logo en haute définition", async ()
     // Carrée, et la plus grande des tailles carrées permises.
     const carrees = TAILLES_DE_LA_PLANCHE_EN_VRAI.filter((t) => t.split("x")[0] === t.split("x")[1]).map((t) => Number(t.split("x")[0]));
     expect(Math.max(...carrees)).toBe(1088);
-    // Une seule relecture pour les quatre, chaque version face à sa tuile, par le relecteur des images de la planche en vrai.
+    // Une seule relecture pour toutes, chaque version face à sa tuile, par le relecteur des images de la planche en vrai.
     expect(s.relectures).toHaveLength(1);
-    expect(s.relectures[0].labels).toEqual(["logo-compact aperçu", "logo-compact refaite", "icone aperçu", "icone refaite", "favicon aperçu", "favicon refaite", "badge aperçu", "badge refaite"]);
+    expect(s.relectures[0].labels).toEqual(["icone aperçu", "icone refaite", "favicon aperçu", "favicon refaite", "badge aperçu", "badge refaite"]);
     expect(T.modeleDe("relecture").effort).toBe("high");
     expect(P.RELECTEUR_DES_LOGOS_EN_HD).toMatch(/même forme que l'aperçu/);
     expect(P.RELECTEUR_DES_LOGOS_EN_HD).toMatch(/micro-texte décoratif : ne le juge pas/);
@@ -89,10 +89,10 @@ describe("1. les quatre petites versions du logo en haute définition", async ()
     // Le badge refusé deux fois, l'icône refusée puis gardée.
     const s = simule((v, tour) => (v === "badge" ? { texteCirculaire: "different", note: 6 } : v === "icone" && tour === 1 ? { ajout: true } : {}));
     const res = await T.refaireLesLogosEnHdDeLaPlanche({ ai: s.ai, nom: "Écume", personnes: false, logo, tuiles: decoupe.apercus });
-    expect(s.demandes.map((x) => x.cle)).toEqual(["logo-hd-logo-compact", "logo-hd-icone", "logo-hd-favicon", "logo-hd-badge", "logo-hd-icone-r1", "logo-hd-badge-r1"]);
+    expect(s.demandes.map((x) => x.cle)).toEqual(["logo-hd-icone", "logo-hd-favicon", "logo-hd-badge", "logo-hd-icone-r1", "logo-hd-badge-r1"]);
     expect(s.relectures.map((x) => x.cle)).toEqual(["relecture-logos-hd", "relecture-logos-hd-r1"]);
     // La reprise, et elle seule, à la charge du Studio.
-    expect(s.demandes.map((x) => x.studio)).toEqual([false, false, false, false, true, true]);
+    expect(s.demandes.map((x) => x.studio)).toEqual([false, false, false, true, true]);
     expect(s.relectures.map((x) => x.studio)).toEqual([false, true]);
     const reprise = s.demandes.find((x) => x.cle === "logo-hd-badge-r1")!.d.texte;
     expect(reprise).toBe(`${P.texteDuLogoEnHd({ version: "badge", nom: "Écume", personnes: false })}\n\nÀ corriger : son texte circulaire n'est pas celui de l'aperçu ; sa fidélité n'est pas au niveau (6/10, il faut 8).`);
@@ -105,11 +105,11 @@ describe("1. les quatre petites versions du logo en haute définition", async ()
     const det = await (await import("@/lib/syna-agent/brand-images")).logoDetoure(logo, "#C14706");
     const l = det.ok ? det.png : logo, sep = await C.separerSymbole(l);
     const v = await C.versionsDuLogo({ logo: l, separation: sep, couleur: "#C44912", sombre: "#C44912", clair: "#F6E8DA", monoClair: "#A7B89B", nom: "Écume", bas: "SAVONNERIE ARTISANALE", police: T.POLICE_DU_BADGE, tuiles: decoupe.apercus, hd: gardes });
-    expect(v.enHd).toEqual(["logo-compact", "icone", "favicon"]);
-    // Depuis le 27 novembre 2026, le logo empilé d'Écume, identique au principal, est aussi repris de l'aperçu.
-    expect(v.depuisLApercu).toEqual(["logo-empile", "badge"]);
-    expect(v.versions["logo-compact"].equals(gardes.get("logo-compact")!)).toBe(true);
-    expect(v.symbole.equals(gardes.get("logo-compact")!)).toBe(true);
+    expect(v.enHd).toEqual(["icone", "favicon"]);
+    // Depuis le 27 novembre 2026, ni logo compact ni logo empilé ; le symbole de la marque est l'icône refaite.
+    expect(v.depuisLApercu).toEqual(["badge"]);
+    expect(v.versions.icone.equals(gardes.get("icone")!)).toBe(true);
+    expect(v.symbole.equals(gardes.get("icone")!)).toBe(true);
     const { runWithLang } = await import("@/lib/i18n-server");
     const dit = runWithLang({ ui: "fr", content: "fr" }, () => T.phrasesDesLogos(v, ["badge"]));
     expect(dit).toEqual(["J'ai refait en haute définition le badge, mais cette version n'a pas passé ma relecture, même refaite : elle n'est pas identique à ta planche choisie. Je garde donc celle de ta planche, agrandie, telle que tu l'as vue."]);
@@ -159,7 +159,7 @@ describe("1. les quatre petites versions du logo en haute définition", async ()
     expect((await C.caseDuLogoEnHd(data, info.width, t, etiree)).raison).toMatch(/proportions/);
   });
 
-  it("le réassemblage d'Écume avec LOGO_HD : les quatre versions refaites, leurs fichiers dans le zip à la place des agrandissements ; un plafond sous le minimal ne lance rien", async () => {
+  it("le réassemblage d'Écume avec LOGO_HD : les petites versions refaites (sans le compact), leurs fichiers dans le zip à la place des agrandissements ; un plafond sous le minimal ne lance rien", async () => {
     const { reassemblerLEssaiEnVrai, chiffresDuReassemblage } = await import("../scripts/syna-recette/essai-planche-en-vrai-outil");
     const { ECUME } = await import("./clients-d-essai");
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), "logos-hd-")), essai = path.join(dir, "essai");
@@ -178,22 +178,23 @@ describe("1. les quatre petites versions du logo en haute définition", async ()
     expect(s.demandes).toHaveLength(0);
     const sortie = path.join(dir, "4c");
     const r = await reassemblerLEssaiEnVrai({ dossier: essai, sortie, planche, logo: logoF, logoHd: true, plafondEuros: (c.maxMicro / 1e6 + 0.01).toFixed(2), ai: () => sansAppel as never, aiLogos: () => s.ai });
-    expect(r.logosEnHd).toMatchObject({ versions: ["logo-compact", "icone", "favicon", "badge"], gardees: ["logo-compact", "icone", "favicon", "badge"], refusees: [] });
-    // Depuis le 27 novembre 2026, le logo empilé d'Écume, identique au principal, est aussi repris de l'aperçu.
-    expect(r.logosDeLApercu).toEqual(["logo-empile"]);
+    expect(r.logosEnHd).toMatchObject({ versions: ["icone", "favicon", "badge"], gardees: ["icone", "favicon", "badge"], refusees: [] });
+    // Depuis le 27 novembre 2026, ni logo compact ni logo empilé : plus rien n'est repris de l'aperçu.
+    expect(r.logosDeLApercu ?? []).toEqual([]);
     // Ce qui part et revient est écrit tout de suite.
     expect(fs.existsSync(path.join(sortie, "logos-hd", "logo-hd-badge-texte-envoye.txt"))).toBe(true);
     expect(fs.existsSync(path.join(sortie, "logos-hd", "relecture-logos-hd-verdict.json"))).toBe(true);
     // L'état : les versions en haute définition, plus reprises de l'aperçu ; plus de proposition de les refaire.
     const etat = JSON.parse(fs.readFileSync(path.join(sortie, "etat.json"), "utf8")) as P.EtatPlancheEnVrai;
-    expect(etat.logosEnHd).toEqual(["logo-compact", "icone", "favicon", "badge"]);
-    expect(etat.logosDeLApercu).toEqual(["logo-empile"]);
+    expect(etat.logosEnHd).toEqual(["icone", "favicon", "badge"]);
+    expect(etat.logosDeLApercu ?? []).toEqual([]);
     expect(etat.issues.join(" ")).not.toMatch(/Je peux les refaire en haute définition/);
     // Le zip : chaque fichier est la version en haute définition (sans fond), jamais l'agrandissement d'environ 460 pixels.
     const { assetData, getAsset } = await import("@/lib/library");
     const { fichiersDeLaMarque } = await import("@/lib/syna-agent/brand-zip");
     const zip = fichiersDeLaMarque(etat, "Écume", (id) => (getAsset(id) ? assetData(getAsset(id)!) : null), () => null);
-    for (const v of ["logo-compact", "icone", "favicon", "badge"] as const) {
+    expect(Object.keys(zip).join(" ")).not.toMatch(/compact|empile/);
+    for (const v of ["icone", "favicon", "badge"] as const) {
       const f = Buffer.from(zip[`logos/${v}.png`]);
       expect(f.equals(fs.readFileSync(path.join(sortie, "logos", `${v}.png`))), v).toBe(true);
       expect(f.equals(fs.readFileSync(path.join(sortie, "logos-hd", `${v}-gardee-sans-fond.png`))), v).toBe(true);
@@ -203,41 +204,41 @@ describe("1. les quatre petites versions du logo en haute définition", async ()
     }
     // Le favicon 512 vient de la version en haute définition.
     expect(zip["logos/favicon-512.png"]).toBeTruthy();
-    expect(fs.readFileSync(path.join(sortie, "rapport.txt"), "utf8")).toMatch(/Logos en haute définition : logo-compact, icone, favicon, badge/);
+    expect(fs.readFileSync(path.join(sortie, "rapport.txt"), "utf8")).toMatch(/Logos en haute définition : icone, favicon, badge/);
 
     // Dans le Studio, sur la planche en vrai d'un projet (sans LOGO_HD au réassemblage) : chaque appel a son point de reprise,
     // chaque image reçue est gardée ; le badge refusé deux fois garde son agrandissement, et SINA le dit.
     const r0 = await reassemblerLEssaiEnVrai({ dossier: essai, sortie: path.join(dir, "4b"), planche, logo: logoF, ai: () => sansAppel as never });
     const ev0 = JSON.parse(fs.readFileSync(path.join(dir, "4b", "etat.json"), "utf8")) as P.EtatPlancheEnVrai;
-    expect(ev0.logosDeLApercu?.sort()).toEqual(["badge", "favicon", "icone", "logo-compact", "logo-empile"]);
+    expect(ev0.logosDeLApercu?.sort()).toEqual(["badge", "favicon", "icone"]);
     const { one } = await import("@/lib/db");
     const who = { userId: one<{ user_id: string }>("SELECT user_id FROM projects WHERE id=?", r0.projectId)!.user_id, projectId: r0.projectId };
     const route = { key: "A", name: "Écume", slogan: "SAVONNERIE / ARTISANALE", palette: { dark: "#C14706" }, board: { planche: { image: { id: ev0.demo, w: 1536, h: 2304 }, logo: "", domaine: "ecumefrance.fr", statut: "disponible", annee: 2026, essais: 1, at: 0 } } } as never;
     const etapes: string[] = [], s2 = simule((v) => (v === "badge" ? { texteCirculaire: "different" } : {}));
     const ev = await T.refaireLesLogosEnHdEnVrai({ ctx: { step: async (k, fn) => { etapes.push(k); return fn(); } }, ai: s2.ai, who, route, etat: { ...ev0, inventaire: inv }, personnes: false });
-    expect(etapes).toEqual(["brand:envrai:logo-hd-logo-compact", "brand:envrai:logo-hd-icone", "brand:envrai:logo-hd-favicon", "brand:envrai:logo-hd-badge", "brand:envrai:relecture-logos-hd", "brand:envrai:logo-hd-badge-r1", "brand:envrai:relecture-logos-hd-r1"]);
-    expect(ev.logosEnHd).toEqual(["logo-compact", "icone", "favicon"]);
+    expect(etapes).toEqual(["brand:envrai:logo-hd-icone", "brand:envrai:logo-hd-favicon", "brand:envrai:logo-hd-badge", "brand:envrai:relecture-logos-hd", "brand:envrai:logo-hd-badge-r1", "brand:envrai:relecture-logos-hd-r1"]);
+    expect(ev.logosEnHd).toEqual(["icone", "favicon"]);
     expect(ev.logosEnHdRefuses).toEqual(["badge"]);
-    expect(ev.logosDeLApercu).toEqual(["logo-empile", "badge"]);
+    expect(ev.logosDeLApercu).toEqual(["badge"]);
     expect(ev.planche?.id).not.toBe(ev0.planche?.id);
     const { all } = await import("@/lib/db");
-    expect(all<{ meta: string }>("SELECT meta FROM assets WHERE project_id=? AND role='planche-en-vrai-brut'", r0.projectId).filter((a) => /"logoEnHd":true/.test(a.meta))).toHaveLength(5);
+    expect(all<{ meta: string }>("SELECT meta FROM assets WHERE project_id=? AND role='planche-en-vrai-brut'", r0.projectId).filter((a) => /"logoEnHd":true/.test(a.meta))).toHaveLength(4);
     const ditS = ev.issues.join(" ");
     expect(ditS).toMatch(/J'ai refait en haute définition le badge, mais cette version n'a pas passé ma relecture/);
     expect(ditS).not.toMatch(/Je peux les refaire en haute définition/);
     // Une réfection des logos par le code garde les versions en haute définition.
     const ev2 = await T.refaireLesLogosEnVrai({ who, route, etat: ev });
-    expect(ev2.logosEnHd).toEqual(["logo-compact", "icone", "favicon"]);
+    expect(ev2.logosEnHd).toEqual(["icone", "favicon"]);
     expect(assetData(getAsset(ev2.logos.find((l) => l.version === "icone")!.id)!).equals(assetData(getAsset(ev.logos.find((l) => l.version === "icone")!.id)!))).toBe(true);
   });
 
-  it("le devis : le premier tour au prix d'une image carrée de la planche en vrai, la reprise des quatre comprise dans le plafond minimal", () => {
+  it("le devis : le premier tour au prix d'une image carrée de la planche en vrai, la reprise de toutes comprise dans le plafond minimal", () => {
     const d = T.devisDesLogosEnHd();
-    expect(d.images).toBe(4);
+    expect(d.images).toBe(3);
     expect(d.relectures).toBe(1);
     expect(d.maxMicro).toBe(2 * d.repriseMicro);
     expect(d.siToutEstRefaitMicro).toBe(2 * d.probableMicro);
-    expect(d.probableMicro).toBe(354_721);
+    expect(d.probableMicro).toBe(294_421);
   });
 });
 

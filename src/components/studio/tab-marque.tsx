@@ -28,8 +28,8 @@ export function BoutonCopier({ texte }: { texte: string }) {
 }
 
 /**
- * La planche en vrai dans l'onglet Marque (25 novembre 2026) : la planche entière, « Tout télécharger », les dix versions
- * du logo en PNG haute définition, chaque couleur avec son code et « Copier », les deux polices (nom à copier, fichier),
+ * La planche en vrai dans l'onglet Marque (25 novembre 2026) : la planche entière, « Tout télécharger », les huit versions
+ * du logo (ni compact ni empilé) en PNG haute définition, chaque couleur avec son code et « Copier », les deux polices (nom à copier, fichier),
  * chaque image en haute définition, téléchargeable seule.
  */
 export function PlancheEnVrai({ v, charte }: { v: VueEnVrai; charte?: { book: string; pages: number } | null }) {

@@ -125,7 +125,8 @@ describe("point 3 : le texte de la planche, le contrôle gratuit des valeurs, la
     expect(P.ligneDesNomsDesProduits(valeurs.produits)).toBe(ligne);
     expect(t).toContain(`Montrer clairement :\n- cafés en grains\n- cafés moulus\n- coffrets\n${ligne}\nLes visuels doivent être propres`);
     // Le texte réel envoyé pour B (avant ses raisons de reprise), mot pour mot, à cette ligne près.
-    expect(t.replace(`${ligne}\n`, "")).toBe(fs.readFileSync(`${F}/planche-B-2-texte-envoye.txt`, "utf8").split("\n\nÀ corriger : ")[0]);
+    // Depuis le 27 novembre 2026, la liste des logos ne nomme plus le logo compact ni le logo empilé.
+    expect(t.replace(`${ligne}\n`, "")).toBe(P.sansLeCompactNiLEmpile(fs.readFileSync(`${F}/planche-B-2-texte-envoye.txt`, "utf8").split("\n\nÀ corriger : ")[0]));
     // Aucune origine, aucune variété n'est nommée dans le texte (rien qui donne l'idée d'en inventer).
     expect(t).not.toMatch(/origine|variété|gamme|arabica|éthiopie|brésil/i);
     // Un site de marque (des prestations) ne change pas ; le texte des preuves non plus.

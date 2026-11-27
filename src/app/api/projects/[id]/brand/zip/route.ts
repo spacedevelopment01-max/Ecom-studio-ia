@@ -1,5 +1,5 @@
 /**
- * « Tout télécharger » de l'onglet Marque (planche en vrai, 25 novembre 2026) : les dix versions du logo, les favicons,
+ * « Tout télécharger » de l'onglet Marque (planche en vrai, 25 novembre 2026) : les huit versions du logo, les favicons,
  * les images en haute définition, la planche entière, les codes des couleurs et les polices, en un seul zip. Lecture
  * seule, gratuite.
  */

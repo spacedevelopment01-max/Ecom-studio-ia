@@ -102,7 +102,7 @@ describe("la reprise d'une première passe interrompue de la planche en vrai (ap
     expect(appels[0]).toBe("image:site-ordinateur");
     expect(appels.filter((a) => a.startsWith("image:"))).toHaveLength(12);
     expect(appels.filter((a) => a.startsWith("relecture:"))).toHaveLength(4);
-    expect(appels.filter((a) => a.startsWith("logo:"))).toEqual(["logo:logo-hd-logo-compact", "logo:logo-hd-icone", "logo:logo-hd-favicon", "logo:logo-hd-badge", "logo:relecture-logos-hd"]);
+    expect(appels.filter((a) => a.startsWith("logo:"))).toEqual(["logo:logo-hd-icone", "logo:logo-hd-favicon", "logo:logo-hd-badge", "logo:relecture-logos-hd"]);
     expect(r2.reprise).toMatchObject({ passe: 1, refaits: ["site-ordinateur"], sansReponse: ["site-ordinateur-1"] });
     expect(r2.reprise!.reprises).toEqual(["l'inventaire", "publication-1x1", "publication-4x5", "publication-9x16", "ouverture-site", "ouverture-planche"]);
     // L'image reçue est celle qui est relue et gardée, telle quelle.
@@ -110,7 +110,7 @@ describe("la reprise d'une première passe interrompue de la planche en vrai (ap
     expect(r2.cases.find((c) => c.element === "publication-1x1")?.gardee).toBe(true);
     expect(r2.etat!.elements.filter((x) => !x.id).map((x) => x.element)).toEqual([]);
     expect(r2.planche).toMatchObject({ w: 3072, h: 4608 });
-    expect(r2.etat!.logosEnHd).toEqual(["logo-compact", "icone", "favicon", "badge"]);
+    expect(r2.etat!.logosEnHd).toEqual(["icone", "favicon", "badge"]);
     for (const f of ["etat.json", "essai.json", "planche-en-vrai.png", "passe-1/rapport.txt", "passe-1/depense.json", "passe-1/cases/site-ordinateur-1-texte-envoye.txt"]) expect(fs.existsSync(path.join(e.sortie, f)), f).toBe(true);
     expect(r2.conversationId).toBeTruthy();
     const rapport2 = fs.readFileSync(path.join(e.sortie, "rapport.txt"), "utf8");

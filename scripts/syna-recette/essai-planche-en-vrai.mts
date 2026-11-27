@@ -62,7 +62,7 @@
  * gardées, les logos, la marque et la planche réassemblée sont rangés dans le projet de l'essai (essai.json du dossier de
  * l'essai, dans la base DATA_DIR ; s'il n'y est pas, un projet fictif est créé et c'est dit), etat.json et essai.json sont
  * écrits dans le dossier de sortie, le parcours est réécrit : ecran-planche-en-vrai.mts se lance sur ce nouvel etat.json.
- * d) avec LOGO_HD=1 et PLAFOND_ESSAI_EUR, les quatre petites versions du logo reprises de l'aperçu (compact, icône, favicon,
+ * d) avec LOGO_HD=1 et PLAFOND_ESSAI_EUR, les petites versions du logo reprises de l'aperçu (icône, favicon,
  * badge) sont refaites en haute définition, à la charge du Studio (`refaireLesLogosEnHdDeLaPlanche`) : chacune à partir de
  * sa tuile, logo officiel joint, relues en un appel, une reprise des refusées ; une refusée deux fois garde son
  * agrandissement, et SINA le dit. Leurs fichiers remplacent les agrandissements (logos/, zip) ; sur la planche, chacune
@@ -72,7 +72,7 @@
  * DEVIS_SEULEMENT=1 REPRENDRE=… LOGO_HD=1 (même commande).
  *
  * LOGO_HD SUR LE CHEMIN NORMAL (26 novembre 2026), sans REASSEMBLER : LOGO_HD=1 sur la commande de l'étape 4. Après la
- * planche en vrai, les quatre petites versions du logo reprises de l'aperçu (sans symbole séparable) sont refaites en haute
+ * planche en vrai, les petites versions du logo reprises de l'aperçu (sans symbole séparable) sont refaites en haute
  * définition par la fonction du Studio (`refaireLesLogosEnHdEnVrai`), à la charge du Studio : leurs appels sont écrits dans
  * logos-hd/, puis les logos et la planche sont refaits par le code avec les versions gardées, avant etat.json et le
  * parcours. Avec un symbole séparable, rien n'est repris de l'aperçu : aucun appel de plus. Un seul plafond pour la planche
@@ -110,7 +110,7 @@ import path from "node:path";
     process.exit(0);
   }
   if (devisSeul && (process.env.REASSEMBLER || reprendre.length)) { const { devisDuReassemblage } = await import("./essai-planche-en-vrai-outil"); console.log((await devisDuReassemblage(reprendre, { logoHd })).join("\n")); process.exit(0); }
-  // Le chemin normal avec LOGO_HD : la planche en vrai, puis les quatre petites versions du logo en haute définition.
+  // Le chemin normal avec LOGO_HD : la planche en vrai, puis les petites versions du logo en haute définition.
   if (devisSeul && logoHd) { const { devisDuCheminNormal } = await import("./essai-planche-en-vrai-outil"); console.log((await devisDuCheminNormal({ logoHd })).texte.join("\n")); process.exit(0); }
   if (devisSeul) { console.log(devisEnTexteEnVrai(await devisDeLEssaiEnVrai()).join("\n")); process.exit(0); }
   if (reprendre.length && !process.env.REASSEMBLER) { console.error("REPRENDRE ne vaut qu'avec REASSEMBLER (un essai de la planche en vrai déjà fait) : rien n'est lancé."); process.exit(1); }

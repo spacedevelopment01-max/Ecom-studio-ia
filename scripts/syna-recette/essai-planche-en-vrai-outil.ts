@@ -302,7 +302,7 @@ export type ResultatEnVrai = {
   /** Le projet de l'essai et le fil où son parcours est enregistré (l'onglet Marque le lit). */
   projectId?: string; conversationId?: string;
   /**
-   * LOGO_HD sur le chemin normal : les quatre petites versions du logo reprises de l'aperçu (sans symbole séparable),
+   * LOGO_HD sur le chemin normal : les petites versions du logo reprises de l'aperçu (sans symbole séparable),
    * refaites en haute définition après la planche en vrai, à la charge du Studio (`refaireLesLogosEnHdEnVrai`). Vide :
    * aucune version reprise de l'aperçu (symbole séparable), rien à refaire.
    */
@@ -329,7 +329,7 @@ export function lignesPourReprendre(res: Pick<ResultatEnVrai, "arret" | "inventa
   ];
 }
 /**
- * Le devis du chemin normal avec LOGO_HD (aucun appel) : la planche en vrai, puis les quatre petites versions du logo en
+ * Le devis du chemin normal avec LOGO_HD (aucun appel) : la planche en vrai, puis les petites versions du logo en
  * haute définition, à la charge du Studio, reprise des refusées comprise. Le plafond minimal exact est la somme des deux.
  */
 export async function devisDuCheminNormal(o: { logoHd?: boolean } = {}): Promise<{ planche: DevisDeLEssaiEnVrai; logos: ReturnType<typeof import("../../src/lib/syna-agent/planche-en-vrai-tache").devisDesLogosEnHd> | null; plafondMinimalMicro: number; probableMicro: number; probableAvecReprisesMicro: number; texte: string[] }> {
@@ -340,7 +340,7 @@ export async function devisDuCheminNormal(o: { logoHd?: boolean } = {}): Promise
   return {
     planche, logos, plafondMinimalMicro, probableMicro, probableAvecReprisesMicro,
     texte: [...devisEnTexteEnVrai(planche), ...(logos ? [
-      `LOGO_HD, sur le chemin normal, à la charge du Studio : les quatre petites versions du logo (compact, icône, favicon, badge), seulement celles reprises de l'aperçu, ${logos.images} images et ${logos.relectures} relecture, puis une reprise des refusées ; probable ${euros(logos.probableMicro)} (si tout est refait une fois : ${euros(logos.siToutEstRefaitMicro)}), au plus ${euros(logos.maxMicro)}`,
+      `LOGO_HD, sur le chemin normal, à la charge du Studio : les petites versions du logo (icône, favicon, badge), seulement celles reprises de l'aperçu, ${logos.images} images et ${logos.relectures} relecture, puis une reprise des refusées ; probable ${euros(logos.probableMicro)} (si tout est refait une fois : ${euros(logos.siToutEstRefaitMicro)}), au plus ${euros(logos.maxMicro)}`,
       `Plafond minimal exact de la commande (planche en vrai et LOGO_HD, somme des maxima, reprises comprises) : ${euros(plafondMinimalMicro)} ; probable ${euros(probableMicro)} (si tout est refait une fois : ${euros(probableAvecReprisesMicro)})`,
     ] : [])],
   };
@@ -582,7 +582,7 @@ const png = (f: string, quoi: string) => {
  */
 export async function essaiDeLaPlancheEnVrai(o: {
   sortie: string; plafondEuros: string; planche: string; logo: string; client: ClientDeLEssai; donnees: DonneesDeLaPlanche; ai?: (q: Qui) => PlancheEnVraiAi;
-  /** LOGO_HD=1 : les quatre petites versions du logo en haute définition, à la charge du Studio, après la planche en vrai. */
+  /** LOGO_HD=1 : les petites versions du logo en haute définition, à la charge du Studio, après la planche en vrai. */
   logoHd?: boolean; aiLogos?: (q: Qui) => LogosEnHdAi;
   /** Le métier court de la recherche du logo (esquisses.json, « metier.court ») : le bas du badge sans phrase, comme dans le Studio. */
   metierCourt?: string | null;
@@ -858,7 +858,7 @@ export async function essaiDeLaPlancheEnVrai(o: {
       : `un appel a échoué, jamais relancé : ${messageAvecCause(e).slice(0, 700)}`;
 
   ecrireFichier("fiche-du-client.txt", `${fiche}\n`);
-  // LOGO_HD : la borne du Studio couvre aussi les quatre petites versions en haute définition (reprise comprise).
+  // LOGO_HD : la borne du Studio couvre aussi les petites versions en haute définition (reprise comprise).
   const devisLogos = o.logoHd ? T.devisDesLogosEnHd() : null;
   // Comme dans le Studio (brand-finish.ts) : la phrase choisie sous le logo est la ligne du logo ; sans elle, le métier court.
   const ligneDuLogo = donnees.phrase || null, metierCourt = o.metierCourt?.trim() || null;
@@ -966,7 +966,7 @@ export type ResultatDuReassemblage = {
   cases: RejugementDeCase[]; gardees: number; planche: string; comparaison: string;
   palette: { hex: string; nom: string }[]; logosDeLApercu: string[];
   reprise?: { elements: NomElement[]; devis: { maxMicro: number; probableMicro: number }; depenseMicro: number; gardees: NomElement[] };
-  /** Les quatre petites versions du logo refaites en haute définition (LOGO_HD) : gardées, refusées deux fois, posées sur la planche. */
+  /** Les petites versions du logo refaites en haute définition (LOGO_HD) : gardées, refusées deux fois, posées sur la planche. */
   logosEnHd?: { versions: VersionEnHd[]; devis: { maxMicro: number; probableMicro: number }; depenseMicro: number; gardees: VersionEnHd[]; refusees: VersionEnHd[]; surLaPlanche: string[] };
   arret?: string; notes: string[];
   /** Le projet de la base d'essai où le réassemblage est enregistré, son fil, l'etat.json écrit (relu par l'écran). */
@@ -985,7 +985,7 @@ export async function devisDuReassemblage(elements: readonly NomElement[], o: { 
     "Devis du réassemblage (fonctions du devis du Studio, aucun appel ; tout à la charge du Studio) :",
     "- a) réassemblage par le code : 0 € ; b) rejugement des images de l'essai : 0 €",
     `- c) reprise de ${elements.join(", ") || "aucune case"} : ${d.images} image(s), ${d.relectures} relecture(s) ; probable ${euros(d.probableMicro)}, au plus ${euros(d.maxMicro)}`,
-    ...(l ? [`- d) LOGO_HD, les quatre petites versions du logo en haute définition (compact, icône, favicon, badge) : ${l.images} images et ${l.relectures} relecture, puis une reprise des refusées (au plus ${l.images} images et ${l.relectures} relecture) ; probable ${euros(l.probableMicro)} (si tout est refait une fois : ${euros(l.siToutEstRefaitMicro)}), au plus ${euros(l.maxMicro)}`] : []),
+    ...(l ? [`- d) LOGO_HD, les petites versions du logo en haute définition (icône, favicon, badge) : ${l.images} images et ${l.relectures} relecture, puis une reprise des refusées (au plus ${l.images} images et ${l.relectures} relecture) ; probable ${euros(l.probableMicro)} (si tout est refait une fois : ${euros(l.siToutEstRefaitMicro)}), au plus ${euros(l.maxMicro)}`] : []),
     `Plafond minimal exact pour la reprise${l ? " et les logos" : ""} (somme des maxima, reprises comprises) : ${euros(c.maxMicro)}`,
     `Probable en tout : ${euros(c.probableMicro)}${l ? ` (si tout est refait une fois : ${euros(c.siToutEstRefaitMicro)})` : ""}`,
   ];
@@ -1007,7 +1007,7 @@ export async function devisDuReassemblage(elements: readonly NomElement[], o: { 
  */
 export async function reassemblerLEssaiEnVrai(o: {
   dossier: string; sortie: string; planche: string; logo: string; reprendre?: NomElement[]; plafondEuros?: string; ai?: (q: Qui) => PlancheEnVraiAi;
-  /** d) Les quatre petites versions du logo en haute définition, à la charge du Studio (LOGO_HD=1). */
+  /** d) Les petites versions du logo en haute définition, à la charge du Studio (LOGO_HD=1). */
   logoHd?: boolean; aiLogos?: (q: Qui) => LogosEnHdAi;
   /**
    * Le fichier du client (CLIENT_JSON) : ses faits à montrer, quand le client de l'essai (essai.json, écrit avant ses
@@ -1064,7 +1064,7 @@ export async function reassemblerLEssaiEnVrai(o: {
   const det2 = await logoDetoure(logoFini, palette0.dark), logo = det2.ok ? det2.png : logoFini;
   const route = { key: "A", name: nom, slogan: donnees.phrase, palette: palette0, board: { planche: { image: { id: "", w: 1536, h: 2304 }, logo: "", domaine: donnees.domaine, statut: donnees.statut, annee: donnees.annee, essais: 1, at: 0, ...(donnees.finitions?.length ? { finitions: donnees.finitions } : {}) } } } as unknown as import("../../src/lib/syna-agent/brand-routes").Route;
 
-  // c) La reprise, seulement si elle est demandée, pour les cases encore refusées ; d) les quatre petites versions du logo en
+  // c) La reprise, seulement si elle est demandée, pour les cases encore refusées ; d) les petites versions du logo en
   // haute définition, seulement avec LOGO_HD. Un seul plafond pour les deux ; sous la somme des maxima (reprises comprises),
   // l'essai part quand même et s'arrête proprement avant l'appel dont le pire cas dépasserait ce qui reste.
   let reprise: ResultatDuReassemblage["reprise"], logosEnHd: ResultatDuReassemblage["logosEnHd"], arret: string | undefined;
@@ -1253,7 +1253,7 @@ async function repriseDesCases(o: {
 }
 
 /**
- * d) LES QUATRE PETITES VERSIONS DU LOGO EN HAUTE DÉFINITION, à la charge du Studio (LOGO_HD=1), par la fonction du Studio
+ * d) LES PETITES VERSIONS DU LOGO EN HAUTE DÉFINITION, à la charge du Studio (LOGO_HD=1), par la fonction du Studio
  * (`refaireLesLogosEnHdDeLaPlanche`) : chacune refaite à partir de sa tuile de l'aperçu, logo officiel joint, relues en un
  * appel, une reprise des refusées ; sous la borne `devisDesLogosEnHd` et le plafond de l'essai (posé par l'appelant). Ce qui
  * part et ce qui revient est écrit tout de suite dans logos-hd/ (un arrêt ne perd rien). Une panne arrête, jamais relancée.

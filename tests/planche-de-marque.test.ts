@@ -103,7 +103,8 @@ describe("la phrase des données vérifiées", async () => {
     // Sans photo de personne ni accord écrit : « aucune personne visible », dans la même phrase.
     expect(P.phraseDesDonneesVerifiees({ nom: "Tenon", annee: 2026, domaine: d, personnes: false })).toMatch(/ni aucun avis ; aucune personne visible\.$/);
     const t = P.texteDeLaPlanche({ nom: "Tenon", valeurs: TENON, annee: 2026, domaine: d, personnes: false });
-    expect(t.startsWith(fs.readFileSync(`${F}/tenon-prompt.txt`, "utf8"))).toBe(true);
+    // Le texte des preuves, sans le logo compact ni le logo empilé (27 novembre 2026).
+    expect(t.startsWith(P.sansLeCompactNiLEmpile(fs.readFileSync(`${F}/tenon-prompt.txt`, "utf8")))).toBe(true);
     expect(t.endsWith("ni aucun avis ; aucune personne visible.")).toBe(true);
     // La reprise : les raisons du relecteur à la toute fin.
     expect(P.texteDeLaPlanche({ nom: "Tenon", valeurs: TENON, annee: 2026, domaine: d, personnes: false, raisons: ["une faute"] }).endsWith("aucune personne visible.\n\nÀ corriger : une faute.")).toBe(true);
@@ -445,7 +446,7 @@ describe("la phrase choisie sous le logo, reprise mot pour mot sur sa planche (2
 
   it("sans phrase (« aucune » ou rien de choisi) : le texte, la demande au relecteur, sa réponse et l'appel sont ceux d'avant", async () => {
     expect(P.texteDeLaPlanche({ ...donnees, phrase: undefined })).toBe(P.texteDeLaPlanche(donnees));
-    expect(P.texteDeLaPlanche({ ...donnees, phrase: [] })).toBe(`${fs.readFileSync(`${F}/tenon-prompt.txt`, "utf8")}\n${P.phraseDesDonneesVerifiees(donnees)}`);
+    expect(P.texteDeLaPlanche({ ...donnees, phrase: [] })).toBe(`${P.sansLeCompactNiLEmpile(fs.readFileSync(`${F}/tenon-prompt.txt`, "utf8"))}\n${P.phraseDesDonneesVerifiees(donnees)}`);
     expect(P.demandeAuRelecteurDeLaPlanche({ ...attendu, phrase: [], texte: "t" })).toBe(P.demandeAuRelecteurDeLaPlanche({ ...attendu, texte: "t" }));
     expect(P.demandeAuRelecteurDeLaPlanche({ ...attendu, texte: "t" })).not.toMatch(/phrasesLues|phrase écrite sous son logo/);
     // Une réponse qui porterait des phrases lues sans phrase choisie : ignorée, rien ne change.
@@ -474,5 +475,28 @@ describe("la phrase choisie sous le logo, reprise mot pour mot sur sa planche (2
     expect(P.phraseDuLogoFini(g, "logo4abcd")).toBeUndefined();
     expect(P.phraseDuLogoFini(g, "inconnu")).toBeUndefined();
     expect(P.phraseDuLogoFini(undefined, "logo6abcd")).toBeUndefined();
+  });
+});
+
+describe("ni logo compact ni logo empilé dans le texte envoyé (27 novembre 2026)", async () => {
+  const P = await import("@/lib/syna-agent/planche-de-marque");
+  const MOTS = "« En même temps logo Compact et logo empiler j'en veux plus sur la planche et nul part »";
+  it(`${MOTS} : seules les deux lignes qui les nomment sont retirées ; tout le reste du texte de base est mot pour mot ; le texte des preuves ne change pas`, () => {
+    const d = { domaine: "tenon.fr", statut: "disponible" as const };
+    const preuve = fs.readFileSync(`${F}/tenon-prompt.txt`, "utf8");
+    const t = P.texteDeLaPlanche({ nom: "Tenon", valeurs: TENON, annee: 2026, domaine: d, personnes: false });
+    expect(t).not.toMatch(/logo empilé|logo compact/);
+    // Les deux lignes, et elles seules, manquent ; les huit autres variantes restent, dans leur ordre.
+    const avant = preuve.split("\n"), apres = t.split("\n");
+    expect(avant.filter((l) => !apres.includes(l))).toEqual(["- logo empilé", "- logo compact"]);
+    expect(t).toContain("- logo principal\n- logo secondaire horizontal\n- icône seule\n- favicon\n- version monochrome foncée\n- version monochrome claire\n- version inversée sur fond sombre\n- version badge / sceau\nToutes les variantes doivent rester cohérentes entre elles.");
+    expect(t.startsWith(P.sansLeCompactNiLEmpile(preuve))).toBe(true);
+    expect(P.sansLeCompactNiLEmpile(preuve).length).toBe(preuve.length - "- logo empilé\n- logo compact\n".length);
+    // Le texte des preuves, lui, refait toujours Tenon à l'identique.
+    expect(P.texteDesPreuves("Tenon", TENON)).toBe(preuve);
+    // Une planche déjà payée avec le texte d'avant est reconnue (jamais repayée).
+    expect(P.texteDeLaPlanche({ nom: "Tenon", valeurs: TENON, annee: 2026, domaine: d, personnes: false, avecLeCompactEtLEmpile: true }).startsWith(preuve)).toBe(true);
+    // Une forme inattendue arrête tout avant l'envoi.
+    expect(() => P.sansLeCompactNiLEmpile("rien")).toThrow(/Texte de base inattendu/);
   });
 });

@@ -280,12 +280,26 @@ export function phraseDesDonneesVerifiees(o: { nom: string; annee: number; domai
 }
 
 /**
- * LE TEXTE ENVOYÉ : celui des preuves (avec la phrase sous le logo, s'il y en a une), puis la phrase des données
- * vérifiées, puis (reprise) les raisons du refus. La phrase est contrôlée mot pour mot avant l'envoi : absente, rien
- * n'est envoyé.
+ * NI LOGO COMPACT NI LOGO EMPILÉ (27 novembre 2026, essai réel de Havane ; les mots du propriétaire : « En même temps logo
+ * Compact et logo empiler j'en veux plus sur la planche et nul part »). Dans le texte envoyé, la liste du système de logos
+ * perd ses deux lignes qui les nomment (« - logo empilé », « - logo compact ») ; tout le reste du texte de base reste mot
+ * pour mot, et le texte des preuves (Tenon et Racine) n'est pas touché. Les huit variantes restantes se répartissent sur la
+ * rangée du bloc 01 : la disposition n'en impose pas le nombre de cases. Une forme inattendue arrête tout avant l'envoi.
  */
-export function texteDeLaPlanche(o: { nom: string; valeurs: ValeursDuMetier; annee: number; domaine: DomaineDeLaPlanche; personnes: boolean; raisons?: readonly string[]; phrase?: readonly string[]; /** Les faits à montrer (27 novembre 2026) : la ligne des mentions vraies, seulement quand il en a donné. */ faits?: FaitsPermis }): string {
-  const base = `${texteAvecLesMentionsVraies(texteDesPreuves(o.nom, o.valeurs, o.phrase, { nomsDesProduits: true }), o.valeurs, o.faits)}\n${phraseDesDonneesVerifiees(o)}`;
+export const VERSIONS_RETIREES_DU_TEXTE = ["- logo empilé\n", "- logo compact\n"] as const;
+export function sansLeCompactNiLEmpile(t: string): string {
+  return VERSIONS_RETIREES_DU_TEXTE.reduce((acc, ligne) => remplacer(acc, ligne, ""), t);
+}
+
+/**
+ * LE TEXTE ENVOYÉ : celui des preuves (avec la phrase sous le logo, s'il y en a une), sans le logo compact ni le logo
+ * empilé (`sansLeCompactNiLEmpile`), puis la phrase des données vérifiées, puis (reprise) les raisons du refus. La phrase
+ * est contrôlée mot pour mot avant l'envoi : absente, rien n'est envoyé. `avecLeCompactEtLEmpile` : le texte d'avant le
+ * 27 novembre 2026, seulement pour reconnaître une planche déjà payée (elle n'est jamais repayée).
+ */
+export function texteDeLaPlanche(o: { nom: string; valeurs: ValeursDuMetier; annee: number; domaine: DomaineDeLaPlanche; personnes: boolean; raisons?: readonly string[]; phrase?: readonly string[]; /** Les faits à montrer (27 novembre 2026) : la ligne des mentions vraies, seulement quand il en a donné. */ faits?: FaitsPermis; avecLeCompactEtLEmpile?: boolean }): string {
+  const preuves = texteDesPreuves(o.nom, o.valeurs, o.phrase, { nomsDesProduits: true });
+  const base = `${texteAvecLesMentionsVraies(o.avecLeCompactEtLEmpile ? preuves : sansLeCompactNiLEmpile(preuves), o.valeurs, o.faits)}\n${phraseDesDonneesVerifiees(o)}`;
   // La reprise part toujours (essai réel d'Écume, 25 novembre 2026 : 18 raisons, 8 939 octets, rien n'était parti) : ses
   // raisons sont dédoublonnées, rangées des plus graves aux moins graves et bornées à la place qui reste.
   const raisons = o.raisons?.length ? raisonsDeLaReprise(o.raisons, TEXTE_DE_LA_PLANCHE_MAX_OCTETS - octets(`${base}\n\n`)) : [];
