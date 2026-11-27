@@ -1,0 +1,23 @@
+{
+  "versions": [
+    {
+      "version": "badge",
+      "memeForme": true,
+      "memesLettres": false,
+      "texteCirculaire": "different",
+      "textesDeLApercu": [
+        "HAVANE",
+        "SACS · PORTEFEUILLES · CEINTURE"
+      ],
+      "textesLus": [
+        "HAVANE",
+        "SACS · PORTEFEUILLES · CENTURES"
+      ],
+      "memesCouleurs": true,
+      "ajout": false,
+      "texteCoupe": false,
+      "note": 4,
+      "pourquoi": "La forme, le Λ vert foncé, la barre orange et les couleurs correspondent bien à l'aperçu. En revanche, le texte circulaire du bas est faux : on lit « CENTURES » (le I manque et un S est ajouté) au lieu de « CEINTURE »."
+    }
+  ]
+}

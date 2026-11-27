@@ -1,0 +1,51 @@
+{
+  "adresse": "POST https://api.openai.com/v1/images/edits (multipart)",
+  "champs": {
+    "model": "gpt-image-2.5-sunburst",
+    "prompt": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Havane : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est le badge rond. Aucune personne n'apparaît.\n\nÀ corriger : ses lettres ne sont pas celles de l'aperçu ; son texte circulaire n'est pas celui de l'aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « CEINTURES ») (en trop ou mal écrits : « CENTURES ») ; sa fidélité n'est pas au niveau (3/10, il faut 8).",
+    "quality": "high",
+    "size": "1088x1088",
+    "background": "opaque",
+    "output_format": "png",
+    "n": 1
+  },
+  "jointes": [
+    {
+      "role": "apercu",
+      "assetId": null,
+      "sha256": "37e064154cdf87e39cb0f3f71bc9c7de5e38b498d546c496a3de727f45d17790",
+      "octets": 28810,
+      "octetsAvantAllegement": 32179
+    },
+    {
+      "role": "logo",
+      "assetId": null,
+      "sha256": "d472c3d5c154ff1f24363f75ae54885cc708b12e9b88eab6b51ab8e65567f0b1",
+      "octets": 88283,
+      "octetsAvantAllegement": 108709
+    }
+  ],
+  "tailleRecue": "1088x1088",
+  "requestId": "req_5f2c480bb677472aadd45cc48fc353bc",
+  "usage": {
+    "input_tokens": 762,
+    "input_tokens_details": {
+      "image_tokens": 532,
+      "text_tokens": 230
+    },
+    "output_tokens": 1834,
+    "output_tokens_details": {
+      "image_tokens": 1834,
+      "text_tokens": 0
+    },
+    "total_tokens": 2596
+  },
+  "renvoye": {
+    "quality": "high",
+    "size": "1088x1088",
+    "background": "opaque",
+    "output_format": "png"
+  },
+  "coutMicro": 51966,
+  "dureeMs": 34986
+}

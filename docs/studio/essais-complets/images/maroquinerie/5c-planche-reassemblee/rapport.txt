@@ -1,0 +1,51 @@
+Réassemblage de la planche en vrai de « Havane » à partir de l'essai /home/user/Ecom-studio-ia/data/essai-maroquinerie/5-planche-en-vrai (aucun appel pour a) et b))
+Images gardées : 17 sur 17
+  publication-1x1 : GARDÉE (essai 1)
+    essai 1 (note 8) : avant gardée → aujourd'hui gardée
+  publication-4x5 : GARDÉE (essai 1)
+    essai 1 (note 9) : avant gardée → aujourd'hui gardée
+  publication-9x16 : GARDÉE (essai 2) — aperçu de l'essai dans la bande d'un titre
+    essai 1 (note 6) : avant elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « SACS », « · », « · », « PORTEFEUILLES », « CEINTURES ») ; un logo foncé est posé sur un fond sombre : il doit y être clair ; sa fidélité n'est pas au niveau (6/10, il faut 8) → aujourd'hui elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « SACS », « · », « · », « PORTEFEUILLES », « CEINTURES ») ; un logo foncé est posé sur un fond sombre : il doit y être clair ; sa fidélité n'est pas au niveau (6/10, il faut 8)
+    essai 2 (note 9) : avant gardée → aujourd'hui gardée
+  ouverture-site : GARDÉE (essai 1)
+    essai 1 (note 8) : avant gardée → aujourd'hui gardée
+  ouverture-planche : GARDÉE (essai 1)
+    essai 1 (note 8) : avant gardée → aujourd'hui gardée
+  site-ordinateur : GARDÉE (essai 1)
+    essai 1 (note 9) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « 08 », « SITE », « WEB », « - », « Une », « expérience », « fluide », « du ») → aujourd'hui gardée
+    essai 2 (note 9) : avant gardée → aujourd'hui faits ou produits inventés, absents de l'aperçu et de la fiche du client : « 08 »
+  site-telephone : GARDÉE (essai 2)
+    essai 1 (note 7) : avant faits ou produits inventés, absents de l'aperçu et de la fiche du client : « 9:41 » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « 6.GI ») ; sa fidélité n'est pas au niveau (7/10, il faut 8) → aujourd'hui sa fidélité n'est pas au niveau (7/10, il faut 8)
+    essai 2 (note 8) : avant gardée → aujourd'hui gardée
+  produit-1 : GARDÉE (essai 1)
+    essai 1 (note 9) : avant gardée → aujourd'hui gardée
+  produit-2 : GARDÉE (essai 2)
+    essai 1 (note 8) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « ΛVAΓK ») → aujourd'hui ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « ΛVAΓK »)
+    essai 2 (note 9) : avant gardée → aujourd'hui gardée
+  produit-3 : GARDÉE (essai 1)
+    essai 1 (note 9) : avant gardée → aujourd'hui gardée
+  emballage : GARDÉE (essai 1)
+    essai 1 (note 9) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « 09 », « PACKAGING », « & », « SUPPORTS », « - », « Une », « marque », « qui ») → aujourd'hui gardée
+    essai 2 (note 9) : avant gardée → aujourd'hui faits ou produits inventés, absents de l'aperçu et de la fiche du client : « 09 »
+  reference-1 : GARDÉE (essai 1)
+    essai 1 (note 9) : avant gardée → aujourd'hui gardée
+  reference-2 : GARDÉE (essai 1)
+    essai 1 (note 9) : avant gardée → aujourd'hui gardée
+  reference-3 : GARDÉE (essai 1)
+    essai 1 (note 9) : avant gardée → aujourd'hui gardée
+  reference-4 : GARDÉE (essai 1)
+    essai 1 (note 9) : avant gardée → aujourd'hui gardée
+  reference-5 : GARDÉE (essai 1)
+    essai 1 (note 8) : avant gardée → aujourd'hui gardée
+  reference-6 : GARDÉE (essai 1)
+    essai 1 (note 9) : avant gardée → aujourd'hui gardée
+Logos repris de l'aperçu : logo-horizontal, badge ; séparation du symbole non fiable (aucune séparation nette entre un symbole et le nom)
+Palette : #0D3B2E Vert Forêt ; #C4672B Cognac ; #EADCC9 Sable ; #9BAE94 Sauge ; #4B3A2E Cuir Foncé
+Logos en haute définition : icone, favicon, badge ; devis probable 0,2944 €, au plus 1,3416 € ; dépense comptée 0,2763 € ; gardées : icone, favicon ; refusées deux fois (l'agrandissement de l'aperçu reste) : badge ; posées sur la planche : monochrome-fonce, icone, favicon
+État et projet mis à jour : etat.json et essai.json (projet 5x53gozddfs14xjg) ; l'onglet Marque montre la planche réassemblée et ses 17 images gardées
+  note : palette : #0D3B2E (écrit sur l'aperçu, mesuré #053327, écart 2.4) ; #C4672B (écrit sur l'aperçu, mesuré #C16E34, écart 2.3) ; #EADCC9 (écrit sur l'aperçu, mesuré #E8DBC4, écart 1.9) ; #9BAE94 (écrit sur l'aperçu, mesuré #9EAD94, écart 1.4) ; #4B3A2E (écrit sur l'aperçu, mesuré #574436, écart 3.6)
+  note : monochrome-fonce fait par le code : posé sur la planche (4.6 % des points changés)
+  note : monochrome-clair fait par le code : la planche garde l'aperçu agrandi (ses proportions changent la case (écart 14 %)) ; la version du code sert aux fichiers à télécharger
+  note : inverse fait par le code : la planche garde l'aperçu agrandi (ses proportions changent la case (écart 300 %)) ; la version du code sert aux fichiers à télécharger
+  note : icone en haute définition : posé sur la planche (0.9 % des points changés)
+  note : favicon en haute définition : posé sur la planche (3.6 % des points changés)

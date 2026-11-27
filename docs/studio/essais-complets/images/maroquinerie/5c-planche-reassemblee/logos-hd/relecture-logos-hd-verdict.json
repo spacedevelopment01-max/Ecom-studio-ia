@@ -1,0 +1,49 @@
+{
+  "versions": [
+    {
+      "version": "icone",
+      "memeForme": true,
+      "memesLettres": true,
+      "texteCirculaire": "aucun",
+      "textesDeLApercu": [],
+      "textesLus": [],
+      "memesCouleurs": true,
+      "ajout": false,
+      "texteCoupe": false,
+      "note": 9,
+      "pourquoi": "Le A vert foncé sans barre et le trapèze cuivré sont identiques à l'aperçu, en plus net. Les proportions et les couleurs sont respectées."
+    },
+    {
+      "version": "favicon",
+      "memeForme": true,
+      "memesLettres": true,
+      "texteCirculaire": "aucun",
+      "textesDeLApercu": [],
+      "textesLus": [],
+      "memesCouleurs": true,
+      "ajout": false,
+      "texteCoupe": false,
+      "note": 9,
+      "pourquoi": "Le carré arrondi vert, le A blanc et la barre cuivrée reprennent fidèlement l'aperçu. Rien n'a été ajouté ni coupé."
+    },
+    {
+      "version": "badge",
+      "memeForme": true,
+      "memesLettres": false,
+      "texteCirculaire": "different",
+      "textesDeLApercu": [
+        "HAVANE",
+        "SACS · PORTEFEUILLES · CEINTURES"
+      ],
+      "textesLus": [
+        "HAVANE",
+        "SACS · PORTEFEUILLES · CENTURES"
+      ],
+      "memesCouleurs": true,
+      "ajout": false,
+      "texteCoupe": false,
+      "note": 3,
+      "pourquoi": "La forme et les couleurs correspondent, mais le texte circulaire est fautif : « CEINTURES » est devenu « CENTURES », il manque le I. Les lettres de « HAVANE » sont aussi dessinées de façon irrégulière."
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+[
+  {
+    "tour": 1,
+    "raisons": [
+      "ses lettres ne sont pas celles de l'aperçu",
+      "son texte circulaire n'est pas celui de l'aperçu",
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « CEINTURES ») (en trop ou mal écrits : « CENTURES »)",
+      "sa fidélité n'est pas au niveau (3/10, il faut 8)"
+    ]
+  },
+  {
+    "tour": 2,
+    "raisons": [
+      "ses lettres ne sont pas celles de l'aperçu",
+      "son texte circulaire n'est pas celui de l'aperçu",
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « CEINTURE ») (en trop ou mal écrits : « CENTURES »)",
+      "sa fidélité n'est pas au niveau (4/10, il faut 8)"
+    ]
+  }
+]

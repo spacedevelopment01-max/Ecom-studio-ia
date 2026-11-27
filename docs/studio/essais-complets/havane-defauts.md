@@ -26,3 +26,8 @@ Défauts relevés sans arrêter l'essai (règle du budget de 5 € en tout, 27 n
    (« 08 SITE WEB – … », « 09 PACKAGING & SUPPORTS – … ») manquaient dans l'image, alors qu'ils sont hors de la zone de
    l'image (règle : une image est jugée sur les textes de sa seule zone) ; elles ont été reprises (dépense Studio).
 11. **Onglet Marque, produit 2** : l'image découpée garde le bas de la carte (« Portefeuilles en cuir » et le rond du bouton).
+12. **Onglet Marque, inversé sur fond sombre** : la tuile garde une fine bande claire à gauche du rectangle sombre (vu par
+   « Évolution de SINA », non corrigé).
+13. **LOGO_HD, badge** : refusé deux fois, à juste titre (« CENTURES » au lieu de « CEINTURES » dans le texte circulaire) ;
+   l'aperçu agrandi garde sa case. Au second tour, le relecteur a lu l'aperçu « CEINTURE » sans S (lecture de l'aperçu
+   instable d'un tour à l'autre).
