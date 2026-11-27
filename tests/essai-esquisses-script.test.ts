@@ -154,6 +154,33 @@ describe("le script de l'essai des esquisses (appels simulés)", async () => {
     expect(r.planches).toEqual([]);
   });
 
+  it("« d'autres pistes » (AUTRES_PISTES) : comme la tâche du Studio, le métier déjà écrit repris sans appel, la numérotation qui continue, les pistes déjà présentées à éviter", async () => {
+    const avant = sortie();
+    refuser = { 1: new Set([3, 5]) };
+    await essaiDesEsquisses({ sortie: avant, plafondEuros: "2", client: ECUME, ai: simule as never });
+    const premieres = JSON.parse(fs.readFileSync(path.join(avant, "esquisses.json"), "utf8")) as { gardees: { piste: string }[] };
+    appels.length = 0; envoyes.length = 0; refuser = {};
+    const dir = sortie();
+    const r = await essaiDesEsquisses({ sortie: dir, plafondEuros: "2", client: ECUME, autresPistes: path.join(avant, "esquisses.json"), ai: simule as never });
+    expect(r.arret).toBeUndefined();
+    // Aucun appel pour le métier : il est repris de la recherche d'avant, comme dans le Studio.
+    expect(appels).not.toContain("metier");
+    expect(appels.filter((a) => a.startsWith("planche:")).every((a) => a.includes(":r2-"))).toBe(true);
+    // Les pistes déjà présentées, toutes, à la toute fin de la demande exacte.
+    const pistes = premieres.gardees.map((g) => g.piste).filter(Boolean);
+    expect(pistes.length).toBeGreaterThan(0);
+    const demandes = envoyes.filter((e) => e.includes("Varie les couleurs"));
+    // Les deux planches du premier tour finissent par toutes les pistes déjà présentées ; un remplacement les garde en tête.
+    for (const e of demandes.slice(0, 2)) expect(e.endsWith(`Évite ces pistes déjà présentées : ${pistes.join(" ; ")}.`)).toBe(true);
+    for (const e of demandes) expect(e).toContain(`Évite ces pistes déjà présentées : ${pistes.join(" ; ")}`);
+    expect(r.gardees.map((g) => g.numero)).toEqual(Array.from({ length: 12 }, (_v, i) => i + 13));
+    expect(fs.existsSync(path.join(dir, "esquisse-13.png"))).toBe(true);
+    expect(JSON.parse(fs.readFileSync(path.join(dir, "esquisses.json"), "utf8")).recherche).toBe(2);
+    // Sans esquisses gardées, rien ne part.
+    fs.writeFileSync(path.join(dir, "vide.json"), "{}");
+    await expect(essaiDesEsquisses({ sortie: sortie(), plafondEuros: "2", client: ECUME, autresPistes: path.join(dir, "vide.json"), ai: simule as never })).rejects.toThrow(/Rien n'est lancé/);
+  });
+
   it("l'étape 2 enchaîne : elle retrouve les esquisses gardées, leurs fichiers et leurs phrases ; une écartée ou une phrase douteuse est refusée", async () => {
     const dir = sortie();
     refuser = { 1: new Set([3, 5]) };
@@ -209,7 +236,7 @@ describe("le script de l'essai des esquisses (appels simulés)", async () => {
     const src = fs.readFileSync("scripts/syna-recette/essai-esquisses.mts", "utf8") + fs.readFileSync("scripts/syna-recette/essai-esquisses-outil.ts", "utf8");
     expect(src).toContain("process.env.STUDIO_ANTHROPIC_KEY");
     expect(src).not.toMatch(/sk-ant-|sk-proj-/);
-    expect(src).toContain("uneRecherche(ai, { nom: CLIENT.nom, metier, depart: 1, eviter: [], recherche: 1 })");
+    expect(src).toContain("uneRecherche(ai, { nom: CLIENT.nom, metier, depart: avant?.depart ?? 1, eviter: avant?.eviter ?? [], recherche: avant?.recherche ?? 1 })");
     expect(src).toContain("vraisAppels(");
     expect(src).not.toMatch(/ai\.(rediger|finaliser|relireLogo)\(|uneFinalisation\(|lancerLesPlanches\(/);
   });

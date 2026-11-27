@@ -158,11 +158,23 @@ export function compteEnTexte(c: CompteDesDouze): string[] {
 }
 
 /**
+ * « D'autres pistes » : lit le esquisses.json d'une recherche précédente de l'essai et en tire ce que la tâche du Studio
+ * reprend de son état (logo-graphistes-tache.ts) : le métier déjà écrit, le premier numéro suivant, les pistes déjà
+ * présentées (toutes les esquisses montrées).
+ */
+export function lesPistesDeLaRechercheAvant(fichier: string): { metier: NonNullable<import("../../src/lib/syna-agent/logo-graphistes").EtatGraphistes["metier"]>; depart: number; eviter: string[]; recherche: number } {
+  const j = JSON.parse(fs.readFileSync(fichier, "utf8")) as { metier?: unknown; gardees?: { numero: number; piste?: string }[]; recherche?: number };
+  const gardees = j.gardees ?? [];
+  if (!j.metier || !gardees.length) throw new Error(`${fichier} : ni métier ni esquisses gardées, « d'autres pistes » ne peut pas partir. Rien n'est lancé.`);
+  return { metier: j.metier as never, depart: Math.max(...gardees.map((g) => g.numero)) + 1, eviter: gardees.map((g) => g.piste ?? "").filter(Boolean), recherche: (j.recherche ?? 1) + 1 };
+}
+
+/**
  * L'essai lui-même. `ai` : les appels (par défaut `graphistesDeps.ai`, sinon les vrais appels de SINA, sous le plafond du
  * client et la borne du Studio du devis de la recherche, comme dans le parcours). Le plafond, en euros, allume le
  * garde-fou de l'essai pour toute la durée du script.
  */
-export async function essaiDesEsquisses(o: { sortie: string; plafondEuros: string; client: ClientDeLEssai; ai?: (c: { userId: string; projectId: string; jobId: string; capMicro: number }) => GraphistesAi }): Promise<ResultatDeLEssai> {
+export async function essaiDesEsquisses(o: { sortie: string; plafondEuros: string; client: ClientDeLEssai; autresPistes?: string; ai?: (c: { userId: string; projectId: string; jobId: string; capMicro: number }) => GraphistesAi }): Promise<ResultatDeLEssai> {
   const plafond = Number(o.plafondEuros.replace(",", "."));
   if (!Number.isFinite(plafond) || plafond <= 0) throw new Error("PLAFOND_ESSAI_EUR manquant ou illisible : rien n'est lancé.");
   if (!o.client?.nom || !o.client.metier) throw new Error("Client de l'essai manquant (nom et métier) : rien n'est lancé.");
@@ -247,10 +259,16 @@ export async function essaiDesEsquisses(o: { sortie: string; plafondEuros: strin
   };
   const arret = (e: unknown) => e instanceof PlafondDeLEssaiAtteint ? `le garde-fou de l'essai a refusé un appel : ${e.message}` : null;
 
+  // « D'autres pistes » (27 novembre 2026), comme la tâche du Studio (logo-graphistes-tache.ts, phase « pistes ») : le
+  // métier déjà écrit est repris tel quel, la numérotation continue, et les pistes déjà présentées sont à éviter.
+  const avant = o.autresPistes ? lesPistesDeLaRechercheAvant(o.autresPistes) : null;
+  if (avant) lignes.push(`« D'autres pistes » : recherche ${avant.recherche}, numéros à partir de ${avant.depart}, ${avant.eviter.length} piste(s) déjà présentée(s) à éviter :`, ...avant.eviter.map((x) => `- ${x}`), "");
+
   return runWithLang({ ui: "fr", content: "fr" }, () => runForUser(u.id, () => withTrace({ jobId, projectId, costCapMicro: devis.devisDuStudio.maxMicro, studioCapMicro: devis.devisDuStudio.studioMaxMicro }, async () => {
-    // Le métier, contrôle compris (comme la tâche du parcours).
+    // Le métier, contrôle compris (comme la tâche du parcours) ; pour « d'autres pistes », celui déjà écrit.
     let metier;
-    try {
+    if (avant) metier = avant.metier;
+    else try {
       const m = await ecrireLeMetier(ai, CLIENT);
       if (!m.ok) { res.arret = `le métier n'a pas passé le contrôle : ${m.raison}`; return ecrire(); }
       metier = m.metier;
@@ -260,10 +278,10 @@ export async function essaiDesEsquisses(o: { sortie: string; plafondEuros: strin
     }
     res.metier = metier.metier;
     lignes.push(`Phrase du métier : ${metier.metier}`, `Ce que la piste explore : ${metier.court} (${metier.piste})`);
-    res.texte = demandeDeRecherche({ nom: CLIENT.nom, metier });
+    res.texte = demandeDeRecherche({ nom: CLIENT.nom, metier, ...(avant ? { eviter: avant.eviter } : {}) });
     lignes.push("", "Texte exact envoyé aux deux modèles (premier tour) :", res.texte, "");
     // La recherche du parcours, telle quelle : planches, découpe, une relecture, remplacements jusqu'à 12 correctes.
-    const r = await uneRecherche(ai, { nom: CLIENT.nom, metier, depart: 1, eviter: [], recherche: 1 });
+    const r = await uneRecherche(ai, { nom: CLIENT.nom, metier, depart: avant?.depart ?? 1, eviter: avant?.eviter ?? [], recherche: avant?.recherche ?? 1 });
     res.reprise = r.reprise; res.notes = r.notes;
     res.compte = { voulues: ESQUISSES_MONTREES, correctesDesLesPlanches: r.correctesDesLesPlanches, remplacees: r.remplacees.length, lesquelles: r.remplacees.map((x) => ({ modele: x.modele, case: x.index + 1, raison: x.raison })), toursDeRemplacement: r.tours, complete: r.complete };
     res.manquees = r.manquees.map((m) => `${m.modele} : ${m.raison}${m.plafond ? " (plafond)" : ""}`);
@@ -295,7 +313,7 @@ export async function essaiDesEsquisses(o: { sortie: string; plafondEuros: strin
       });
     }
     if (cases.length) ecrireFichier("planche-contact-complete.png", await plancheContactComplete(cases));
-    ecrireFichier("esquisses.json", json({ nom: CLIENT.nom, metier, compte: res.compte, gardees: res.gardees, ecartees: res.ecartees, reprise: res.reprise }));
+    ecrireFichier("esquisses.json", json({ nom: CLIENT.nom, metier, compte: res.compte, gardees: res.gardees, ecartees: res.ecartees, reprise: res.reprise, recherche: avant?.recherche ?? 1 }));
     lignes.push(...compteEnTexte(res.compte), "",
       `Esquisses gardées par le relecteur : ${res.gardees.length}${res.reprise ? " (remplacements compris, à la charge du Studio)" : ""} — ${r.contact ? "planche-contact.png" : "aucune planche-contact : moins de 12, rien ne serait montré au client"}`,
       ...res.gardees.map((g) => `Esquisse ${nn(g.numero)} : ${g.fichier} ; piste « ${g.piste} » ; phrase sous le nom : ${g.phrase ? `« ${g.phrase.texte} » (${g.phrase.ok ? "proposable telle quelle" : `jamais proposée telle quelle : ${(g.phrase.raisons ?? []).join(", ")}`})` : "aucune"}`),
