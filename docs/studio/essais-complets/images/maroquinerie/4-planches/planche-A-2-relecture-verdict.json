@@ -1,0 +1,168 @@
+{
+  "verdict": {
+    "nomLu": "HAVANE",
+    "logoFidele": true,
+    "copyrightLu": "© 2026 Havane",
+    "domaineLu": "havanefrance.fr — disponible",
+    "fautes": [],
+    "microTextes": [
+      "ABCDEFFGHIJJLIMMMERTVWXYZ (spécimen Montserrat)",
+      "abcdefgjiqklninopoqtuvywxyz (spécimen Montserrat)",
+      "ABCDEFFGIJJLMNMEBTVWXYZ (spécimen Playfair Display)",
+      "abcdefgjikmhopaoganwjxyz (spécimen Playfair Display)",
+      "6:61 (heure de la barre d'état du téléphone, bloc 08)"
+    ],
+    "promesses": [],
+    "personnes": false,
+    "personnesVues": [],
+    "logoFonceSurFondSombre": false,
+    "motMaquette": false,
+    "copies": [],
+    "signesIsoles": [
+      {
+        "ou": "Bloc 08, écran de l'ordinateur, en-tête du site, à gauche du logo HAVANE",
+        "description": "Petit trait oblique « \\ » égaré, hors des mots"
+      }
+    ],
+    "produitsInventes": [],
+    "note": 8.5,
+    "pourquoi": "Planche complète et soignée : le nom, la phrase du client, les mentions, le domaine et le copyright sont exacts, sans promesse, sans produit inventé ni personne. Seuls restent les alphabets déformés des spécimens et un petit trait égaré dans l'en-tête du site sur l'ordinateur.",
+    "phrasesLues": [
+      {
+        "emplacement": "Ouverture, sous le grand logo",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Ouverture, colonne de texte à droite de la photo",
+        "lignes": [
+          "SACS",
+          "PORTEFEUILLES",
+          "CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, logo principal",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, logo horizontal",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, logo empilé",
+        "lignes": [
+          "SACS · PORTEFEUILLES",
+          "· CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, monochrome foncé",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, monochrome clair",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, inversé sur fond sombre",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, badge / sceau, texte circulaire",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 04, slogan en tête du bloc",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 06, titre du bloc",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 07, publication 1:1, sous le logo",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 07, publication 4:5, sous le logo",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 08, téléphone, menu sous le logo",
+        "lignes": [
+          "Sacs · Portefeuilles · Ceintures"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 09, boîte kraft, sous le logo",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 09, pochon en coton, sous le logo",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 10, titre SEO",
+        "lignes": [
+          "Havane – Sacs · Portefeuilles · Ceintures en cuir"
+        ],
+        "cachee": false
+      }
+    ]
+  },
+  "raisons": [
+    "la phrase choisie par le client est mal écrite (« Ouverture, colonne de texte à droite de la photo : SACS / PORTEFEUILLES / CEINTURES » au lieu de « SACS · PORTEFEUILLES · CEINTURES »)",
+    "la phrase choisie par le client est mal écrite (« Bloc 10, titre SEO : Havane – Sacs · Portefeuilles · Ceintures en cuir » au lieu de « SACS · PORTEFEUILLES · CEINTURES »)",
+    "fautes : « signe déclaré isolé, mais qui touche le nom, la phrase du logo, l'adresse ou l'année : Bloc 08, écran de l'ordinateur, en-tête du site, à gauche du logo HAVANE : Petit trait oblique « \\ » égaré, hors des mots »"
+  ],
+  "ecartes": [
+    "micro-texte décoratif, non jugé : « ABCDEFFGHIJJLIMMMERTVWXYZ (spécimen Montserrat) »",
+    "micro-texte décoratif, non jugé : « abcdefgjiqklninopoqtuvywxyz (spécimen Montserrat) »",
+    "micro-texte décoratif, non jugé : « ABCDEFFGIJJLMNMEBTVWXYZ (spécimen Playfair Display) »",
+    "micro-texte décoratif, non jugé : « abcdefgjikmhopaoganwjxyz (spécimen Playfair Display) »",
+    "micro-texte décoratif, non jugé : « 6:61 (heure de la barre d'état du téléphone, bloc 08) »"
+  ],
+  "gardee": false
+}

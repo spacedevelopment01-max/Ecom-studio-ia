@@ -1,0 +1,49 @@
+{
+  "adresse": "POST https://api.openai.com/v1/images/edits (multipart)",
+  "champs": {
+    "model": "gpt-image-2.5-sunburst",
+    "prompt": "La première image est le logo Havane : il sert de base à tout le système de logos et ne doit pas être redessiné. Construis l'univers graphique de la marque à partir de ce logo.\n\nLa deuxième image montre la disposition obligatoire de la planche : reprends exactement le même emplacement, le même ordre et les mêmes proportions pour chaque bloc (l'ouverture en haut, puis les blocs 01 à 10 aux mêmes places et avec les mêmes formats d'aperçus). N'en reprends ni les couleurs, ni le logo, ni les photographies, ni les textes : l'identité vient uniquement du logo de la première image.\n\nHavane — Planche d’identité visuelle\n\nCrée la planche complète d’identité visuelle de Havane, avec une structure, une cohérence et une lisibilité fortes.\n\nObjectif :\nCréer une planche d’identité visuelle premium, moderne, commerciale et très propre, digne d’une vraie agence de branding, avec une hiérarchie forte et des éléments bien présentés.\n\nImportant :\n- Havane, maroquinerie artisanale qui fabrique et vend en ligne des sacs, des portefeuilles et des ceintures en cuir : marque artisanale, chaleureuse, élégante et durable. Sa phrase, choisie par le client et écrite sous le logo : « SACS · PORTEFEUILLES · CEINTURES » ; c'est aussi son slogan : partout où la planche l'écrit, écris-la exactement, sans en changer une lettre ni un accent.\n- Ne pas revenir à une charte austère ou trop scolaire.\n- Garder une présentation immersive et désirable.\n\nContenu obligatoire\n\n1. Système de logos plus complet\nJe veux un vrai système de logo avec davantage de variantes :\n- logo principal\n- logo secondaire horizontal\n- logo empilé\n- logo compact\n- icône seule\n- favicon\n- version monochrome foncée\n- version monochrome claire\n- version inversée sur fond sombre\n- version badge / sceau\nToutes les variantes doivent rester cohérentes entre elles.\n\n2. Réseaux sociaux : vrais formats\nJe veux 3 publications montrées dans leurs vrais formats visuels, et pas comme de petites vignettes approximatives.\nFormats exacts :\n- 1:1 feed carré\n- 4:5 publication portrait\n- 9:16 story / reel\nChaque publication doit avoir :\n- un objectif différent,\n- une composition différente,\n- une vraie accroche,\n- un vrai rôle marketing.\nExemples :\n- 1:1 = émotion / le plaisir d'un bel objet en cuir qui dure des années, pour soi ou à offrir\n- 4:5 = focus produit / bénéfices\n- 9:16 = contenu communauté / engagement / story\nLes trois doivent être lisibles et paraître publiables telles quelles.\n\n3. Site web : mockups réellement crédibles\nJe veux deux mockups distincts :\n- un mockup ordinateur réaliste, au bon ratio d’écran, large et lisible\n- un mockup téléphone réaliste, vertical, avec un vrai ratio mobile\nLes deux doivent montrer le même univers de site Havane, avec adaptation responsive réelle :\n- même DA,\n- même palette,\n- même logo,\n- même ton,\n- mais mise en page adaptée à chaque support.\nLe site doit sembler être une vraie boutique e-commerce :\n- header\n- hero\n- accroche\n- CTA\n- produits / collections\n- éléments de réassurance\n\n4. Ajouter une section “Images de référence”\nJe veux une vraie section de direction visuelle / inspiration photo.\nCette section doit montrer 4 à 6 petites images de référence cohérentes, par exemple :\n- cuir de vachette pleine fleur en teintes naturel, cognac et noir\n- coutures au point sellier en gros plan\n- atelier toulousain baigné de lumière douce\n- outils de maroquinier posés sur un établi en bois\n- sac cabas en cuir cognac sur une table en bois\n- texture du tannage végétal sous une lumière chaude\nBut :\nmontrer l’univers photographique et émotionnel de la marque.\nAttention :\nce sont des images de référence d’univers, pas des logos supplémentaires.\n\n5. Produits\nLa section produits doit être mieux mise en scène et plus premium.\nMontrer clairement :\n- sacs en cuir\n- portefeuilles en cuir\n- ceintures en cuir\nSur les étiquettes, les emballages, les fiches produits et le site, chaque produit porte seulement l'un de ces noms, ceux du client, au singulier pour un seul article : « Sacs en cuir », « Portefeuilles en cuir », « Ceintures en cuir ».\nLes étiquettes, les emballages, les fiches et le site peuvent porter ces mentions vraies, données par le client, écrites exactement : « Sac cabas », formats ou poids : « 38 x 30 cm » ; « Portefeuille », formats ou poids : « 11 x 9 cm » ; « Ceinture », formats ou poids : « de 85 à 115 cm » ; origine : « Cuir de France » ; lieu de fabrication : « Fait main à Toulouse » ; matières : « cuir de vachette pleine fleur » ; tannage : « tannage végétal » ; coutures : « cousu main au point sellier » ; finitions et teintes : « naturel, cognac et noir » ; année de création : « 2019 » ; ville : « Toulouse ». Aucune autre origine, aucun autre poids, label, lieu ou date n'est écrit : les autres petits textes restent de simples traits, sans mot lisible.\nLes visuels doivent être propres, désirables, e-commerce, avec une sensation plus “marque” et moins “simple catalogue”.\n\n6. Structure générale de la planche\nLa planche doit rester dense mais plus claire.\nJe veux une hiérarchie visuelle très lisible avec ces blocs :\n1. titre / identité\n2. système de logos\n3. palette + typographies\n4. ton / slogan / valeurs\n5. images de référence\n6. produits\n7. 3 publications réseaux\n8. site web desktop + mobile\n9. packaging / supports de marque\n10. SEO / nom de domaine / copyright\n\n7. SEO / domaine / mentions\nConserver un bloc avec :\n- titre SEO\n- méta-description\n- nom de domaine suggéré\n- mention “disponibilité à vérifier”\n- copyright\nNe pas inventer de disponibilité comme un fait certain si elle n’est pas vérifiée.\n\n8. Niveau graphique attendu\nJe veux une planche :\n- plus forte graphiquement,\n- plus structurée,\n- plus moderne,\n- plus cohérente,\n- plus proche d’une vraie présentation de studio de branding.\nLa planche ne doit pas ressembler à un simple tableau d’éléments posés.\nJe veux quelque chose que l’on regarde en se disant :\n“oui, cette marque existe déjà”.\n\nDans le bloc 10, à la place de la mention « disponibilité à vérifier », écris exactement « havanefrance.fr — disponible » et « © 2026 Havane » ; n'ajoute aucune promesse, aucun chiffre ni aucun avis ; aucune personne visible.\n\nÀ corriger : la phrase choisie par le client est mal écrite (« Bloc 09, boîte kraft sous le logo et sur la face : SACS · PORTEFEUILLES · CEINTURES / SACS · PORTEFEUILLES · CEINTURES » au lieu de « SACS · PORTEFEUILLES · CEINTURES ») ; le bloc 10 doit dire exactement « havanefrance.fr — disponible » (lu : « havanefrance.fr / havanefrance.fr — disponible »).",
+    "quality": "xhigh",
+    "size": "1536x2304",
+    "background": "opaque",
+    "output_format": "png",
+    "n": 1
+  },
+  "jointes": [
+    {
+      "role": "logo",
+      "assetId": "a5yco7xik6iar21f",
+      "sha256": "9d336814c7d7736f9f34c0f34cb9aa31458c00c7adfe27104e260551e54d9644",
+      "octets": 988819
+    },
+    {
+      "role": "disposition",
+      "assetId": "disposition:standard",
+      "sha256": "b4e2e0438d9467ffecfef30d450617299b5d547ff35b01d8e7b049f537e152f5",
+      "octets": 4685578
+    }
+  ],
+  "tailleRecue": "1536x2304",
+  "requestId": "req_cbe5d7d4b03e429baf2d9b58853d14eb",
+  "usage": {
+    "input_tokens": 4714,
+    "input_tokens_details": {
+      "image_tokens": 3057,
+      "text_tokens": 1657
+    },
+    "output_tokens": 3811,
+    "output_tokens_details": {
+      "image_tokens": 3811,
+      "text_tokens": 0
+    },
+    "total_tokens": 8525
+  },
+  "renvoye": {
+    "quality": "xhigh",
+    "size": "1536x2304",
+    "background": "opaque",
+    "output_format": "png"
+  },
+  "coutMicro": 126481,
+  "dureeMs": 54094
+}

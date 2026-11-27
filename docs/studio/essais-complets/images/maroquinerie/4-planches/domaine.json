@@ -1,0 +1,20 @@
+{
+  "nom": "Havane",
+  "descripteur": "maroquinerie",
+  "verifie": {
+    "taken": [
+      "havane.fr",
+      "havane.com"
+    ],
+    "free": [
+      "havanefrance.fr",
+      "havanefrance.com"
+    ],
+    "unknown": [],
+    "at": 1795803059871
+  },
+  "domaine": "havanefrance.fr",
+  "statut": "disponible",
+  "mention": "havanefrance.fr — disponible",
+  "caseSousLaPlanche": "havanefrance.fr : libre aujourd'hui, seule la réservation le garantit."
+}

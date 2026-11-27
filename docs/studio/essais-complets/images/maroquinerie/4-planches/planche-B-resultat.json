@@ -1,0 +1,30 @@
+{
+  "nom": "Havane",
+  "disposition": "standard",
+  "logo": {
+    "fichier": "/home/user/Ecom-studio-ia/data/essai-maroquinerie/3-logos/esquisse-05-logo-garde.png",
+    "sha256": "26daee87fdb3f9b0f393017c6392f8d36d9f6bbcae8a600c5280ab4f8602d660"
+  },
+  "phrase": [
+    "MAROQUINERIE ARTISANALE"
+  ],
+  "planche": {
+    "logo": "edstmawg569shi3s",
+    "domaine": "havanefrance.fr",
+    "statut": "disponible",
+    "annee": 2026,
+    "phrase": [
+      "MAROQUINERIE ARTISANALE"
+    ],
+    "at": 1795803258499,
+    "image": {
+      "id": "zdvv7z71rvxowt2n",
+      "w": 1536,
+      "h": 2304
+    },
+    "essais": 1,
+    "note": 9
+  },
+  "notes": [],
+  "issues": []
+}

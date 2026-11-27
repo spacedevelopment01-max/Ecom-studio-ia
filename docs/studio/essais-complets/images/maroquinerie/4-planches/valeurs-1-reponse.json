@@ -1,0 +1,24 @@
+{
+  "nom": "Havane",
+  "traits": [
+    "artisanale",
+    "chaleureuse",
+    "élégante",
+    "durable"
+  ],
+  "emotion": "le plaisir d'un bel objet en cuir qui dure des années, pour soi ou à offrir",
+  "images": [
+    "cuir de vachette pleine fleur en teintes naturel, cognac et noir",
+    "coutures au point sellier en gros plan",
+    "atelier toulousain baigné de lumière douce",
+    "outils de maroquinier posés sur un établi en bois",
+    "sac cabas en cuir cognac sur une table en bois",
+    "texture du tannage végétal sous une lumière chaude"
+  ],
+  "produits": [
+    "sacs en cuir",
+    "portefeuilles en cuir",
+    "ceintures en cuir"
+  ],
+  "appel": "devis"
+}

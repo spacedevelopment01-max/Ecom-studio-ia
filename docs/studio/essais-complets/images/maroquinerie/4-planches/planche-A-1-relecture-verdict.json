@@ -1,0 +1,145 @@
+{
+  "verdict": {
+    "nomLu": "HAVANE",
+    "logoFidele": true,
+    "copyrightLu": "© 2026 Havane",
+    "domaineLu": "havanefrance.fr / havanefrance.fr — disponible",
+    "fautes": [],
+    "microTextes": [
+      "Montserrat : ABCDEFGHJLlLMMOPPEFΓŪVWXYZ",
+      "Montserrat : abcdefgjüikhvrhapcgcqtuywxyz",
+      "Lora : ABCDEPFGHJLLMØJDEFTVVWXYZ",
+      "Lora : abcdefuljinkhvonaboapqaiwxyz"
+    ],
+    "promesses": [],
+    "personnes": false,
+    "personnesVues": [],
+    "logoFonceSurFondSombre": false,
+    "motMaquette": false,
+    "copies": [],
+    "signesIsoles": [],
+    "produitsInventes": [],
+    "note": 8.8,
+    "pourquoi": "Planche complète et soignée, logo fidèle, phrase du client juste partout, mentions conformes aux données, sans personne ni promesse. Seuls les alphabets des spécimens de polices sont déformés, ce qui reste décoratif.",
+    "phrasesLues": [
+      {
+        "emplacement": "Ouverture, sous le grand logo",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, logo principal",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, logo horizontal",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, logo empilé",
+        "lignes": [
+          "SACS · PORTEFEUILLES",
+          "· CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, monochrome foncé",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, monochrome clair",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, inversé sur fond sombre",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, badge / sceau, texte circulaire",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 04, slogan",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 06, titre",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 07, publication 1:1",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 07, publication 4:5",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 08, site mobile sous l'image",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 09, boîte kraft sous le logo et sur la face",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES",
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 09, carte sous le logo",
+        "lignes": [
+          "SACS · PORTEFEUILLES · CEINTURES"
+        ],
+        "cachee": false
+      }
+    ]
+  },
+  "raisons": [
+    "le bloc 10 doit dire exactement « havanefrance.fr — disponible » (lu : « havanefrance.fr / havanefrance.fr — disponible »)",
+    "la phrase choisie par le client est mal écrite (« Bloc 09, boîte kraft sous le logo et sur la face : SACS · PORTEFEUILLES · CEINTURES / SACS · PORTEFEUILLES · CEINTURES » au lieu de « SACS · PORTEFEUILLES · CEINTURES »)"
+  ],
+  "ecartes": [
+    "micro-texte décoratif, non jugé : « Montserrat : ABCDEFGHJLlLMMOPPEFΓŪVWXYZ »",
+    "micro-texte décoratif, non jugé : « Montserrat : abcdefgjüikhvrhapcgcqtuywxyz »",
+    "micro-texte décoratif, non jugé : « Lora : ABCDEPFGHJLLMØJDEFTVVWXYZ »",
+    "micro-texte décoratif, non jugé : « Lora : abcdefuljinkhvonaboapqaiwxyz »"
+  ],
+  "gardee": false
+}

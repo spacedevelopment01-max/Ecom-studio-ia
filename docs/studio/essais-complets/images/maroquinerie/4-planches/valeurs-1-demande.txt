@@ -1,0 +1,39 @@
+Tu prépares, en français simple, les mots d'une planche d'identité visuelle pour une marque. Réponds en JSON :
+- nom : le nom de la marque, recopié lettre pour lettre ;
+- traits : trois ou quatre adjectifs qui disent la marque (par exemple « artisanale », « chaleureuse », « précise », « haut de gamme ») ;
+- emotion : en quelques mots, le moment ou la sensation que vit son client (par exemple « le plaisir de recevoir chez soi »), sans verbe à l'impératif ;
+- images : six images de référence de l'univers photo de la marque, quelques mots chacune (lieux, matières, gestes, lumière) ;
+- produits : les trois produits ou prestations principaux du client, pris dans ses mots, au pluriel s'il en vend plusieurs ; jamais un produit qu'il n'a pas cité ;
+- partout : seulement ce que le client a donné ; une origine, une variété, une gamme ou un nom de produit ne s'écrit que s'il est dans ses mots ;
+- appel : « devis », « rendez-vous » ou « réservation » : ce que son client demande d'abord.
+Chaque valeur en minuscules, sans point final, sans guillemets. Aucun chiffre, aucune promesse (prix, délai, garantie, « le meilleur »), aucun avis.
+
+--- demande ---
+Le nom de la marque : « Havane ».
+Son métier, déjà écrit : maroquinerie artisanale qui fabrique et vend en ligne des sacs, des portefeuilles et des ceintures en cuir.
+Elle vend surtout des produits (boutique en ligne).
+Aucune personne n'apparaît : ni dans l'émotion, ni dans les images (pas de famille, de client, de main, de visage).
+Les mentions vraies qu'il accepte de montrer, mot pour mot (seules permises, en plus de ses mots) : « Sac cabas », formats ou poids : « 38 x 30 cm » ; « Portefeuille », formats ou poids : « 11 x 9 cm » ; « Ceinture », formats ou poids : « de 85 à 115 cm » ; origine : « Cuir de France » ; lieu de fabrication : « Fait main à Toulouse » ; matières : « cuir de vachette pleine fleur » ; tannage : « tannage végétal » ; coutures : « cousu main au point sellier » ; finitions et teintes : « naturel, cognac et noir » ; année de création : « 2019 » ; ville : « Toulouse ».
+Ce que le client a dit de son entreprise et de ses produits, avec ses mots :
+# La fiche du client (tout ce qu'il a dit, avec ses mots ; relue en entier)
+## Ses réponses
+- Activité : des produits (27 novembre 2026)
+- Offre : « maroquinerie artisanale qui fabrique et vend en ligne des sacs, des portefeuilles et des ceintures en cuir : sacs en cuir, portefeuilles en cuir, ceintures en cuir » (27 novembre 2026)
+- Client idéal : « des gens qui veulent un bel objet en cuir qui dure des années, pour eux ou pour l'offrir » (27 novembre 2026)
+- Image voulue : « chaleureux, élégant et artisanal » (27 novembre 2026)
+- Prix : « environ 180 € le sac, 60 € le portefeuille et 50 € la ceinture » (27 novembre 2026)
+## Ce qui peut s'écrire sur ses images et son site (mentions vraies, mot pour mot ; rien d'autre)
+- Noms exacts : « Sac cabas », « Portefeuille », « Ceinture »
+- Formats ou poids de « Sac cabas » : « 38 x 30 cm »
+- Formats ou poids de « Portefeuille » : « 11 x 9 cm »
+- Formats ou poids de « Ceinture » : « de 85 à 115 cm »
+- Origine : « Cuir de France »
+- Lieu de fabrication : « Fait main à Toulouse »
+- Matières : « cuir de vachette pleine fleur »
+- Tannage : « tannage végétal »
+- Coutures : « cousu main au point sellier »
+- Finitions et teintes : « naturel, cognac et noir »
+- Année de création : « 2019 »
+- Ville : « Toulouse »
+## Ce qu'il ne veut pas montrer (jamais écrit ni montré)
+- Mentions et labels

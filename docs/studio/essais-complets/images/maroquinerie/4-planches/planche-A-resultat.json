@@ -1,0 +1,31 @@
+{
+  "nom": "Havane",
+  "disposition": "standard",
+  "logo": {
+    "fichier": "/home/user/Ecom-studio-ia/data/essai-maroquinerie/3-logos/esquisse-02-logo-garde.png",
+    "sha256": "9d336814c7d7736f9f34c0f34cb9aa31458c00c7adfe27104e260551e54d9644"
+  },
+  "phrase": [
+    "SACS · PORTEFEUILLES · CEINTURES"
+  ],
+  "planche": {
+    "logo": "a5yco7xik6iar21f",
+    "domaine": "havanefrance.fr",
+    "statut": "disponible",
+    "annee": 2026,
+    "phrase": [
+      "SACS · PORTEFEUILLES · CEINTURES"
+    ],
+    "at": 1795803060904,
+    "essais": 2,
+    "note": 8.5,
+    "raison": "refusée deux fois (la phrase choisie par le client est mal écrite (« Ouverture, colonne de texte à droite de la photo : SACS / PORTEFEUILLES / CEINTURES » au lieu de « SACS · PORTEFEUILLES · CEINTURES ») ; la phrase choisie par le client est mal écrite (« Bloc 10, titre SEO : Havane – Sacs · Portefeuilles · Ceintures en cuir » au lieu de « SACS · PORTEFEUILLES · CEINTURES ») ; fautes : « signe déclaré isolé, mais qui touche le nom, la phrase du logo, l'adresse ou l'année : Bloc 08, écran de l'ordinateur, en-tête du site, à gauche du logo HAVANE : Petit trait oblique « \\ » égaré, hors des mots »)"
+  },
+  "notes": [
+    "planche A, essai 1 refusé : le bloc 10 doit dire exactement « havanefrance.fr — disponible » (lu : « havanefrance.fr / havanefrance.fr — disponible ») ; la phrase choisie par le client est mal écrite (« Bloc 09, boîte kraft sous le logo et sur la face : SACS · PORTEFEUILLES · CEINTURES / SACS · PORTEFEUILLES · CEINTURES » au lieu de « SACS · PORTEFEUILLES · CEINTURES »)",
+    "planche A, essai 2 refusé : la phrase choisie par le client est mal écrite (« Ouverture, colonne de texte à droite de la photo : SACS / PORTEFEUILLES / CEINTURES » au lieu de « SACS · PORTEFEUILLES · CEINTURES ») ; la phrase choisie par le client est mal écrite (« Bloc 10, titre SEO : Havane – Sacs · Portefeuilles · Ceintures en cuir » au lieu de « SACS · PORTEFEUILLES · CEINTURES ») ; fautes : « signe déclaré isolé, mais qui touche le nom, la phrase du logo, l'adresse ou l'année : Bloc 08, écran de l'ordinateur, en-tête du site, à gauche du logo HAVANE : Petit trait oblique « \\ » égaré, hors des mots »"
+  ],
+  "issues": [
+    "Identité A « Havane » : je ne te montre pas cette planche, elle n'a pas passé ma relecture, même refaite. Je peux la refaire à ma charge : rien n'est compté sur ton budget."
+  ]
+}

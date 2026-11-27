@@ -1,0 +1,65 @@
+Essai des planches de marque — client « Havane » (maroquinerie artisanale qui fabrique et vend en ligne des sacs, des portefeuilles et des ceintures en cuir), type « produits »
+Produits ou prestations de sa fiche : sacs en cuir ; portefeuilles en cuir ; ceintures en cuir
+Plafond de l'essai : 1,0000 €
+Personnes permises : non (aucune photo de personne ni accord)
+Logos finis : A (/home/user/Ecom-studio-ia/data/essai-maroquinerie/3-logos/esquisse-02-logo-garde.png), B (/home/user/Ecom-studio-ia/data/essai-maroquinerie/3-logos/esquisse-05-logo-garde.png)
+Phrase sous le logo A : « SACS · PORTEFEUILLES · CEINTURES », reprise mot pour mot sur la planche (/home/user/Ecom-studio-ia/data/essai-maroquinerie/3-logos/esquisse-02-phrase-du-logo.txt)
+Phrase sous le logo B : « MAROQUINERIE ARTISANALE », reprise mot pour mot sur la planche (/home/user/Ecom-studio-ia/data/essai-maroquinerie/3-logos/esquisse-05-phrase-du-logo.txt)
+
+Devis de l'essai pour 2 planches (fonctions du devis du Studio, aucun appel) :
+- le client · valeurs du métier · anthropic:claude-opus-5-5 (effort medium) · toujours · charge client · probable 0,0361 € · au plus 0,1675 €
+- le client · valeurs réécrites (une fois) · anthropic:claude-opus-5-5 (effort medium) · si le contrôle refuse les valeurs · charge Studio · probable 0,0361 € · au plus 0,1675 €
+- planche 1 · planche, 1er essai · openai:gpt-image-2.5-sunburst (xhigh, 1536 × 2304) · toujours · charge client · probable 0,1241 € · au plus 0,2047 €
+- planche 1 · relecture du 1er essai · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,0740 € · au plus 0,2451 €
+- planche 1 · planche, reprise unique · openai:gpt-image-2.5-sunburst (xhigh, 1536 × 2304) · si le relecteur refuse la planche · charge Studio · probable 0,1241 € · au plus 0,2047 €
+- planche 1 · relecture de la reprise · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse la planche · charge Studio · probable 0,0740 € · au plus 0,2451 €
+- planche 2 · planche, 1er essai · openai:gpt-image-2.5-sunburst (xhigh, 1536 × 2304) · toujours · charge client · probable 0,1241 € · au plus 0,2047 €
+- planche 2 · relecture du 1er essai · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,0740 € · au plus 0,2451 €
+- planche 2 · planche, reprise unique · openai:gpt-image-2.5-sunburst (xhigh, 1536 × 2304) · si le relecteur refuse la planche · charge Studio · probable 0,1241 € · au plus 0,2047 €
+- planche 2 · relecture de la reprise · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse la planche · charge Studio · probable 0,0740 € · au plus 0,2451 €
+Probable, sans refus : 0,4322 € (devis du Studio : 0,4322 €)
+Probable, si les valeurs sont réécrites et chaque planche refaite une fois : 0,8645 €
+Plafond minimal pour aller au bout à coup sûr (somme des maxima, reprises comprises) : 2,1341 €
+  dont plafond du client de la tâche 1,0670 € et borne du Studio 1,0670 € (devisDesPlanchesDeMarque)
+Hors plafond : une réponse de texte mal formée à réparer coûterait au plus 1,5898 € de plus en tout ; la tâche ne la couvre pas (elle s'arrêterait sur sa propre borne).
+
+Valeurs du métier (contrôlées) :
+  métier : maroquinerie artisanale qui fabrique et vend en ligne des sacs, des portefeuilles et des ceintures en cuir
+  traits : artisanale, chaleureuse, élégante, durable
+  émotion : le plaisir d'un bel objet en cuir qui dure des années, pour soi ou à offrir
+  site : boutique
+  images : cuir de vachette pleine fleur en teintes naturel, cognac et noir ; coutures au point sellier en gros plan ; atelier toulousain baigné de lumière douce ; outils de maroquinier posés sur un établi en bois ; sac cabas en cuir cognac sur une table en bois ; texture du tannage végétal sous une lumière chaude
+  produits : sacs en cuir ; portefeuilles en cuir ; ceintures en cuir
+Domaine vérifié avant le dessin : havanefrance.fr — disponible (libres : havanefrance.fr, havanefrance.com ; pris : havane.fr, havane.com ; à vérifier : aucun) ; année 2026
+Disposition jointe : standard
+
+Planche A (/home/user/Ecom-studio-ia/data/essai-maroquinerie/3-logos/esquisse-02-logo-garde.png) : NON gardée, jamais montrée (refusée deux fois (la phrase choisie par le client est mal écrite (« Ouverture, colonne de texte à droite de la photo : SACS / PORTEFEUILLES / CEINTURES » au lieu de « SACS · PORTEFEUILLES · CEINTURES ») ; la phrase choisie par le client est mal écrite (« Bloc 10, titre SEO : Havane – Sacs · Portefeuilles · Ceintures en cuir » au lieu de « SACS · PORTEFEUILLES · CEINTURES ») ; fautes : « signe déclaré isolé, mais qui touche le nom, la phrase du logo, l'adresse ou l'année : Bloc 08, écran de l'ordinateur, en-tête du site, à gauche du logo HAVANE : Petit trait oblique « \ » égaré, hors des mots »))
+  essai 1 : texte planche-A-1-texte-envoye.txt ; planche brute planche-A-1-brute.png ; bandes planche-A-1-bande-1.png, planche-A-1-bande-2.png, planche-A-1-bande-3.png, planche-A-1-bande-4.png
+    verdict : note 8.8/10, nom lu « HAVANE », copyright lu « © 2026 Havane », domaine lu « havanefrance.fr / havanefrance.fr — disponible », logo fidèle oui — Planche complète et soignée, logo fidèle, phrase du client juste partout, mentions conformes aux données, sans personne ni promesse. Seuls les alphabets des spécimens de polices sont déformés, ce qui reste décoratif.
+    raisons du refus : le bloc 10 doit dire exactement « havanefrance.fr — disponible » (lu : « havanefrance.fr / havanefrance.fr — disponible ») ; la phrase choisie par le client est mal écrite (« Bloc 09, boîte kraft sous le logo et sur la face : SACS · PORTEFEUILLES · CEINTURES / SACS · PORTEFEUILLES · CEINTURES » au lieu de « SACS · PORTEFEUILLES · CEINTURES »)
+    non compté : micro-texte décoratif, non jugé : « Montserrat : ABCDEFGHJLlLMMOPPEFΓŪVWXYZ » ; micro-texte décoratif, non jugé : « Montserrat : abcdefgjüikhvrhapcgcqtuywxyz » ; micro-texte décoratif, non jugé : « Lora : ABCDEPFGHJLLMØJDEFTVVWXYZ » ; micro-texte décoratif, non jugé : « Lora : abcdefuljinkhvonaboapqaiwxyz »
+  essai 2 (reprise à la charge du Studio) : texte planche-A-2-texte-envoye.txt ; planche brute planche-A-2-brute.png ; bandes planche-A-2-bande-1.png, planche-A-2-bande-2.png, planche-A-2-bande-3.png, planche-A-2-bande-4.png
+    verdict : note 8.5/10, nom lu « HAVANE », copyright lu « © 2026 Havane », domaine lu « havanefrance.fr — disponible », logo fidèle oui — Planche complète et soignée : le nom, la phrase du client, les mentions, le domaine et le copyright sont exacts, sans promesse, sans produit inventé ni personne. Seuls restent les alphabets déformés des spécimens et un petit trait égaré dans l'en-tête du site sur l'ordinateur.
+    raisons du refus : la phrase choisie par le client est mal écrite (« Ouverture, colonne de texte à droite de la photo : SACS / PORTEFEUILLES / CEINTURES » au lieu de « SACS · PORTEFEUILLES · CEINTURES ») ; la phrase choisie par le client est mal écrite (« Bloc 10, titre SEO : Havane – Sacs · Portefeuilles · Ceintures en cuir » au lieu de « SACS · PORTEFEUILLES · CEINTURES ») ; fautes : « signe déclaré isolé, mais qui touche le nom, la phrase du logo, l'adresse ou l'année : Bloc 08, écran de l'ordinateur, en-tête du site, à gauche du logo HAVANE : Petit trait oblique « \ » égaré, hors des mots »
+    non compté : micro-texte décoratif, non jugé : « ABCDEFFGHIJJLIMMMERTVWXYZ (spécimen Montserrat) » ; micro-texte décoratif, non jugé : « abcdefgjiqklninopoqtuvywxyz (spécimen Montserrat) » ; micro-texte décoratif, non jugé : « ABCDEFFGIJJLMNMEBTVWXYZ (spécimen Playfair Display) » ; micro-texte décoratif, non jugé : « abcdefgjikmhopaoganwjxyz (spécimen Playfair Display) » ; micro-texte décoratif, non jugé : « 6:61 (heure de la barre d'état du téléphone, bloc 08) »
+  note : planche A, essai 1 refusé : le bloc 10 doit dire exactement « havanefrance.fr — disponible » (lu : « havanefrance.fr / havanefrance.fr — disponible ») ; la phrase choisie par le client est mal écrite (« Bloc 09, boîte kraft sous le logo et sur la face : SACS · PORTEFEUILLES · CEINTURES / SACS · PORTEFEUILLES · CEINTURES » au lieu de « SACS · PORTEFEUILLES · CEINTURES »)
+  note : planche A, essai 2 refusé : la phrase choisie par le client est mal écrite (« Ouverture, colonne de texte à droite de la photo : SACS / PORTEFEUILLES / CEINTURES » au lieu de « SACS · PORTEFEUILLES · CEINTURES ») ; la phrase choisie par le client est mal écrite (« Bloc 10, titre SEO : Havane – Sacs · Portefeuilles · Ceintures en cuir » au lieu de « SACS · PORTEFEUILLES · CEINTURES ») ; fautes : « signe déclaré isolé, mais qui touche le nom, la phrase du logo, l'adresse ou l'année : Bloc 08, écran de l'ordinateur, en-tête du site, à gauche du logo HAVANE : Petit trait oblique « \ » égaré, hors des mots »
+  SINA dirait : Identité A « Havane » : je ne te montre pas cette planche, elle n'a pas passé ma relecture, même refaite. Je peux la refaire à ma charge : rien n'est compté sur ton budget.
+
+Planche B (/home/user/Ecom-studio-ia/data/essai-maroquinerie/3-logos/esquisse-05-logo-garde.png) : GARDÉE par le relecteur (planche-B-gardee.png, note 9/10)
+  essai 1 : texte planche-B-1-texte-envoye.txt ; planche brute planche-B-1-brute.png ; bandes planche-B-1-bande-1.png, planche-B-1-bande-2.png, planche-B-1-bande-3.png, planche-B-1-bande-4.png
+    verdict : note 9/10, nom lu « HAVANE », copyright lu « © 2026 Havane », domaine lu « havanefrance.fr — disponible », logo fidèle oui — Planche complète et soignée : logo fidèle, phrase « MAROQUINERIE ARTISANALE » exacte partout, mentions du client respectées, aucune personne ni promesse inventée. Seuls les alphabets des spécimens de polices sont déformés, ce qui reste décoratif.
+    raisons du refus : aucune
+    non compté : micro-texte décoratif, non jugé : « ABCDEFCHIJKLMMOFQOBBVWXYZ » ; micro-texte décoratif, non jugé : « abcdefghijkkinopogantyvwxyz » ; micro-texte décoratif, non jugé : « ABCDEFFCHIJKLMMOOO[illisible]VWXYZ » ; micro-texte décoratif, non jugé : « abcdefghijklkinoppgantyvwxyz »
+
+Dépense réelle comptée par le Studio, appel par appel (réservé au plus → réglé) :
+- 8055dc76a34cdbc4231371761ca1299d7e84ef027108deb06e0fa63168cbc11d · anthropic:claude-opus-5-5 · charge du client · réservé 0,1609 € → réglé 0,0151 € (settled) · jetons 1076 en entrée, 240 en sortie
+- 0907d147fb9bcd07b3087d89687f20b39234a8ca262eae2cba50f7609a18c7d0 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,2012 € → réglé 0,1260 € (settled) · jetons 4604 en entrée, 3811 en sortie
+- 2b122714c3b5c3c75439b2da80eb6258e502cd31f5eccc0406bc39818c929668 · anthropic:claude-opus-5-5 · charge du client · réservé 0,2595 € → réglé 0,1078 € (settled) · jetons 11307 en entrée, 2982 en sortie
+- 65aa46238165b0d3f36b679e4fa427bd99e37e8179f94967ad7365ded141cc62 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,2034 € → réglé 0,1265 € (settled) · jetons 4714 en entrée, 3811 en sortie
+- fe16205ec648fe5407ca7977db01a43c6c1a2962f9bc33ac4e143c92bb324aa4 · anthropic:claude-opus-5-5 · charge du Studio · réservé 0,2603 € → réglé 0,1277 € (settled) · jetons 11486 en entrée, 5089 en sortie
+- 79b7aade35eef5d974e18e181b400d80ac620da32997c4cd707b72ea78aa0464 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,2011 € → réglé 0,1256 € (settled) · jetons 4539 en entrée, 3811 en sortie
+- b45a34fbb8631755b2bb18599893df7b30c8bd8d9a30160c8cff27bf8e675e8d · anthropic:claude-opus-5-5 · charge du client · réservé 0,2574 € → réglé 0,0893 € (settled) · jetons 10840 en entrée, 2980 en sortie
+
+Dépense réelle comptée par le Studio : 0,7180 €
+Détail complet : depense.json (appel par appel), usage.json (jetons, qualité, taille, fond, format renvoyés).

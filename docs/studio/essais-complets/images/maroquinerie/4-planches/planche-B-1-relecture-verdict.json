@@ -1,0 +1,176 @@
+{
+  "verdict": {
+    "nomLu": "HAVANE",
+    "logoFidele": true,
+    "copyrightLu": "© 2026 Havane",
+    "domaineLu": "havanefrance.fr — disponible",
+    "fautes": [],
+    "microTextes": [
+      "ABCDEFCHIJKLMMOFQOBBVWXYZ",
+      "abcdefghijkkinopogantyvwxyz",
+      "ABCDEFFCHIJKLMMOOO[illisible]VWXYZ",
+      "abcdefghijklkinoppgantyvwxyz"
+    ],
+    "promesses": [],
+    "personnes": false,
+    "personnesVues": [],
+    "logoFonceSurFondSombre": false,
+    "motMaquette": false,
+    "copies": [],
+    "signesIsoles": [],
+    "produitsInventes": [],
+    "note": 9,
+    "pourquoi": "Planche complète et soignée : logo fidèle, phrase « MAROQUINERIE ARTISANALE » exacte partout, mentions du client respectées, aucune personne ni promesse inventée. Seuls les alphabets des spécimens de polices sont déformés, ce qui reste décoratif.",
+    "phrasesLues": [
+      {
+        "emplacement": "Ouverture, sous le grand logo",
+        "lignes": [
+          "MAROQUINERIE ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Ouverture, sous l'accroche « Des objets de caractère pour la vie. »",
+        "lignes": [
+          "MAROQUINERIE ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, logo principal",
+        "lignes": [
+          "MAROQUINERIE ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, logo horizontal",
+        "lignes": [
+          "MAROQUINERIE ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, logo empilé",
+        "lignes": [
+          "MAROQUINERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, monochrome foncé",
+        "lignes": [
+          "MAROQUINERIE ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, monochrome clair",
+        "lignes": [
+          "MAROQUINERIE ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, inversé sur fond sombre",
+        "lignes": [
+          "MAROQUINERIE ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, badge / sceau, texte circulaire",
+        "lignes": [
+          "MAROQUINERIE ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 04, slogan en tête",
+        "lignes": [
+          "MAROQUINERIE ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 07, publication 1:1, sous le logo",
+        "lignes": [
+          "MAROQUINERIE ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 07, publication 1:1, bas du visuel",
+        "lignes": [
+          "MAROQUINERIE ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 07, story 9:16, sous le logo",
+        "lignes": [
+          "MAROQUINERIE ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 07, story 9:16, bas du visuel",
+        "lignes": [
+          "MAROQUINERIE ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 08, ordinateur, en-tête sous le logo",
+        "lignes": [
+          "MAROQUINERIE ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 08, ordinateur, hero sous l'accroche",
+        "lignes": [
+          "MAROQUINERIE ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 08, téléphone, en-tête sous le logo",
+        "lignes": [
+          "MAROQUINERIE ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 09, boîte kraft, sous le logo",
+        "lignes": [
+          "MAROQUINERIE ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 09, pochette en tissu, sous le logo",
+        "lignes": [
+          "MAROQUINERIE ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 09, carte bleu foncé, sous le logo",
+        "lignes": [
+          "MAROQUINERIE ARTISANALE"
+        ],
+        "cachee": false
+      }
+    ]
+  },
+  "raisons": [],
+  "ecartes": [
+    "micro-texte décoratif, non jugé : « ABCDEFCHIJKLMMOFQOBBVWXYZ »",
+    "micro-texte décoratif, non jugé : « abcdefghijkkinopogantyvwxyz »",
+    "micro-texte décoratif, non jugé : « ABCDEFFCHIJKLMMOOO[illisible]VWXYZ »",
+    "micro-texte décoratif, non jugé : « abcdefghijklkinoppgantyvwxyz »"
+  ],
+  "gardee": true
+}

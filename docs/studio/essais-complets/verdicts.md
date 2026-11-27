@@ -76,6 +76,8 @@ du propriétaire, mot pour mot. Ce carnet servira à régler les juges.
 | 27/11 | Havane | « D'autres pistes » (troisième recherche, partie avant le choix du propriétaire, non montrée) | 12 correctes sur 12 dès les deux planches ; 0,1075 € | 12 sur 12 | non montrée (le propriétaire a choisi dans la première) |
 | 27/11 | Havane | Logo fini de l'esquisse 2, phrase « SACS · PORTEFEUILLES · CEINTURES » | 9/10, petite finition : premier A un peu plus étroit que le second | Oui | [en attente] |
 | 27/11 | Havane | Logo fini de l'esquisse 5, phrase « MAROQUINERIE ARTISANALE » | 9/10, petites finitions : bout de la courbe très mince au-dessus du N, empattement du N un peu mou ; les deux logos : 0,1847 € | Oui | [en attente] |
+| 27/11 | Havane | Planche A (logo 2, phrase « SACS · PORTEFEUILLES · CEINTURES ») | Refusée deux fois (8,8 puis 8,5/10, « planche complète et soignée ») : la liste des produits « SACS / PORTEFEUILLES / CEINTURES » de l'ouverture et le titre « Havane – Sacs · Portefeuilles · Ceintures en cuir » comptés comme la phrase du logo mal écrite ; au 1er essai, domaine lu en double et phrase en double sur la boîte | Non | [en attente] |
+| 27/11 | Havane | Planche B (logo 5, phrase « MAROQUINERIE ARTISANALE ») | 9/10 : « Planche complète et soignée … Seuls les alphabets des spécimens de polices sont déformés » ; les deux planches : 0,7180 € | Oui | [en attente] |
 
 ## Photos de départ des clients inventés (pas des images de SINA)
 
