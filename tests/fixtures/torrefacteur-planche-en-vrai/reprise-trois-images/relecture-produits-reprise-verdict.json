@@ -1,0 +1,31 @@
+{
+  "images": [
+    {
+      "case": "produit-2",
+      "identique": true,
+      "textesLus": [
+        "MOUTURE",
+        "TORRÉFACTION ARTISANALE",
+        "CAFÉ MOULU",
+        "ÉTIOPIENNE"
+      ],
+      "logoPresent": true,
+      "personne": false,
+      "logoFonceSurFondSombre": false,
+      "produitFidele": null,
+      "texteCoupe": false,
+      "note": 6,
+      "pourquoi": "La composition, le sachet kraft, le logo hexagonal et le tas de café moulu reprennent fidèlement l'aperçu. En revanche, l'étiquette porte l'origine « ÉTIOPIENNE », absente de l'aperçu et mal orthographiée, et les petites lignes de texte de l'aperçu ont disparu.",
+      "inventes": [
+        {
+          "ou": "étiquette du sachet, sous « CAFÉ MOULU »",
+          "texte": "ÉTIOPIENNE"
+        }
+      ],
+      "aussiSurLApercu": [
+        "MOUTURE",
+        "CAFÉ MOULU"
+      ]
+    }
+  ]
+}

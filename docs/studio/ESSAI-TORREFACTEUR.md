@@ -413,6 +413,59 @@ une construction du site (`next build`), impossible ce jour-là, le disque du co
   d'un logo à aplats) est reprise de sa case de l'aperçu, pour tout client ; les monochromes d'un logo à aplats gardent ses
   creux, le nom lisible ».
 
+### La reprise des trois images, encore refusées (27 novembre 2026), corrigée sans dépense
+
+La reprise payante de produit-2, reference-4 et reference-5 (0,21 € comptés, à la charge du Studio ; fichiers :
+`docs/studio/essais-complets/images/torrefacteur/5c-reprise-trois-images/`, branche `claude/essais-complets`, commit
+d448fa8) n'a rien gardé. Décision du chef d'orchestre : « Je tranche, sans dépense, avec des tests sur ces verdicts réels ».
+Quatre corrections, pour tout client, essayées sur les verdicts réels (`tests/planche-en-vrai-mouture-reprise-trois.test.ts`,
+épreuve `planche-en-vrai-reprise-hd-petits-textes-logo-et-coupe`) :
+
+1. **Les petits textes illisibles de l'aperçu.** Le dessinateur y écrivait des mots plausibles (« ÉTIOPIENNE »,
+   « 100% ARABICA », « TORRÉFIÉ EN FRANCE », « Café de Paris »). La ligne qui dit l'élément porte maintenant, en positif :
+   « Les petits textes illisibles de l'aperçu restent de simples traits ou une texture, sans aucun mot lisible ; seuls les
+   mots déjà lisibles sur l'aperçu sont écrits. » La règle des preuves reste mot pour mot.
+2. **Le nom et la phrase du logo.** La reprise du réassemblage ne recevait ni la phrase du logo ni les produits de la fiche :
+   « TORRÉFACTION ARTISANALE » était comptée en trop sur les sachets, et la ligne des étiquettes manquait au dessinateur.
+   Elle les reçoit ; la consigne du relecteur dit qu'ils ne sont jamais une faute, exacts, où que le logo soit posé.
+3. **La coupe fidèle à l'aperçu.** Le relecteur écrivait « coupé par le bord de l'image, […] comme sur l'aperçu » et cochait
+   quand même la coupe. Il le dit maintenant à part (`coupeCommeSurLApercu`) ; sans ce champ, le code le lit dans son
+   pourquoi. Une coupe fidèle ne fait plus refuser, ni les mots qu'elle tronque (« MOU », « TORRÉF »).
+4. **La palette du bloc 02.** Les codes et les légendes étaient écrits dans la moyenne de l'encre de l'aperçu, bords
+   adoucis compris, et à des demi-pixels : un peu pâles et flous. Ils prennent l'encre pleine de leur ligne (le cœur des
+   traits) et se posent sur des pixels entiers.
+
+**Le rejugement, gratuit, sur les verdicts réels de la reprise : aucune des trois n'est gardée.** Ce qui reste, après les
+corrections 2 et 3, est chaque fois un mot lisible écrit à la place d'un petit texte illisible de l'aperçu, ce que la
+correction 1 vise pour la prochaine reprise :
+
+| Image | Raisons qui restent |
+|---|---|
+| produit-2 | « ÉTIOPIENNE » sur l'étiquette ; fidélité 6/10 |
+| reference-4 | « 100% ARABICA » et « TORRÉFIÉ EN FRANCE » sur les étiquettes (la coupe et la phrase du logo ne sont plus reprochées ; note 8) |
+| reference-5 | « Café de Paris » sur la plaque du moulin ; fidélité 7/10 |
+
+Le mode `REJUGER=1` ne lit que les relectures de la passe de l'essai, pas celles de la reprise du réassemblage ; le
+rejugement a donc été fait hors ligne, par le code du Studio (`raisonsDuRefusEnVrai`), dans le test ci-dessus : aucun appel.
+
+Devis pour les refaire avec la nouvelle consigne (`DEVIS_SEULEMENT=1 REASSEMBLER=data/essai-torrefacteur/5-planche-en-vrai
+REPRENDRE=produit-2,reference-4,reference-5`, aucun appel) : 3 images et 2 relectures, **probable 0,38 €** (0,3801 €), au
+plus 0,91 € (0,9080 €), à la charge du Studio ; plafond conseillé : 1 €.
+
+La commande gratuite pour réassembler puis refaire l'écran ne change pas (voir plus haut, « La commande gratuite pour
+réassembler puis refaire l'écran ») ; la reprise payante est la même commande avec
+`REPRENDRE=produit-2,reference-4,reference-5 PLAFOND_ESSAI_EUR=1`, seulement après son « oui ».
+
+Cette décision contredit une épreuve scellée : `planche-en-vrai-pas-identique-a-l-apercu-mouture` disait que reference-4
+restait à refaire pour son « texte coupé » (elle reste à refaire, mais pour ses étiquettes). Elle est marquée remplacée le
+27 novembre 2026 par `planche-en-vrai-reprise-hd-petits-textes-logo-et-coupe`, qui la rejoue en entier ; son verdict, son
+attendu et son sceau ne changent pas ; l'accord écrit du propriétaire tient encore sa place (`ACCORD_A_COMPLETER`). La
+phrase d'accord à lui faire écrire : « Oui, marque planche-en-vrai-pas-identique-a-l-apercu-mouture comme remplacée par ma
+décision du 27 novembre, ajoute et scelle planche-en-vrai-reprise-hd-petits-textes-logo-et-coupe (les petits textes
+illisibles de l'aperçu restent des traits sans mot lisible ; le nom et la phrase du logo, exacts, ne sont jamais une faute,
+où que le logo soit posé ; une coupe au bord fidèle à l'aperçu ne fait jamais refuser ; les codes et les légendes de la
+palette sont nets, à l'encre pleine de l'aperçu), et mets à jour la partie Identité de CLAUDE.md. »
+
 ## Étape 6 — l'écran (gratuit)
 
 ```

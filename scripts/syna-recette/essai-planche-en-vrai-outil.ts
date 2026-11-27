@@ -702,7 +702,7 @@ export async function essaiDeLaPlancheEnVrai(o: {
       if (recue) {
         // Une image reçue AVANT la ligne des étiquettes (même texte, cette ligne en moins) est reprise telle quelle : elle a
         // été payée, et son verdict est recompté par le code d'aujourd'hui.
-        const avantLaLigne = recue.texte != null && recue.texte !== d.texte && recue.texte === P.texteSansLaLigneDesTextes(d.texte, client.produits);
+        const avantLaLigne = recue.texte != null && recue.texte !== d.texte && (recue.texte === P.texteSansLaLigneDesTextes(d.texte, client.produits) || recue.texte === P.texteSansLaLigneDesPetitsTextes(d.texte));
         if (avantLaLigne) res.reprise!.ecarts.push(`${d.element} (essai ${tour}) : image reçue avant la ligne des étiquettes, reprise telle quelle et rejugée par le code`);
         else if (recue.texte != null && recue.texte !== d.texte) throw (erreur ??= new RepriseRefusee(`le texte de ${d.element} (essai ${tour}) n'est plus celui de la passe d'avant : l'image reçue ne correspondrait plus ; rien de plus n'est lancé (REJUGER=1 dit lesquelles refaire)`));
         const differentes = d.jointes.filter((j) => recue.jointes.get(j.role) && recue.jointes.get(j.role) !== sha(j.data)).map((j) => j.role);
@@ -1070,7 +1070,7 @@ export async function reassemblerLEssaiEnVrai(o: {
     process.env.STUDIO_ESSAI_DEBUT = String(Date.now());
   }
   if (aReprendre.length) {
-    const r = await repriseDesCases({ client, inventaire, decoupe, logo, separation, nom, personnes, elements: aReprendre, raisons: new Map(aReprendre.map((n) => [n, cases.find((c) => c.element === n)!.essais.at(-1)!.raisonsApres])), debordes: cases.filter((c) => c.deborde).map((c) => c.element), ai: o.ai, ecrire });
+    const r = await repriseDesCases({ client, inventaire, decoupe, logo, separation, nom, personnes, elements: aReprendre, raisons: new Map(aReprendre.map((n) => [n, cases.find((c) => c.element === n)!.essais.at(-1)!.raisonsApres])), debordes: cases.filter((c) => c.deborde).map((c) => c.element), ai: o.ai, ecrire, phrase: lignesDuTexte(donnees.phrase) });
     reprise = { elements: aReprendre, devis: r.devis, depenseMicro: r.depenseMicro, gardees: [...r.gardees.keys()] };
     arret = r.arret;
     for (const [n, p] of r.gardees) { images.set(n, p); cases.find((c) => c.element === n)!.gardee = "reprise"; ecrire(`cases/${n}-gardee-hd.png`, p); }
@@ -1183,6 +1183,7 @@ async function repriseDesCases(o: {
   client: ClientDeLEssai; inventaire: Inventaire; decoupe: import("../../src/lib/syna-agent/planche-en-vrai").Decoupe; logo: Buffer;
   separation: import("../../src/lib/syna-agent/planche-en-vrai-code").Separation; nom: string; personnes: boolean; elements: NomElement[];
   raisons: Map<NomElement, string[]>; debordes: string[]; ai?: (q: Qui) => PlancheEnVraiAi; ecrire: (f: string, c: string | Buffer) => string;
+  /** La phrase du logo, toutes ses lignes (jamais en trop ; dite au relecteur). */ phrase: readonly string[];
 }): Promise<{ devis: { maxMicro: number; probableMicro: number }; depenseMicro: number; gardees: Map<NomElement, Buffer>; arret?: string }> {
   const T = await import("../../src/lib/syna-agent/planche-en-vrai-tache");
   const { id } = await import("../../src/lib/db");
@@ -1219,7 +1220,10 @@ async function repriseDesCases(o: {
   let arret: string | undefined;
   await runWithLang({ ui: "fr", content: "fr" }, () => runForUser(u.id, () => withTrace({ jobId, projectId, costCapMicro: 0, studioCapMicro: devis.maxMicro }, async () => {
     try {
-      const res = await T.reprendreDesCasesEnVrai({ ai, nom: o.nom, personnes: o.personnes, logo: o.logo, separation: o.separation, inventaire: o.inventaire, decoupe: o.decoupe, elements: o.elements, raisons: o.raisons, debordes: o.debordes });
+      const res = await T.reprendreDesCasesEnVrai({ ai, nom: o.nom, personnes: o.personnes, logo: o.logo, separation: o.separation, inventaire: o.inventaire, decoupe: o.decoupe, elements: o.elements, raisons: o.raisons, debordes: o.debordes,
+        // Les produits de la fiche et la phrase du logo (27 novembre 2026, reprise réelle de Mouture : sans eux, la ligne des
+        // étiquettes manquait au dessinateur et la phrase du logo était comptée en trop).
+        produits: o.client.produits, phrase: o.phrase });
       for (const [n, r] of res) { o.ecrire(`reprise/${n}-raisons.json`, `${JSON.stringify(r.essais.map((e) => e.raisons), null, 2)}\n`); if (r.ok && r.png) gardees.set(n, r.png); }
     } catch (e) {
       arret = e instanceof PlafondDeLEssaiAtteint ? `le garde-fou de l'essai a refusé un appel : ${e.message}` : e instanceof CostCapReached ? `la borne du Studio a refusé un appel : ${e.message}` : `un appel a échoué, jamais relancé : ${messageAvecCause(e).slice(0, 700)}`;

@@ -86,8 +86,8 @@ describe("planche en vrai de Mouture, étape 5 : produits et faits inventés", (
     // Le texte réellement envoyé à l'essai (sans la ligne) est reconnu, pour reprendre l'image reçue sans la repayer.
     const avant = fs.readFileSync(`${F}/produit-1-1-texte-envoye.txt`, "utf8");
     expect(P.texteSansLaLigneDesTextes(P.texteDeLElement({ element: "produit-1", nom: "Mouture", logo: true, photo: false, personnes: false, produits: PRODUITS }), PRODUITS)).toBe(avant);
-    // Sans produits, le texte d'avant ne change pas.
-    expect(P.texteDeLElement({ element: "produit-1", nom: "Mouture", logo: true, photo: false, personnes: false })).toBe(avant);
+    // Sans produits, le texte d'avant ne change pas, sauf la ligne des petits textes (27 novembre 2026), elle aussi reconnue.
+    expect(P.texteSansLaLigneDesTextes(P.texteDeLElement({ element: "produit-1", nom: "Mouture", logo: true, photo: false, personnes: false }), undefined)).toBe(avant);
   });
   it("la reprise ne renvoie jamais au dessinateur un texte inventé (l'essai réel les renvoyait), et rappelle les noms de la fiche", () => {
     expect(fs.readFileSync(`${F}/produit-3-2-texte-envoye-avant.txt`, "utf8")).toMatch(/« PÉROU »/);

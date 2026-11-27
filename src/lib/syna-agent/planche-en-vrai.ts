@@ -330,17 +330,30 @@ export const SANS_PERSONNE_EN_VRAI = "Aucune personne n'apparaît.";
  */
 export const ligneDesTextesEnVrai = (produits: readonly string[]): string =>
   `Les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : ${produits.map((p) => `« ${nomDuProduitALEcran(p)} »`).join(", ")} ; aucune date, aucune origine, aucun chiffre n'y est ajouté.`;
-/** La ligne qui dit ce qu'est l'élément (marge des formats larges ; textes des étiquettes ; sans accord du client, aucune personne). */
+/**
+ * LES PETITS TEXTES ILLISIBLES DE L'APERÇU (27 novembre 2026, essai réel de Mouture, reprise des trois images ; constat du
+ * chef d'orchestre : sur les étiquettes, une plaque ou un emballage, l'aperçu en petit ne montre que des traits ; en haute
+ * définition, le dessinateur y écrivait des mots plausibles, une origine, un chiffre, un nom de lieu). Dite en positif, pour
+ * tout client, dans la ligne qui dit l'élément (la règle des preuves reste mot pour mot) : ces petits textes restent des
+ * traits ou une texture, sans aucun mot lisible ; seuls les mots déjà lisibles sur l'aperçu sont écrits.
+ */
+export const MICRO_TEXTES_EN_VRAI = "Les petits textes illisibles de l'aperçu restent de simples traits ou une texture, sans aucun mot lisible ; seuls les mots déjà lisibles sur l'aperçu sont écrits.";
+/** La ligne qui dit ce qu'est l'élément (petits textes illisibles ; marge des formats larges ; textes des étiquettes ; sans accord du client, aucune personne). */
 export function ligneDeLElement(n: NomElement, personnes: boolean, produits?: readonly string[]): string {
   const d = def(n);
-  return [d.quoi, d.large && !/marges généreuses/.test(d.quoi) ? MARGE_LARGE : "", produits?.length ? ligneDesTextesEnVrai(produits) : "", personnes ? "" : SANS_PERSONNE_EN_VRAI].filter(Boolean).join(" ");
+  return [d.quoi, MICRO_TEXTES_EN_VRAI, d.large && !/marges généreuses/.test(d.quoi) ? MARGE_LARGE : "", produits?.length ? ligneDesTextesEnVrai(produits) : "", personnes ? "" : SANS_PERSONNE_EN_VRAI].filter(Boolean).join(" ");
 }
 /**
- * Le texte d'une image envoyé AVANT la ligne des étiquettes (une passe d'essai reçue avant cette correction) : le même texte,
- * cette ligne retirée. Sert seulement à reconnaître une image déjà reçue et payée, jamais à envoyer.
+ * Le texte d'une image envoyé AVANT la ligne des étiquettes et celle des petits textes (une passe d'essai reçue avant ces
+ * corrections) : le même texte, ces lignes retirées. Sert seulement à reconnaître une image déjà reçue et payée, jamais à
+ * envoyer.
  */
-export const texteSansLaLigneDesTextes = (texte: string, produits: readonly string[] | undefined): string =>
-  produits?.length ? texte.replace(` ${ligneDesTextesEnVrai(produits)}`, "") : texte;
+export const texteSansLaLigneDesTextes = (texte: string, produits: readonly string[] | undefined): string => {
+  const t = texte.replace(` ${MICRO_TEXTES_EN_VRAI}`, "");
+  return produits?.length ? t.replace(` ${ligneDesTextesEnVrai(produits)}`, "") : t;
+};
+/** Le texte d'une image envoyé avant la ligne des petits textes seulement (la ligne des étiquettes y était déjà). */
+export const texteSansLaLigneDesPetitsTextes = (texte: string): string => texte.replace(` ${MICRO_TEXTES_EN_VRAI}`, "");
 export const finDeRepriseEnVrai = (raisons: readonly string[]) => `À corriger : ${raisons.join(" ; ")}.`;
 /** LE TEXTE ENVOYÉ : REGLE mot pour mot (sa phrase du logo seulement si le logo est joint), la photo du produit, la ligne. */
 export function texteDeLElement(o: { element: NomElement; nom: string; logo: boolean; photo: boolean; personnes: boolean; raisons?: readonly string[]; /** Le symbole seul est joint (jamais avec le logo complet). */ symbole?: boolean;
@@ -524,6 +537,13 @@ export const ImageRelueSchema = z.object({
   produitFidele: z.boolean().nullable().catch(null),
   /** Un texte coupé, ou collé au bord de l'image. */
   texteCoupe: z.boolean().catch(true),
+  /**
+   * LA COUPE FIDÈLE À L'APERÇU (27 novembre 2026, essai réel de Mouture, reference-4 : « Le sachet de droite est coupé par
+   * le bord de l'image, ce qui tronque son logo et son étiquette, comme sur l'aperçu. », refusée quand même) : seulement
+   * quand texteCoupe est vrai, la coupe est déjà sur l'aperçu, au même bord. Elle n'est jamais une faute. Absent d'un
+   * verdict d'avant ce champ : le code lit alors le pourquoi (`coupeFideleALApercu`).
+   */
+  coupeCommeSurLApercu: z.boolean().nullable().optional().catch(undefined),
   /** La note de fidélité à l'aperçu, de 0 à 10. */
   note: z.number().min(0).max(10).catch(0),
   pourquoi: z.string().max(500).catch(""),
@@ -552,10 +572,12 @@ export const RELECTEUR_EN_VRAI = `Tu es le relecteur le plus exigeant d'un studi
 - logoFonceSurFondSombre : un logo foncé est posé sur un fond sombre (il doit y être clair) ;
 - produitFidele : seulement si la photo du produit est jointe : le produit montré est le sien, reconnaissable au premier regard (même forme, même contenant, même matière) ; null sinon ;
 - texteCoupe : un texte est coupé, ou collé au bord de l'image ;
+- coupeCommeSurLApercu : seulement quand texteCoupe est vrai : la même coupe est déjà sur l'aperçu, au même bord (un objet, une étiquette ou un texte coupé par le bord exactement comme sur l'aperçu) ; une coupe fidèle à l'aperçu n'est jamais une faute ; null quand rien n'est coupé ;
 - note : ta note de fidélité à l'aperçu, de 0 à 10 ; une image fidèle, nette, sans défaut visible vaut 8 ou plus ;
 - pourquoi : une ou deux phrases simples ;
 - inventes : chaque texte lisible de l'image refaite qui donne un nom de produit, une origine, une date, une année ou un chiffre absents de son aperçu et des produits de la marque donnés dans la demande (sur une étiquette, un emballage, une plaque, partout) ; pour chacun, « ou » (l'objet qui le porte) et « texte » (recopié lettre pour lettre) ; vide s'il n'y en a pas. Le nom de la marque et la phrase de son logo ne sont jamais inventés ;
 - aussiSurLApercu : chaque texte de textesLus que tu lis aussi, écrit de la même façon, sur l'aperçu de la case (à n'importe quelle place de l'aperçu), recopié comme dans textesLus ; vide s'il n'y en a pas.
+Le nom de la marque et la phrase de son logo, écrits exactement, ne sont jamais une faute, où que le logo soit posé (une étiquette, un sachet, une enseigne, une page), même quand l'aperçu est trop petit pour les lire : recopie-les dans textesLus sans les reprocher. Un petit texte de l'aperçu, illisible, doit rester des traits ou une texture : un mot lisible écrit à sa place est un texte inventé.
 Ne juge que ce que tu vois.`;
 
 export function demandeAuRelecteurEnVrai(o: { nom: string; personnes: boolean; groupe: Groupe; cases: { element: NomElement; photo: boolean }[]; produits?: readonly string[]; phrase?: readonly string[] }): string {
@@ -707,21 +729,76 @@ export function raisonsDuRefusEnVrai(v: ImageRelue | undefined, o: { inventaire:
   if (!v.identique) r.push("elle n'est pas identique à son aperçu");
   const z = textesDeLaZone(o.inventaire?.textes ?? [], v.textesLus, { element: o.element ?? o.inventaire?.case, deborde: o.deborde });
   const c = comparerLesTextes(z.attendus, z.lus);
+  // LE NOM ET LA PHRASE DU LOGO, OÙ QUE LE LOGO SOIT POSÉ (27 novembre 2026, essai réel de Mouture, reprise : la phrase du
+  // logo encore comptée en trop dans le logo posé sur un sachet, parce que la reprise ne recevait pas la phrase) : écrits
+  // exactement, ils ne sont jamais une faute là où le logo est, dans l'aperçu ou dans l'image refaite, quelle que soit sa
+  // place ; la comparaison reste lettre pour lettre (`sansLesTextesDuLogo`). Toute reprise reçoit la phrase.
   const logoLa = o.logo && (v.logoPresent || o.inventaire?.logo) ? o.logo : undefined;
   const inventes = faitsInventesEnVrai(v, { attendus: z.attendus, lus: z.lus, produits: o.produits, logo: logoLa });
   // Les mots des lignes inventées sont dits dans leur propre raison, pas deux fois.
   const dansLesInventes = new Set(inventes.flatMap(motsDe));
   const excuses = textesExcusesEnVrai(v, { attendus: z.attendus, lus: z.lus, produits: o.produits });
-  const t = { manquants: sansLesMots(c.manquants, excuses.manquants), enTrop: sansLesMots(sansLesTextesDuLogo(c.enTrop, logoLa).filter((w) => !dansLesInventes.has(w)), excuses.enTrop) };
+  const fidele = v.texteCoupe && coupeFideleALApercu(v);
+  const coupes = fidele ? motsCoupesCommeSurLApercu(z.attendus, z.lus, logoLa) : { enTrop: [], manquants: [] };
+  const t = { manquants: sansLesMots(sansLesMots(c.manquants, excuses.manquants), coupes.manquants), enTrop: sansLesMots(sansLesMots(sansLesTextesDuLogo(c.enTrop, logoLa).filter((w) => !dansLesInventes.has(w)), excuses.enTrop), coupes.enTrop) };
   if (inventes.length) r.push(`${DEBUT_FAITS_INVENTES_EN_VRAI}${inventes.map((l) => `« ${l} »`).join(", ")}`);
   if (t.manquants.length || t.enTrop.length) r.push(`ses textes ne sont pas ceux de l'aperçu, lettre pour lettre${t.manquants.length ? ` (manquent : ${t.manquants.slice(0, 8).map((w) => `« ${w} »`).join(", ")})` : ""}${t.enTrop.length ? ` (en trop ou mal écrits : ${t.enTrop.slice(0, 8).map((w) => `« ${w} »`).join(", ")})` : ""}`);
   if (v.logoPresent && !o.inventaire?.logo) r.push("un logo a été ajouté là où l'aperçu n'en a pas");
   if (v.personne && !o.personnes) r.push("une personne est visible sans l'accord du client");
   if (v.logoFonceSurFondSombre) r.push("un logo foncé est posé sur un fond sombre : il doit y être clair");
   if (o.photo && v.produitFidele === false) r.push("le produit montré n'est pas celui de la photo du client");
-  if (v.texteCoupe) r.push("un texte est coupé ou collé au bord");
+  if (v.texteCoupe && !fidele) r.push("un texte est coupé ou collé au bord");
   if (v.note < NOTE_DU_PROPRIETAIRE) r.push(`sa fidélité n'est pas au niveau (${v.note}/10, il faut ${NOTE_DU_PROPRIETAIRE})`);
   return r;
+}
+
+/**
+ * UNE COUPE AU BORD FIDÈLE À L'APERÇU NE FAIT JAMAIS REFUSER (27 novembre 2026, essai réel de Mouture, reference-4 : le
+ * relecteur écrit lui-même « coupé par le bord de l'image, […] comme sur l'aperçu » et coche texteCoupe). Vraie quand le
+ * relecteur le dit dans `coupeCommeSurLApercu` ; dans un verdict sans ce champ, quand chaque proposition de son pourquoi qui
+ * parle d'une coupe ou d'un bord dit aussi qu'elle est comme sur l'aperçu (« comme sur l'aperçu », « comme dans l'aperçu »,
+ * « déjà coupé sur l'aperçu »…). Une phrase qui dit seulement que l'image est « fidèle à l'aperçu » ne suffit pas : elle ne
+ * parle pas de la coupe (« La composition est fidèle à l'aperçu, mais « naturels » touche le bord » reste une faute).
+ */
+const DIT_UNE_COUPE = /\bcoup[ée]+s?\b|\bcoupé|tronqu|\bbords?\b|rogn/iu;
+const COMME_SUR_L_APERCU = /comme (?:sur|dans) l['’]aper[çc]u|(?:d[ée]j[àa]|aussi|[ée]galement) (?:coup[ée]+s?|tronqu[ée]+s?|rogn[ée]+s?) (?:sur|dans) l['’]aper[çc]u|(?:d[ée]j[àa]|aussi|[ée]galement) (?:sur|dans) l['’]aper[çc]u|(?:m[êe]me|identique [àa] la) coupe (?:que (?:sur|dans) l['’]aper[çc]u|de l['’]aper[çc]u)/iu;
+export function coupeFideleALApercu(v: Pick<ImageRelue, "texteCoupe" | "pourquoi"> & { coupeCommeSurLApercu?: boolean | null }): boolean {
+  if (!v.texteCoupe) return false;
+  if (typeof v.coupeCommeSurLApercu === "boolean") return v.coupeCommeSurLApercu;
+  const propositions = v.pourquoi.split(/[.;!?\n]+|\bmais\b|\ben revanche\b|\bcependant\b|\btoutefois\b|\bpar contre\b/iu).map((x) => x.trim()).filter(Boolean);
+  const coupes = propositions.filter((x) => DIT_UNE_COUPE.test(x));
+  return coupes.length > 0 && coupes.every((x) => COMME_SUR_L_APERCU.test(x));
+}
+/**
+ * LES MOTS COUPÉS PAR UN BORD FIDÈLE À L'APERÇU : une ligne lue qui est le début d'une ligne attendue ou d'un texte du logo,
+ * coupée par le bord (« CAFÉ E » pour « CAFÉ EN GRAINS », « MOU » pour « MOUTURE », « TORRÉF » pour « TORRÉFACTION
+ * ARTISANALE ») : son dernier mot, début d'un mot de la ligne, n'est pas en trop ; les mots de la ligne attendue qui suivent
+ * la coupe ne manquent pas. Seulement quand la coupe est fidèle à l'aperçu ; la casse ne compte pas pour les textes du logo
+ * (dessinés en capitales), chaque lettre et chaque accent si. Rend les mots excusés, un pour un.
+ */
+export function motsCoupesCommeSurLApercu(attendus: readonly string[], lus: readonly string[], logo?: TextesDuLogo): { enTrop: string[]; manquants: string[] } {
+  const enTrop: string[] = [], manquants: string[] = [];
+  const lignes: { mots: string[]; attendue: boolean }[] = [
+    ...attendus.map((t) => ({ mots: motsDe(t), attendue: true })),
+    ...(logo ? [logo.nom, ...(logo.phrase ?? [])].map((t) => ({ mots: motsDe(t), attendue: false })) : []),
+  ].filter((l) => l.mots.length);
+  const pareil = (a: string, b: string) => enCapitales(a) === enCapitales(b);
+  for (const lu of lus) {
+    const m = motsDe(lu);
+    if (!m.length) continue;
+    for (const l of lignes) {
+      const n = m.length, dernier = m[n - 1], celui = l.mots[n - 1];
+      if (n > l.mots.length || !celui) continue;
+      if (!m.slice(0, -1).every((w, i) => pareil(w, l.mots[i]))) continue;
+      const entier = pareil(dernier, celui), debut = !entier && enCapitales(celui).startsWith(enCapitales(dernier));
+      if (!entier && !debut) continue;
+      if (entier && n === l.mots.length) continue; // la ligne entière : rien de coupé
+      if (debut) enTrop.push(dernier);
+      if (l.attendue) manquants.push(...l.mots.slice(debut ? n - 1 : n));
+      break;
+    }
+  }
+  return { enTrop, manquants };
 }
 
 /**
