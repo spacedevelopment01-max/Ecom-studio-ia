@@ -1,0 +1,47 @@
+{
+  "verdict": {
+    "images": [
+      {
+        "case": "site-telephone",
+        "identique": false,
+        "textesLus": [
+          "10:05",
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "Des cafés",
+          "de caractère,",
+          "pour tous",
+          "vos moments.",
+          "TORRÉFACTION ARTISANALE",
+          "Découvrir →",
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "Nos cafés",
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "MOUTURE",
+          "MOUTURE",
+          "Cafés en grains",
+          "Cafés moulus",
+          "Coffrets"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 7,
+        "pourquoi": "L'écran du téléphone reprend fidèlement l'aperçu : même titre, même bouton, même tasse fumante et mêmes sachets kraft. En revanche, la phrase manuscrite « Une boutique toujours avec vous » au-dessus du téléphone a disparu et le cadrage est différent.",
+        "inventes": []
+      }
+    ]
+  },
+  "raisons": {
+    "site-telephone": [
+      "elle n'est pas identique à son aperçu",
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « Une », « boutiq », « toujours », « avec », « vous ») (en trop ou mal écrits : « Cafés », « en », « grains », « Cafés », « moulus », « Coffrets »)",
+      "sa fidélité n'est pas au niveau (7/10, il faut 8)"
+    ]
+  },
+  "gardees": []
+}

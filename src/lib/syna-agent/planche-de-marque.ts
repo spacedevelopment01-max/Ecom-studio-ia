@@ -862,7 +862,7 @@ export function lectureDesSignesIsoles(v: RelectureDeLaPlanche, o: AttenduDeLaPl
   }
   return { finitions, fautes };
 }
-const motsDuProduit = (t: string) => plat(t).split(/[^a-z0-9]+/).filter((w) => w.length >= 3 && !MOTS_VIDES.has(w)).map(racine);
+export const motsDuProduit = (t: string) => plat(t).split(/[^a-z0-9]+/).filter((w) => w.length >= 3 && !MOTS_VIDES.has(w)).map(racine);
 /**
  * Un nom lu sur la planche est-il celui d'un produit de la fiche ? Chacun de ses vrais mots est un mot des produits du client
  * (singulier ou pluriel, accents et capitales mis à part) : « Café en grains », « Coffrets » sont permis pour « cafés en

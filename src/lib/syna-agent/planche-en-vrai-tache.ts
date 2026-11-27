@@ -27,7 +27,7 @@ import { lignesDuTexte } from "./phrase-sous-le-nom";
 import { blocDeLaFinition, copyright, lignesDeLaPhrase, mentionDuDomaine, nettoyerLesSignesIsoles, porteUnSigneParasite, texteDeLaFinition } from "./planche-de-marque";
 import {
   CASES_DU_CODE, ELEMENTS, GROUPES, INVENTAIRE_SYSTEM, InventaireSchema, NOMS_DES_ELEMENTS, RELECTEUR_EN_VRAI, RelectureDuGroupeSchema, TITRES, TUILES_DU_LOGO,
-  caseLue, decouperLesApercus, demandeDeLInventaire, inventaireIncomplet, lesCases, phraseDeLaPoliceRemplacee, phraseDeLaPublicationIncomprehensible,
+  caseLue, decouperLesApercus, policesDeLApercu, demandeDeLInventaire, inventaireIncomplet, lesCases, phraseDeLaPoliceRemplacee, phraseDeLaPublicationIncomprehensible,
   phraseDeLImageGardeeEnApercu, phraseDesLogosDeLApercu, phraseDesLogosEnHdRefuses, phraseDuProduitImagine, phraseDuSymboleComplet, promessesDuBloc, refaireLesElements, refaireLesLogosEnHd,
   ETIQUETTE_AMBIANCE, LOGOS_EN_HD, RELECTEUR_DES_LOGOS_EN_HD, RelectureDesLogosEnHdSchema, TAILLE_DES_LOGOS_EN_HD, VERSIONS_EN_HD,
   type Decoupe, type DemandeDElement, type DemandeDeLogoEnHd, type EtatPlancheEnVrai, type Groupe, type Inventaire, type Laquelle, type NomElement, type RelectureDesLogosEnHd,
@@ -317,7 +317,8 @@ export async function plancheEnVrai(o: {
   const encre = route.palette.dark && luminance(route.palette.dark) < 0.35 ? route.palette.dark : "#1C2A24";
   const roles = rolesDeLaPalette(palette0, encre);
   const palette = palette0.map((hex, i) => ({ hex, nom: inventaire.couleurs[i]?.nom?.trim() ?? "", mots: (inventaire.couleurs[i]?.mots ?? []).map((m) => m.trim()).filter(Boolean).slice(0, 3) }));
-  const titres = policeDuCatalogue(inventaire.polices.titres, 700), textes = policeDuCatalogue(inventaire.polices.textes, 400);
+  // Les rôles des polices suivent leur place dans l'aperçu (`policesDeLApercu`).
+  const lues = policesDeLApercu(inventaire), titres = policeDuCatalogue(lues.titres, 700), textes = policeDuCatalogue(lues.textes, 400);
   issues.push(...phrasesDesPolicesRemplacees({ titres, textes }));
   const couleur = await couleurDuLogo(logo);
   const bas = texteDuBasDuBadge({ ligneDuLogo: o.ligneDuLogo, metierCourt: o.metierCourt, signature: o.phrase });
@@ -430,8 +431,15 @@ export function textesDeLaPlanche(inventaire: Inventaire, route: Route): { titre
   // haut est effacé en entier et seul le logo y est posé.
   const duLogo = new Set([nom, ...(caseLue(inventaire, "logo")?.textes ?? []), ...lignesDuTexte(route.slogan ?? "")].map(plat).filter(Boolean));
   const portee = (l: string) => duLogo.has(plat(l)) || [...duLogo].some((d) => d.length > 3 && plat(l).length > 3 && (d.includes(plat(l)) || plat(l).includes(d)));
-  const hautLu = lignes("haut");
-  return { titres, blocs, haut: hautLu.filter((l) => !portee(l)), hautDansLeLogo: hautLu.length > 0 && hautLu.every(portee), notes };
+  // LES DÉBRIS DU BANDEAU VOISIN (27 novembre 2026, essai réel de Mouture : l'inventaire a lu « D », « à », « le », « TO »
+  // dans le haut, le début du titre du bandeau coupé par le bord de la case ; le code les écrivait sous le logo). Quand le
+  // bandeau d'ouverture porte du texte, une ligne du haut d'un seul mot d'au plus trois lettres en est un morceau : elle
+  // n'est ni écrite ni comptée comme une ligne à garder.
+  const bandeauLu = lignes("ouverture-planche").length > 0;
+  const debris = (l: string) => bandeauLu && !/\s/.test(l.trim()) && [...l.trim()].filter((c) => /\p{L}/u.test(c)).length <= 3;
+  const hautLu = lignes("haut"), hautDebris = hautLu.filter(debris), hautGarde = hautLu.filter((l) => !debris(l));
+  if (hautDebris.length) notes.push(`haut de la planche : ${hautDebris.map((l) => `« ${l} »`).join(", ")} sont des morceaux du titre du bandeau voisin ; ils ne sont pas réécrits`);
+  return { titres, blocs, haut: hautGarde.filter((l) => !portee(l)), hautDansLeLogo: hautGarde.length > 0 && hautGarde.every(portee), notes };
 }
 /**
  * LES PHRASES DE PRÉSENTATION DES POLICES, lues à l'inventaire dans la case des typographies : la ligne qui suit le nom de
@@ -442,7 +450,8 @@ export function phrasesDesPolices(inventaire: Inventaire): [string | null, strin
   const plat = (x: string) => x.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/[^a-z0-9]/g, "");
   const specimen = (x: string) => /^[\p{Lu}\s]{10,}$/u.test(x) || /^[\p{Ll}\s]{20,}$/u.test(x) && !/\s/.test(x.trim()) || /^[\d\s]+$/.test(x);
   const apres = (nom: string) => { const i = t.findIndex((x) => plat(x) === plat(nom)); const s = i >= 0 ? t[i + 1] : undefined; return s && !specimen(s) && plat(s) !== "" ? nettoyerLesSignesIsoles(s) : null; };
-  return [apres(inventaire.polices.titres.nom), apres(inventaire.polices.textes.nom)];
+  const lues = policesDeLApercu(inventaire);
+  return [apres(lues.titres.nom), apres(lues.textes.nom)];
 }
 /**
  * LES LIGNES DE MOTS SOUS CHAQUE PASTILLE, telles que l'aperçu les coupe (« Chaleur, énergie » puis « bienveillance »), lues
@@ -806,7 +815,7 @@ export async function plancheEnVraiParLeCode(o: {
   const encre = o.route.palette.dark && luminance(o.route.palette.dark) < 0.35 ? o.route.palette.dark : "#1C2A24";
   const roles = rolesDeLaPalette(ret.hex, encre);
   const palette = ret.hex.map((hex, i) => ({ hex, nom: o.inventaire.couleurs[i]?.nom?.trim() ?? "", mots: (o.inventaire.couleurs[i]?.mots ?? []).map((m) => m.trim()).filter(Boolean).slice(0, 3) }));
-  const polices = { titres: policeDuCatalogue(o.inventaire.polices.titres, 700), textes: policeDuCatalogue(o.inventaire.polices.textes, 400) };
+  const lues = policesDeLApercu(o.inventaire), polices = { titres: policeDuCatalogue(lues.titres, 700), textes: policeDuCatalogue(lues.textes, 400) };
   const bas = texteDuBasDuBadge({ ligneDuLogo: o.ligneDuLogo, metierCourt: o.metierCourt, signature: o.phrase ?? o.route.slogan ?? "" });
   const v = await versionsDuLogo({ logo: o.logo, separation, couleur: await couleurDuLogo(o.logo), sombre: luminance(roles.primary) < 0.45 ? roles.primary : roles.dark, clair: roles.light, monoClair: monoClairDe(ret.hex), nom: o.route.name.trim(), bas, police: POLICE_DU_BADGE, tuiles: decoupe.apercus, hd: o.logosEnHd?.gardes });
   const t = textesDeLaPlanche(o.inventaire, o.route);

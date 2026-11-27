@@ -1,0 +1,41 @@
+{
+  "verdict": {
+    "images": [
+      {
+        "case": "publication-4x5",
+        "identique": true,
+        "textesLus": [
+          "Un café",
+          "de caractère,",
+          "au quotidien.",
+          "Torréfaction",
+          "artisanale",
+          "Origines",
+          "sélectionnées",
+          "Saveurs",
+          "intenses",
+          "Découvrir",
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "CAFÉ EN GRAINS",
+          "L'ESSENTIEL",
+          "Saveurs intenses"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "L'image refaite reprend fidèlement l'aperçu : même titre, mêmes trois atouts avec leurs pictos, même bouton, même sachet kraft avec le logo Mouture sur fond de grains. Le rendu est net et l'étiquette affiche seulement « Saveurs intenses », sans aucune mention inventée.",
+        "inventes": []
+      }
+    ]
+  },
+  "raisons": {
+    "publication-4x5": [
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Saveurs », « intenses »)"
+    ]
+  },
+  "gardees": []
+}

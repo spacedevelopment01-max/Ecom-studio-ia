@@ -2745,3 +2745,64 @@ describe("l'épreuve des erreurs techniques (une tâche au résultat incertain, 
     expect(en.fin.message).not.toMatch(TECHNIQUE);
   });
 });
+
+describe("l'épreuve de la planche en vrai de Mouture identique à l'aperçu A (vrais fichiers, aucun appel)", async () => {
+  const P = await import("@/lib/syna-agent/planche-en-vrai");
+  const C = await import("@/lib/syna-agent/planche-en-vrai-code");
+  const T = await import("@/lib/syna-agent/planche-en-vrai-tache");
+  const { logoDetoure } = await import("@/lib/syna-agent/brand-images");
+  type NomElement = import("@/lib/syna-agent/planche-en-vrai").NomElement;
+  const F = "tests/fixtures/torrefacteur-planche-en-vrai";
+  const PRODUITS = ["cafés en grains", "cafés moulus", "coffrets"], LOGO = { nom: "Mouture", phrase: ["TORRÉFACTION ARTISANALE"] };
+  const inventaire = P.InventaireSchema.parse(JSON.parse(fs.readFileSync(`${F}/inventaire-reponse.json`, "utf8")));
+  const v2 = (n: NomElement) => (JSON.parse(fs.readFileSync(`${F}/${P.def(n).groupe}-2-verdict.json`, "utf8")).verdict as import("@/lib/syna-agent/planche-en-vrai").RelectureDuGroupe).images.find((x) => x.case === n)!;
+  const raisons = (n: NomElement) => P.raisonsDuRefusEnVrai(v2(n), { inventaire: P.caseLue(inventaire, n), personnes: false, photo: false, element: n, logo: LOGO, produits: PRODUITS });
+  const routeMouture = { key: "A", name: "Mouture", slogan: "TORRÉFACTION ARTISANALE", palette: { dark: "#2B140E" }, board: { planche: { domaine: "mouturefrance.fr", statut: "disponible", annee: 2026 } } } as unknown as import("@/lib/syna-agent/brand-routes").Route;
+  const lum = (r: number, g: number, b: number) => 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  epreuve("planche-en-vrai-pas-identique-a-l-apercu-mouture", async () => {
+    const demo = await sharp(`${F}/apercu-planche-A-gardee.jpg`).resize(P.TAILLE_DEMO.w, P.TAILLE_DEMO.h, { fit: "fill" }).png().toBuffer();
+    const d = await P.decouperLesApercus(demo, "standard");
+    const det = await logoDetoure(fs.readFileSync(`${F}/logo-joint.png`)), logo = det.ok ? det.png : fs.readFileSync(`${F}/logo-joint.png`);
+    // 1 et 2. Les monochromes lisibles, l'horizontal repris de l'aperçu ; sur la planche, ces tuiles gardent l'aperçu.
+    const a = (await C.logoAAplats(logo))!;
+    expect(a).toBeTruthy();
+    const v = await C.versionsDuLogo({ logo, separation: await C.separerSymbole(logo), couleur: await C.couleurDuLogo(logo), sombre: "#2E1A12", clair: "#FCFAF7", monoClair: "#C89B6B", nom: "Mouture", bas: "TORRÉFACTION ARTISANALE", police: T.POLICE_DU_BADGE, tuiles: d.apercus });
+    const ref = v.versions["logo-principal"];
+    expect(await C.contrasteDesLettres(ref, v.versions["monochrome-fonce"], "#FCFAF7", a.seuil)).toBeGreaterThanOrEqual(C.CONTRASTE_MIN_DES_LETTRES);
+    expect(await C.contrasteDesLettres(ref, v.versions["monochrome-clair"], "#222222", a.seuil)).toBeGreaterThanOrEqual(C.CONTRASTE_MIN_DES_LETTRES);
+    expect(await C.contrasteDesLettres(logo, await C.monochromeAuxCreux(logo, "#FFFFFF", a.seuil, "claires"), "#2E1A12", a.seuil)).toBeGreaterThanOrEqual(C.CONTRASTE_MIN_DES_LETTRES);
+    expect(v.depuisLApercu).toContain("logo-horizontal");
+    expect(v.versions["logo-horizontal"].equals(ref)).toBe(false);
+    const tu = await C.tuilesDuBloc01({ demo, boites: d.boites, versions: v.versions, depuisLApercu: v.depuisLApercu });
+    for (const x of ["logo-horizontal", "monochrome-fonce", "monochrome-clair", "inverse"] as const) expect(tu.tuilesDeLApercu, x).toContain(x);
+    // 3. Les polices : Montserrat en titres (à gauche), jamais remplacée ; Playfair Display en textes.
+    const lues = P.policesDeLApercu(inventaire);
+    expect(C.policeDuCatalogue(lues.titres, 700)).toMatchObject({ famille: "Montserrat", remplacee: false });
+    expect(C.policeDuCatalogue(lues.textes, 400)).toMatchObject({ famille: "Playfair Display", remplacee: false });
+    expect(C.policeDuCatalogue({ nom: "Nunito", genre: "manuscrite", procheDuCatalogue: "Caveat" }, 400)).toMatchObject({ famille: "Caveat", pourquoi: "genre" });
+    // 4. Le bandeau : aucun débris écrit, aucune encre de l'ancien titre, les bandes gardent la photo.
+    const t = T.textesDeLaPlanche(inventaire, routeMouture);
+    expect(t.haut).toEqual([]);
+    expect(t.hautDansLeLogo).toBe(true);
+    const planche = await C.assemblerLaPlanche({
+      demo, boites: d.boites, pastilles: P.lesCases("standard").pastilles, images: new Map([["ouverture-planche", await sharp(`${F}/ouverture-planche-gardee-hd.jpg`).png().toBuffer()]]),
+      versions: Object.fromEntries(C.VERSIONS_DU_LOGO.map((x) => [x, logo])) as Record<import("@/lib/syna-agent/planche-en-vrai-code").VersionDuLogo, Buffer>, palette: [],
+      polices: { titres: C.policeDuCatalogue(lues.titres, 700), textes: C.policeDuCatalogue(lues.textes, 400) }, signature: t.haut, titres: new Map(), blocs: new Map([["ton", null], ["seo", null]]), encre: "#2B140E", hautDansLeLogo: t.hautDansLeLogo,
+    });
+    const { data, info } = await sharp(planche).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+    const { data: a0, info: ai } = await sharp(demo).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+    const haut = d.boites.get("haut")!, ob = d.boites.get("ouverture-planche")!, e = C.encresDuHaut(a0, ai.width, haut, C.fondDe(a0, ai.width, haut));
+    let encre = 0;
+    for (let y = 20; y < (ob[3] - 10) * 2; y++) for (let x = (e.logo![2] + 8) * 2; x < (ob[0] + 40) * 2; x++) { const i = (y * info.width + x) * 3; if (lum(data[i], data[i + 1], data[i + 2]) < 110) encre++; }
+    expect(encre).toBe(0);
+    const droite: number[] = [];
+    for (let y = ob[1] * 2 + 40; y < ob[3] * 2 - 40; y += 3) for (let x = ob[2] * 2 - 60; x < ob[2] * 2 - 10; x += 3) { const i = (y * info.width + x) * 3; droite.push(lum(data[i], data[i + 1], data[i + 2])); }
+    expect(droite.sort((p, q) => p - q)[droite.length >> 1]).toBeLessThan(170);
+    // 5. Les faux refus : noms des produits et texte de l'aperçu répété jamais en trop ; ce qui reste à refaire.
+    for (const n of ["publication-4x5", "produit-3", "emballage", "reference-6"] as const) expect(raisons(n), n).toEqual([]);
+    expect(raisons("site-telephone").join(" ")).not.toMatch(/« Cafés »|« Coffrets »/);
+    expect(raisons("produit-2").join(" ")).toMatch(/« EXCELLENCE »/);
+    expect(raisons("reference-5").join(" ")).toMatch(/« Qualité »/);
+    expect(P.RELECTEUR_EN_VRAI).toContain("aussiSurLApercu");
+  });
+});
