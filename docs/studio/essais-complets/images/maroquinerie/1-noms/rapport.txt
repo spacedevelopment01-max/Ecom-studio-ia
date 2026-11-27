@@ -1,0 +1,74 @@
+Essai des noms — client sans nom (maroquinerie artisanale qui fabrique et vend en ligne des sacs, des portefeuilles et des ceintures en cuir), type « produits », 2 identités
+Plafond de l'essai : 3,5000 € ; plafond de la tâche : 10,9281 €
+Le plafond 3,5000 € est sous la somme des maxima 10,9281 € (probable 1,4492 €) : l'essai part quand même. Il s'arrête proprement avant tout appel dont le pire cas dépasserait ce qui reste, garde ses fichiers et dit ce qu'il faudrait pour finir.
+
+Devis de l'essai des noms (fonctions du devis du Studio, aucun appel) :
+- recherches sur le web (paroles de clients, concurrents, usages) (3 fois) · anthropic:claude-sonnet-5-5 (recherche sur le web, 5 recherches au plus) · toujours · probable 0,3600 € · au plus 3,2357 €
+- étude du marché · anthropic:claude-sonnet-5-5 (effort medium) · toujours · probable 0,1118 € · au plus 0,3034 €
+- idées de la marque · anthropic:claude-opus-5-5 (effort medium) · toujours · probable 0,2821 € · au plus 0,6238 €
+- second tour d'idées · anthropic:claude-opus-5-5 (effort medium) · si trop peu d'idées passent les deux épreuves · probable 0,2821 € · au plus 0,6238 €
+- équipes de noms (une par chemin) (4 fois) · anthropic:claude-sonnet-5-5 (effort medium) · toujours · probable 0,4266 € · au plus 1,0373 €
+- reprise courte d'une équipe coupée (4 fois) · anthropic:claude-sonnet-5-5 (effort low) · si une réponse est coupée · probable 0,2546 € · au plus 0,5316 €
+- juge des noms · anthropic:claude-opus-5-5 (effort medium) · toujours · probable 0,1066 € · au plus 0,3657 €
+- second tour des équipes (4 fois) · anthropic:claude-sonnet-5-5 (effort medium) · si le juge garde trop peu de noms · probable 0,4266 € · au plus 1,0373 €
+- reprise courte du second tour (4 fois) · anthropic:claude-sonnet-5-5 (effort low) · si une réponse du second tour est coupée · probable 0,2546 € · au plus 0,5316 €
+- juge du second tour · anthropic:claude-opus-5-5 (effort medium) · si le juge garde trop peu de noms · probable 0,1066 € · au plus 0,3657 €
+- recherche sur le web des noms gardés · anthropic:claude-sonnet-5-5 (recherche sur le web, 5 recherches au plus) · toujours · probable 0,1200 € · au plus 1,0786 €
+- même recherche des noms gardés, autrement formulée · anthropic:claude-sonnet-5-5 (recherche sur le web, 5 recherches au plus) · si la première recherche ne rend aucune page · probable 0,1200 € · au plus 1,0786 €
+- vérification des noms gardés · anthropic:claude-sonnet-5-5 (effort medium) · toujours · probable 0,0421 € · au plus 0,1148 €
+Probable, déroulé habituel : 1,4492 €
+Probable, avec le second tour d'idées et le second tour de noms : 2,2645 €
+Plafond conseillé pour l'essai (deux fois le probable, arrondi) : 3,0000 €
+Attention au départ : les 3 recherches sur le web partent en même temps, chacune réservée à son pire cas ; sous 3,2357 €, la dernière est refusée et l'essai s'arrête dès le départ (les recherches déjà parties sont payées et se refont à la reprise).
+Somme des maxima (seconds tours et reprises courtes compris), pour aller au bout à coup sûr : 10,9281 € ; un plafond plus bas est permis : l'essai s'arrête alors proprement avant l'appel qui pourrait le dépasser
+Plafond que le Studio donne à cette tâche dans l'accord de l'étape (accordGraphistes, part des noms) : 10,9281 € (la somme des maxima de tous ses appels, vérification des noms gardés comprise)
+Hors plafond : une réponse de texte mal formée à réparer coûterait au plus 6,6349 € de plus en tout.
+L'adresse de chaque nom (annuaires publics des registres) : gratuite.
+
+Noms vérifiés proposés au client : 2
+1. Maroquin [vérifié] — Tu fais de la maroquinerie : le nom dit ton métier en un mot ancien et élégant, que tu peux mettre en grand sur ton site sans rougir.
+   Nom de domaine : maroquin.fr et maroquin.com sont déjà pris ; libres aujourd'hui : maroquinfrance.fr et maroquinfrance.com (à réserver vite : seule la réservation le garantit).
+   La planche écrirait : « maroquinfrance.fr — disponible »
+2. Havane [vérifié] — Il donne à ta marque la chaleur et l'élégance que tu cherches, en un mot court qui évoque la teinte de tes sacs et ceintures.
+   Nom de domaine : havane.fr et havane.com sont déjà pris ; libres aujourd'hui : havanefrance.fr et havanefrance.com (à réserver vite : seule la réservation le garantit).
+   La planche écrirait : « havanefrance.fr — disponible »
+
+Le nom choisi part aux étapes suivantes par CLIENT_NOM="<le nom, tel qu'il est écrit ci-dessus>".
+
+Noms écartés par SINA, et pourquoi (pour toi seulement : le client ne les voit pas) :
+Premier tour : 127 nom(s) différent(s) trouvé(s) par les équipes ; 0 écarté(s) par les contrôles gratuits du Studio ; 127 envoyé(s) au juge, qui en garde 3.
+  Presque gardés par le juge (4) :
+  - Besace (équipe « mots »), note 7/10 : Le nom seul : beau mot chaleureux, mais il ne parle que du sac et laisse de côté tes portefeuilles et tes ceintures.
+  - Poinçon (équipe « mots »), note 7/10 : La beauté : le mot dit bien la marque de l'artisan, mais il sonne un peu dur et administratif, plus orfèvrerie que cuir chaleureux.
+  - Sellier (équipe « mots »), note 7,5/10 : Le nom seul : il dit bien l'artisan du cuir, mais il fait d'abord penser aux selles de cheval, que tu ne fabriques pas.
+  - Grain (équipe « verite »), note 7,5/10 : Le sous-entendu : « avoir un grain », c'est être un peu fou, et le mot évoque aussi l'averse. Beau mot de matière, mais ce doute coûte.
+  Refusés par le juge (120), sans raison écrite : il n'écrit une raison et une note que pour les noms presque gardés.
+  - équipe « langue » : Du Cran, Les Bons Comptes, Bouche Cousue, Haut la Main, Billet Doux, De Fil en Aiguille, Tout se Tient, Main de Maître, Pour de Bon, Un Beau Geste, La Boucle Bouclée, Cartes sur Table, Au Fil des Ans, Sur le Métier, Point d'Honneur, À Toute Épreuve, Un Tour de Main, Avec le Temps, Aux Petits Soins, Pièce Maîtresse, Cousu d'Or, En Bonnes Mains, Peau Neuve, Le Dessus du Panier, Tenir Bon, Point par Point, Main dans la Main, Sac à Malice, Patte Blanche, À Fleur de Peau, Un Bon Point, Bien dans sa Peau
+  - équipe « univers » : Ceinture Noire, Bon Point, Long Cours, Atout, Accord Parfait, Feu Doux, Escale, Compte Juste, Second Souffle, Baluchon, Carte Maîtresse, Belle Saison, Gros Temps, Ritournelle, Bon Vent, Prolongations, Éclaircie, Mise en Place, Havre, Bonne Mesure, Vent Arrière, Relais, Terre Ferme, Crescendo, Passeport, Été Indien, Trois Cartes, Bonne Donne, Endurance, Tempo, Veillée
+  - équipe « verite » : Prix de Revient, Prendre Ses Plis, Trois et Pas Plus, Rodage, Même Main, Belle Usure, Envie de Garder, Épreuve du Temps, Imparfait, Peau Dure, Chaque Euro, Longtemps, Cuir Franc, Seconde Peau, Du Poids, Signé, Fleur de Peau, Veine, Plus Beau Demain, Éprouvé, Marque de Fabrique, Apprivoisé, Trace, Prix Expliqué, Tenace, Tout Cuir, Bon Pour Longtemps, Cadeau Sûr, Peu Mais Cuir, Cuir Vieilli
+  - équipe « mots » : Cabas, Musette, Héritage, Lignée, Sillage, Cognac, Noisette, Châtaigne, Écorce, Ardillon, Sangle, Boucle, Passepoil, Surpiqûre, Nervure, Cambrure, Écrin, Présent, Offrande, Bivouac, Aplomb, Tenue, Fidèle, Rouille, Safran, Chamois, Gibecière
+Second tour : pas fait (il ne part que si le juge garde moins de 2 nom(s), un par identité ; il en a gardé 3).
+Vérification des noms gardés (3 vérifié(s)) : 1 écarté(s) :
+  - Patine (équipe « mots ») : déjà porté par une marque du même secteur : J'ai lu que Patine est un label de mode parisien lancé en 2017, présent aussi sur d'autres pages comme marque de vêtements : c'est le même secteur que ton projet de vêtements, donc le nom est pris (https://www.pratiks.com/que-faut-il-savoir-sur-patine)
+Fin des noms écartés.
+
+Notes de la tâche :
+- 0 parole(s) réelle(s) de clients trouvée(s) : moins de dix
+
+Dépense réelle comptée par le Studio, appel par appel (réservé au plus → réglé) :
+- a5f5de0d7d046279b53194057998b2974cee378a2b99d0dcccd185266c09e96b · anthropic:claude-sonnet-5-5 · charge du client · réservé 1,0964 € → réglé 0,1175 € (settled)
+- 9c82bf07c4104237be9087e82ee7526b36a9ea77e7a1301d0dcc80b15fcae850 · anthropic:claude-sonnet-5-5 · charge du client · réservé 1,0967 € → réglé 0,0718 € (settled)
+- 2697619778f53454686083ff6fc62f2c95454f4a232cafed1666b28510df5633 · anthropic:claude-sonnet-5-5 · charge du client · réservé 1,0964 € → réglé 0,0785 € (settled)
+- ce889698ae18d6603ce700cfcc1cb58765d3d450a4c2f96ee63f8e570e1b16be · anthropic:claude-sonnet-5-5 · charge du client · réservé 0,2128 € → réglé 0,0109 € (settled)
+- cf108bf8448dacbe805fc9b91ef4931040d2a67818e521c289c35ec5a5450e45 · anthropic:claude-opus-5-5 · charge du client · réservé 0,5556 € → réglé 0,0822 € (settled)
+- 8c86c56ffeb0112bef331b07ffcd4d499af8814f49a1c65daf5d8b40e682e2e4 · anthropic:claude-opus-5-5 · charge du client · réservé 0,5604 € → réglé 0,0418 € (settled)
+- 5ff6124f4fe616a558115cad278f8a4a46413d6ccee50848953ce38511388214 · anthropic:claude-sonnet-5-5 · charge du client · réservé 0,2663 € → réglé 0,0614 € (settled)
+- a4da3443996c3d967d14e0f9839e52cb62d5c799b325719928b7d5c629641cc5 · anthropic:claude-sonnet-5-5 · charge du client · réservé 0,2662 € → réglé 0,0205 € (settled)
+- b76d7adc19f0888eca15d3737ca82409bc1ad408e82ce9421af8590cfcb6c795 · anthropic:claude-sonnet-5-5 · charge du client · réservé 0,2662 € → réglé 0,0371 € (settled)
+- daa60765da4e280d00ff91db2baf93bf4066145a1e8ca7d7d4d8a4c97dcb0b75 · anthropic:claude-sonnet-5-5 · charge du client · réservé 0,2663 € → réglé 0,0385 € (settled)
+- 89fd1eacf2ecc0881933f6ef81dcaa916b2cee54a3faf9a37ac08bceee9a527b · anthropic:claude-opus-5-5 · charge du client · réservé 0,3895 € → réglé 0,0526 € (settled)
+- aed2ce292a4c1e725d27635fb43bec3c8e0a0c483c8524348437a5d42af15d46 · anthropic:claude-sonnet-5-5 · charge du client · réservé 1,0966 € → réglé 0,0683 € (settled)
+- f38b58fdd576dabd39aa340e49c9e555e1ec21d4ddc18d115755ccd4784576e6 · anthropic:claude-sonnet-5-5 · charge du client · réservé 1,0970 € → réglé 0,0855 € (settled)
+- 8a138de9db0a420b56e85bd7b17c985ebe9777184e440d4d216ca185778e7a6f · anthropic:claude-sonnet-5-5 · charge du client · réservé 0,0800 € → réglé 0,0036 € (settled)
+
+Dépense réelle comptée par le Studio : 0,7703 €

@@ -1,0 +1,1223 @@
+{
+  "client": {
+    "metier": "maroquinerie artisanale qui fabrique et vend en ligne des sacs, des portefeuilles et des ceintures en cuir",
+    "kind": "produits",
+    "produits": [
+      "sacs en cuir",
+      "portefeuilles en cuir",
+      "ceintures en cuir"
+    ]
+  },
+  "verifies": true,
+  "verification": "verifie",
+  "aDireAuClient": null,
+  "noms": [
+    {
+      "numero": 1,
+      "nom": "Maroquin",
+      "pourquoi": "Tu fais de la maroquinerie : le nom dit ton métier en un mot ancien et élégant, que tu peux mettre en grand sur ton site sans rougir.",
+      "detail": "Ton métier est la maroquinerie : des sacs, des portefeuilles et des ceintures en cuir.",
+      "doute": null,
+      "verification": "verifie",
+      "adresses": {
+        "taken": [
+          "maroquin.fr",
+          "maroquin.com"
+        ],
+        "free": [
+          "maroquinfrance.fr",
+          "maroquinfrance.com"
+        ],
+        "unknown": [],
+        "at": 1795797293678
+      },
+      "phraseDeLAdresse": "Nom de domaine : maroquin.fr et maroquin.com sont déjà pris ; libres aujourd'hui : maroquinfrance.fr et maroquinfrance.com (à réserver vite : seule la réservation le garantit).",
+      "adresseDeLaPlanche": {
+        "domaine": "maroquinfrance.fr",
+        "statut": "disponible",
+        "mention": "maroquinfrance.fr — disponible"
+      }
+    },
+    {
+      "numero": 2,
+      "nom": "Havane",
+      "pourquoi": "Il donne à ta marque la chaleur et l'élégance que tu cherches, en un mot court qui évoque la teinte de tes sacs et ceintures.",
+      "detail": "Le cuir de tes sacs, portefeuilles et ceintures a une couleur chaude, celle que tu veux donner à la marque.",
+      "doute": null,
+      "verification": "verifie",
+      "adresses": {
+        "taken": [
+          "havane.fr",
+          "havane.com"
+        ],
+        "free": [
+          "havanefrance.fr",
+          "havanefrance.com"
+        ],
+        "unknown": [],
+        "at": 1795797294901
+      },
+      "phraseDeLAdresse": "Nom de domaine : havane.fr et havane.com sont déjà pris ; libres aujourd'hui : havanefrance.fr et havanefrance.com (à réserver vite : seule la réservation le garantit).",
+      "adresseDeLaPlanche": {
+        "domaine": "havanefrance.fr",
+        "statut": "disponible",
+        "mention": "havanefrance.fr — disponible"
+      }
+    }
+  ],
+  "notes": [
+    "0 parole(s) réelle(s) de clients trouvée(s) : moins de dix"
+  ],
+  "ecartes": {
+    "tours": [
+      {
+        "tour": 1,
+        "trouves": 127,
+        "ecartesParLeCode": 0,
+        "juges": 127,
+        "gardesParLeJuge": 3
+      }
+    ],
+    "ecartes": [
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Du Cran",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Ceinture Noire",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Les Bons Comptes",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Bon Point",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Prix de Revient",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Bouche Cousue",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Besace",
+        "equipe": "mots",
+        "raison": "Le nom seul : beau mot chaleureux, mais il ne parle que du sac et laisse de côté tes portefeuilles et tes ceintures.",
+        "note": 7,
+        "verdict": "presque"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Long Cours",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Prendre Ses Plis",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Haut la Main",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Cabas",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Atout",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Trois et Pas Plus",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Billet Doux",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Musette",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Accord Parfait",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Rodage",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "De Fil en Aiguille",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Héritage",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Feu Doux",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Même Main",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Tout se Tient",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Lignée",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Escale",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Belle Usure",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Main de Maître",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Sillage",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Compte Juste",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Envie de Garder",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Pour de Bon",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Second Souffle",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Épreuve du Temps",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Un Beau Geste",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Cognac",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Baluchon",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Imparfait",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "La Boucle Bouclée",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Noisette",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Carte Maîtresse",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Peau Dure",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Cartes sur Table",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Châtaigne",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Belle Saison",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Chaque Euro",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Au Fil des Ans",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Écorce",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Gros Temps",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Longtemps",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Sur le Métier",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Poinçon",
+        "equipe": "mots",
+        "raison": "La beauté : le mot dit bien la marque de l'artisan, mais il sonne un peu dur et administratif, plus orfèvrerie que cuir chaleureux.",
+        "note": 7,
+        "verdict": "presque"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Ritournelle",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Cuir Franc",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Point d'Honneur",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Sellier",
+        "equipe": "mots",
+        "raison": "Le nom seul : il dit bien l'artisan du cuir, mais il fait d'abord penser aux selles de cheval, que tu ne fabriques pas.",
+        "note": 7.5,
+        "verdict": "presque"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Bon Vent",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Seconde Peau",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "À Toute Épreuve",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Ardillon",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Prolongations",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Du Poids",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Un Tour de Main",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Sangle",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Éclaircie",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Signé",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Avec le Temps",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Boucle",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Mise en Place",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Fleur de Peau",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Aux Petits Soins",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Passepoil",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Havre",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Veine",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Pièce Maîtresse",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Surpiqûre",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Bonne Mesure",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Plus Beau Demain",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Cousu d'Or",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Nervure",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Vent Arrière",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Éprouvé",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "En Bonnes Mains",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Cambrure",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Relais",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Marque de Fabrique",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Peau Neuve",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Écrin",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Terre Ferme",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Apprivoisé",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Le Dessus du Panier",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Présent",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Crescendo",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Trace",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Tenir Bon",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Offrande",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Passeport",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Prix Expliqué",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Point par Point",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Été Indien",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Tenace",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Main dans la Main",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Bivouac",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Trois Cartes",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Tout Cuir",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Sac à Malice",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Aplomb",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Bonne Donne",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Grain",
+        "equipe": "verite",
+        "raison": "Le sous-entendu : « avoir un grain », c'est être un peu fou, et le mot évoque aussi l'averse. Beau mot de matière, mais ce doute coûte.",
+        "note": 7.5,
+        "verdict": "presque"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Patte Blanche",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Tenue",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Endurance",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Bon Pour Longtemps",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "À Fleur de Peau",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Fidèle",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Tempo",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Cadeau Sûr",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Un Bon Point",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Rouille",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Veillée",
+        "equipe": "univers",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Peu Mais Cuir",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Bien dans sa Peau",
+        "equipe": "langue",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Safran",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Cuir Vieilli",
+        "equipe": "verite",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Chamois",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "juge",
+        "nom": "Gibecière",
+        "equipe": "mots",
+        "raison": "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)",
+        "note": null,
+        "verdict": "refuse"
+      },
+      {
+        "tour": 1,
+        "etape": "verification",
+        "nom": "Patine",
+        "equipe": "mots",
+        "raison": "déjà porté par une marque du même secteur : J'ai lu que Patine est un label de mode parisien lancé en 2017, présent aussi sur d'autres pages comme marque de vêtements : c'est le même secteur que ton projet de vêtements, donc le nom est pris (https://www.pratiks.com/que-faut-il-savoir-sur-patine)"
+      }
+    ],
+    "permis": [
+      "Patine",
+      "Maroquin",
+      "Havane"
+    ],
+    "verifies": [
+      "Patine",
+      "Maroquin",
+      "Havane"
+    ],
+    "libres": [
+      "Maroquin",
+      "Havane"
+    ],
+    "verificationFaite": true,
+    "pourquoiNonVerifie": null
+  }
+}
