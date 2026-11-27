@@ -516,8 +516,12 @@ export async function essaiDesPlanches(o: { sortie: string; plafondEuros: string
           const dp = { domaine: res.domaine.domaine, statut: res.domaine.statut as never };
           // Une planche payée avant les faits à montrer (27 novembre 2026) : son texte d'alors, sans la ligne des mentions, est
           // reconnu ; elle n'est jamais repayée.
-          const sansFaits = P.texteDeLaPlanche({ nom: client.nom, valeurs: res.valeurs.valeurs, annee, domaine: dp, personnes, ...(l.phrase ? { phrase: l.phrase } : {}) });
-          const texte1 = rep.texte != null && rep.texte === sansFaits ? sansFaits : P.texteDeLaPlanche({ nom: client.nom, valeurs: res.valeurs.valeurs, annee, domaine: dp, personnes, ...(l.phrase ? { phrase: l.phrase } : {}), ...(faits.mentions.length ? { faits } : {}) });
+          // Et une planche payée avant le retrait du logo compact et du logo empilé (27 novembre 2026) : son texte d'alors, avec
+          // leurs deux lignes, est reconnu de même.
+          const valeursDAlors = res.valeurs.valeurs;
+          const dAlors = [false, true].flatMap((avecLeCompactEtLEmpile) => [P.texteDeLaPlanche({ nom: client.nom, valeurs: valeursDAlors, annee, domaine: dp, personnes, ...(l.phrase ? { phrase: l.phrase } : {}), avecLeCompactEtLEmpile }),
+            P.texteDeLaPlanche({ nom: client.nom, valeurs: valeursDAlors, annee, domaine: dp, personnes, ...(l.phrase ? { phrase: l.phrase } : {}), ...(faits.mentions.length ? { faits } : {}), avecLeCompactEtLEmpile })]);
+          const texte1 = rep.texte != null && dAlors.includes(rep.texte) ? rep.texte : P.texteDeLaPlanche({ nom: client.nom, valeurs: res.valeurs.valeurs, annee, domaine: dp, personnes, ...(l.phrase ? { phrase: l.phrase } : {}), ...(faits.mentions.length ? { faits } : {}) });
           if (rep.texte != null && rep.texte !== texte1) { p.erreur = `le texte du premier essai repris (${rep.dossier}) n'est pas celui que le Studio enverrait aujourd'hui avec ces valeurs, ce domaine et cette année : rien n'est repris`; (res.erreurs ??= []).push(`planche ${l.key} : ${p.erreur}`); continue; }
           const m = await sharp(rep.png).metadata();
           const im = await saveAsset({ userId: u.id, projectId, data: rep.png, name: `planche-de-marque-${l.key}-1.png`, mime: "image/png", role: "planche-refusee", origin: "generated", status: "ready", meta: { plancheDeMarque: { key: l.key, tour: 1, nom: client.nom, texteEnvoye: texte1, recu: null, repris: rep.fichierPng, verdict: rep.verdict } } as never });

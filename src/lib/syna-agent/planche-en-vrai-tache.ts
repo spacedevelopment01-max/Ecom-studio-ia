@@ -35,7 +35,7 @@ import {
 } from "./planche-en-vrai";
 import {
   GRAISSE_DE_MISE_EN_PAGE, POLICE_DE_MISE_EN_PAGE, VERSIONS_DU_LOGO, assemblerLaPlanche, catalogueDesPolicesParGenre, codesEcritsDeLaPalette, couleurDuLogo, faviconsEtAvatar, luminance,
-  imageDuSite, mesurerLaPalette, monoClairDe, paletteRetenue, rognerAuContenu, policeDuCatalogue, rolesDeLaPalette, separerSymbole, texteDuBasDuBadge, tuilesDuBloc01, versionsDuLogo,
+  imageDuSite, mesurerLaPalette, monoClairDe, paletteRetenue, rognerAuContenu, sansLeBasDeCarte, policeDuCatalogue, rolesDeLaPalette, separerSymbole, texteDuBasDuBadge, tuilesDuBloc01, versionsDuLogo,
   type BlocDeTexte, type Separation, type VersionDuLogo,
 } from "./planche-en-vrai-code";
 import { detourerLeLogo } from "../media/detourage-logo";
@@ -138,7 +138,7 @@ export function vraisAppelsEnVrai(o: { userId: string; projectId: string; jobId:
 }
 
 /**
- * Les appels des quatre petites versions du logo en haute définition : l'image par le modèle d'images des logos (le même
+ * Les appels des petites versions du logo en haute définition : l'image par le modèle d'images des logos (le même
  * appel que les images de la planche en vrai, `aiElementDeLaPlanche`), la relecture par le relecteur des images de la
  * planche en vrai (le plus fort, effort élevé). Remplaçables par les essais : aucun appel payant.
  */
@@ -171,7 +171,7 @@ export async function sansFondDuLogoEnHd(png: Buffer): Promise<{ ok: true; png: 
   return d.ok ? { ok: true, png: d.png } : { ok: false, raison: d.raison };
 }
 /**
- * LES QUATRE PETITES VERSIONS DU LOGO REFAITES EN HAUTE DÉFINITION (`refaireLesLogosEnHd`), avec les appels donnés : chacune
+ * LES PETITES VERSIONS DU LOGO REFAITES EN HAUTE DÉFINITION (`refaireLesLogosEnHd`), avec les appels donnés : chacune
  * à partir de sa tuile de l'aperçu (`decoupe.apercus`), le logo officiel joint sur fond blanc ; relues en un appel ; une
  * reprise des refusées à la charge du Studio. `cles` : les clés des appels (les points de reprise de la tâche) ; sans elles,
  * « logo-hd-<version> » et « relecture-logos-hd » (« -r1 » pour la reprise).
@@ -557,14 +557,14 @@ export const phrasesDesPolicesRemplacees = (polices: NonNullable<EtatPlancheEnVr
 export const phrasesDesLogos = (v: { depuisLApercu: readonly VersionDuLogo[]; symboleComplet: boolean; enHd?: readonly VersionDuLogo[] }, refusesEnHd: readonly VersionDuLogo[] = []): string[] => {
   // Les versions refaites en haute définition et refusées deux fois : leur agrandissement reste, et c'est dit simplement ;
   // celles qui n'ont pas été tentées gardent la proposition de les refaire, prix annoncé avant.
-  // Seules les quatre petites versions se refont en haute définition (`VERSIONS_EN_HD`) : le logo horizontal, l'empilé, les
+  // Seules les petites versions se refont en haute définition (`VERSIONS_EN_HD`) : le logo horizontal, les
   // monochromes ou l'inversé repris de l'aperçu (27 novembre 2026) ne sont jamais promis en haute définition.
   const proposables = v.depuisLApercu.filter((x) => (VERSIONS_EN_HD as readonly string[]).includes(x));
   const refusees = proposables.filter((x) => refusesEnHd.includes(x)), jamais = proposables.filter((x) => !refusesEnHd.includes(x));
   const out = [...(jamais.length ? [phraseDesLogosDeLApercu(jamais)] : []), ...(refusees.length ? [phraseDesLogosEnHdRefuses(refusees)] : [])];
   return out.length ? out : v.symboleComplet && !v.enHd?.length ? [phraseDuSymboleComplet()] : [];
 };
-/** Les dix versions du logo, le symbole, les favicons et l'avatar, rangés dans les logos de la marque. */
+/** Les huit versions du logo (ni compact ni empilé), le symbole, les favicons et l'avatar, rangés dans les logos de la marque. */
 export async function rangerLesLogos(o: { who: { userId: string; projectId: string }; logoAssetId: string; versions: Record<VersionDuLogo, Buffer>; symbole: Buffer; clair: string; refaitParLeCode?: boolean }): Promise<{ logos: EtatPlancheEnVrai["logos"]; favicons: NonNullable<EtatPlancheEnVrai["favicons"]>; symboleId: string }> {
   const logos: EtatPlancheEnVrai["logos"] = [];
   for (const version of VERSIONS_DU_LOGO) {
@@ -599,7 +599,7 @@ export function publicationsDeLaPlanche(elements: EtatPlancheEnVrai["elements"],
  * LE RÉASSEMBLAGE ET LE REJUGEMENT ENREGISTRÉS (26 novembre 2026 ; constat du chef d'orchestre devant l'écran d'Écume :
  * « L'écran ne suit pas le réassemblage. »). Dans le Studio comme dans l'essai, une planche en vrai refaite par le code
  * (`plancheEnVraiParLeCode`), avec les images gardées au rejugement, met à jour l'état et le projet de la même façon que la
- * tâche : les images gardées rangées en haute définition, les dix versions du logo, le symbole et les favicons, la marque
+ * tâche : les images gardées rangées en haute définition, les huit versions du logo, le symbole et les favicons, la marque
  * du projet relue sur la planche (palette, polices, symbole), les publications, ce que SINA dit, puis la planche assemblée
  * et le site en une seule image. Rend le nouvel état, à poser dans le parcours (`plancheEnVrai`) : l'onglet Marque montre
  * alors exactement la planche réassemblée et ses images gardées. Aucun appel.
@@ -635,7 +635,9 @@ export async function enregistrerLaPlancheReassemblee(o: {
  * du site, pleines par construction et à leurs formats exacts.
  */
 export async function imageMontree(n: NomElement, png: Buffer): Promise<Buffer> {
-  return n.startsWith("publication-") || n === "ouverture-site" ? png : rognerAuContenu(png);
+  if (n.startsWith("publication-") || n === "ouverture-site") return png;
+  // Une photo de produit posée sur une carte s'arrête à la photo (`sansLeBasDeCarte`, essai réel de Havane, point 11).
+  return rognerAuContenu(n.startsWith("produit-") ? await sansLeBasDeCarte(png) : png);
 }
 /** L'image d'une case telle qu'elle est posée sur la planche (avant le rognage au contenu). */
 const surLaPlanche = (e: EtatPlancheEnVrai["elements"][number]) => e.idPlanche ?? e.id;
@@ -662,11 +664,11 @@ export function devisDUneReprise(elements: readonly NomElement[]): { maxMicro: n
   return { maxMicro: Math.ceil(max), probableMicro: Math.ceil(probable), images: elements.length, relectures: groupes.size };
 }
 /**
- * LE DEVIS DES QUATRE PETITES VERSIONS DU LOGO EN HAUTE DÉFINITION (26 novembre 2026) : le compact, l'icône, le favicon et
+ * LE DEVIS DES PETITES VERSIONS DU LOGO EN HAUTE DÉFINITION (26 novembre 2026 ; sans le compact depuis le 27) : l'icône, le favicon et
  * le badge refaits à partir de leur tuile de l'aperçu, logo joint, au tarif d'une image carrée de la planche en vrai
  * (1088 × 1088, qualité haute, trois images jointes au plus : une borne large, deux partent), relus en un appel ; puis la
- * reprise des refusées, une fois, à la charge du Studio (au plus : les quatre et une relecture). `probableMicro` : le
- * premier tour seul ; `siToutEstRefaitMicro` : avec la reprise des quatre ; `maxMicro` : la somme des maxima, reprise
+ * reprise des refusées, une fois, à la charge du Studio (au plus : toutes et une relecture). `probableMicro` : le
+ * premier tour seul ; `siToutEstRefaitMicro` : avec la reprise de toutes ; `maxMicro` : la somme des maxima, reprise
  * comprise (le plafond minimal exact). Aucun appel.
  */
 export function devisDesLogosEnHd(n: number = VERSIONS_EN_HD.length): { maxMicro: number; probableMicro: number; siToutEstRefaitMicro: number; repriseMicro: number; images: number; relectures: number } {
@@ -724,7 +726,7 @@ export function enVraiOuArretee(etapes: readonly string[]): string[] {
 /**
  * LES LOGOS REFAITS PAR LE CODE, SANS AUCUN APPEL (25 novembre 2026, onglet Marque de Racine : les logos de la base
  * d'essai dataient d'avant la correction de la séparation du symbole et du nom). À partir du logo fini de l'état (le fond
- * retiré une seconde fois, comme dans la tâche) : la séparation, les dix versions, les favicons, l'avatar et le symbole,
+ * retiré une seconde fois, comme dans la tâche) : la séparation, les huit versions, les favicons, l'avatar et le symbole,
  * rangés comme dans la tâche ; la marque du projet prend le nouveau symbole ; la phrase du symbole complet n'est dite que
  * si la séparation n'est toujours pas fiable. Avec l'inventaire, la planche est réassemblée (gratuit) ; sans lui, elle est
  * gardée telle quelle, et c'est écrit dans les notes. Rend l'état mis à jour ; les images refaites ne sont jamais touchées.
@@ -765,10 +767,10 @@ export async function refaireLesLogosEnVrai(o: {
   return { ...etat, ...(await placerLaPlanche({ who: o.who, route: o.route, etat, demo, boites: decoupe.boites, images, versions: v.versions, encre })) };
 }
 
-// ---------------------------------------------------------------- les quatre petites versions en haute définition
+// ---------------------------------------------------------------- les petites versions en haute définition
 
 /**
- * LES QUATRE PETITES VERSIONS DU LOGO EN HAUTE DÉFINITION D'UNE PLANCHE EN VRAI DÉJÀ FAITE (26 novembre 2026). Pour les
+ * LES PETITES VERSIONS DU LOGO EN HAUTE DÉFINITION D'UNE PLANCHE EN VRAI DÉJÀ FAITE (26 novembre 2026). Pour les
  * versions reprises de l'aperçu (`logosDeLApercu`) : chacune refaite à partir de sa tuile, logo officiel joint, relues en
  * un appel, une reprise des refusées à la charge du Studio (`refaireLesLogosEnHdDeLaPlanche`) ; chaque appel a son point
  * de reprise (`brand:envrai:logo-hd-<version>`, `brand:envrai:relecture-logos-hd`, « -r1 » pour la reprise) et chaque image

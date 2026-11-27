@@ -79,12 +79,10 @@ describe("2. le logo horizontal que le code ne sait pas composer est repris de l
     expect(sep.fiable).toBe(false);
     const v = await C.versionsDuLogo({ logo, separation: sep, couleur: await C.couleurDuLogo(logo), sombre: "#2E1A12", clair: "#FCFAF7", monoClair: "#C89B6B", nom: "Mouture", bas: "TORRÉFACTION ARTISANALE", police: T.POLICE_DU_BADGE, tuiles: d.apercus });
     expect(v.depuisLApercu).toContain("logo-horizontal");
-    // Le logo empilé que le code rendrait identique au principal est aussi repris de l'aperçu (27 novembre 2026).
-    expect(v.depuisLApercu).toContain("logo-empile");
-    expect(v.versions["logo-empile"].equals(v.versions["logo-principal"])).toBe(false);
-    expect(C.tuileDeLaVersion("logo-empile")).toBe("logo-3");
-    // SINA ne promet la haute définition que pour les quatre petites versions.
-    expect(T.phrasesDesLogos(v).join(" ")).not.toMatch(/logo-horizontal|logo-empile/);
+    // Ni logo compact ni logo empilé (27 novembre 2026) : ni fait, ni repris de l'aperçu.
+    expect(Object.keys(v.versions).join(" ")).not.toMatch(/compact|empile/);
+    // SINA ne promet la haute définition que pour les petites versions.
+    expect(T.phrasesDesLogos(v).join(" ")).not.toMatch(/logo-horizontal/);
     expect(v.versions["logo-horizontal"].equals(v.versions["logo-principal"])).toBe(false);
     const m = await sharp(v.versions["logo-horizontal"]).metadata(), p = await sharp(v.versions["logo-principal"]).metadata();
     expect(m.width! / m.height!).toBeGreaterThan(2);

@@ -37,7 +37,8 @@ const etat = (): EtatPlancheEnVrai => ({
   key: "A", demo: "demo", logo: "logo", laquelle: "standard", at: 1,
   planche: { id: "planche", w: 3072, h: 4608 },
   elements: NOMS_DES_ELEMENTS.map((n, i) => (["ouverture-planche", "produit-1", "reference-6"].includes(n) ? { element: n, id: null, essais: 2 } : { element: n, id: `img${i}`, w: n === "ouverture-site" ? 1920 : n === "publication-9x16" ? 1080 : 1024, h: n === "ouverture-site" ? 720 : n === "publication-9x16" ? 1920 : 912, essais: 1, ...(n.startsWith("produit-") ? { ambiance: true } : {}) })),
-  logos: [{ version: "logo-principal", id: "l1" }, { version: "logo-compact", id: "l2" }],
+  // Un ancien projet garde ses fichiers du logo compact et du logo empilé (avant le 27 novembre 2026) : jamais montrés.
+  logos: [{ version: "logo-principal", id: "l1" }, { version: "icone", id: "l2" }, { version: "logo-compact" as never, id: "l3" }, { version: "logo-empile" as never, id: "l4" }],
   palette: [{ hex: "#640B29", nom: "Bordeaux", mots: [] }, { hex: "#25583B", nom: "Vert forêt", mots: [] }, { hex: "#F7F3EC", nom: "Lin", mots: [] }],
   polices: { titres: { cle: "playfair_display", famille: "Playfair Display", fichier: "PlayfairDisplay-700.ttf", poids: 700, handle: "playfair_display_n7", lue: "Playfair Display", remplacee: false }, textes: { cle: "montserrat", famille: "Montserrat", fichier: "Montserrat-400.ttf", poids: 400, handle: "montserrat_n4", lue: "Montserrat", remplacee: false } } as never,
   symboleComplet: false, publications: [], issues: [ANCIENNE], notes: ["produit-1, essai 2 refusé : interne"],
@@ -160,6 +161,19 @@ describe("l'onglet Marque avec la planche en vrai", () => {
     const v = runWithLang({ ui: "fr", content: "fr" }, () => avecLesFichiersDuLogo(vueEnVrai(etat(), "p1", URL), { symbole: "l2", favicons: null }, URL))!;
     expect(v.logos.map((l) => l.url)).toEqual(["/api/files/l1", "/api/files/l2"]);
     expect(avecLesFichiersDuLogo(null, FICHIERS, URL)).toBeNull();
+  });
+
+  it("ni logo compact ni logo empilé (27 novembre 2026) : un ancien projet qui a encore leurs fichiers ne les montre plus, ni à l'écran ni dans le zip", async () => {
+    const v = runWithLang({ ui: "fr", content: "fr" }, () => vueEnVrai(etat(), "p1", URL))!;
+    expect(v.logos.map((l) => l.version)).toEqual(["logo-principal", "icone"]);
+    expect(v.logos.map((l) => l.label).join(" ")).not.toMatch(/compact|empil/i);
+    etatDeLEcran.sheet = runWithLang({ ui: "fr", content: "fr" }, () => feuille(true));
+    expect(rendu(h(TabMarque))).not.toMatch(/Logo compact|Logo empilé|\/api\/files\/l3|\/api\/files\/l4/);
+    const { fichiersDeLaMarque } = await import("@/lib/syna-agent/brand-zip");
+    const zip = Object.keys(fichiersDeLaMarque(etat(), "Racine", (id) => Buffer.from(id), () => null));
+    expect(zip).toContain("logos/logo-principal.png");
+    expect(zip).toContain("logos/icone.png");
+    expect(zip.join(" ")).not.toMatch(/compact|empile/);
   });
 
   it("sans planche en vrai, « Ta charte et tes fichiers » reste comme avant, avec son bouton", () => {

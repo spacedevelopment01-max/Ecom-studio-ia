@@ -19,11 +19,12 @@ const PHRASE = ["SAVONNERIE ARTISANALE", "BULLES DE SOIN AU NATUREL"];
 const reel = () => JSON.parse(fs.readFileSync(`${F}/planche-A-1-relecture-verdict.json`, "utf8"));
 /**
  * Le texte réel du premier essai de A, tel que le Studio l'enverrait aujourd'hui : depuis le 26 novembre 2026 (essai réel du
- * torréfacteur), la partie « produits » d'une boutique porte en plus la ligne des noms des produits ; le reste est mot pour mot.
+ * torréfacteur), la partie « produits » d'une boutique porte en plus la ligne des noms des produits ; depuis le 27 novembre
+ * 2026, la liste des logos ne nomme plus le logo compact ni le logo empilé ; le reste est mot pour mot.
  */
 const texteA1DAujourdhui = async () => {
   const P = await import("@/lib/syna-agent/planche-de-marque");
-  return P.texteAvecLesNomsDesProduits(fs.readFileSync(`${F}/planche-A-1-texte-envoye.txt`, "utf8"), JSON.parse(fs.readFileSync(`${F}/valeurs-du-metier.json`, "utf8")).valeurs);
+  return P.sansLeCompactNiLEmpile(P.texteAvecLesNomsDesProduits(fs.readFileSync(`${F}/planche-A-1-texte-envoye.txt`, "utf8"), JSON.parse(fs.readFileSync(`${F}/valeurs-du-metier.json`, "utf8")).valeurs));
 };
 
 describe("Écume, étape 3 : la relecture de la planche A recalculée par le code corrigé", async () => {
@@ -320,6 +321,21 @@ describe("le script d'essai des planches : planches indépendantes, et le chemin
     // Le verdict d'origine n'est jamais réécrit.
     expect(fs.readFileSync(path.join(sortie, "planche-A-1-relecture-verdict.json"), "utf8")).toBe(fs.readFileSync(path.join(F, "planche-A-1-relecture-verdict.json"), "utf8"));
     expect(fs.readFileSync(path.join(sortie, "rapport.txt"), "utf8")).toContain("(déjà payé, repris de ");
+  });
+
+  it("REPRENDRE_A avec le texte d'avant le retrait du logo compact et du logo empilé (27 novembre 2026) : reconnu, jamais repayé ; la reprise part sans eux", async () => {
+    const { sortie, logos } = await dossier({ reprise: true });
+    const P = await import("@/lib/syna-agent/planche-de-marque");
+    const avant = P.texteAvecLesNomsDesProduits(fs.readFileSync(`${F}/planche-A-1-texte-envoye.txt`, "utf8"), JSON.parse(fs.readFileSync(`${F}/valeurs-du-metier.json`, "utf8")).valeurs);
+    expect(avant).toContain("- logo empilé\n- logo compact\n");
+    fs.writeFileSync(path.join(sortie, "planche-A-1-texte-envoye.txt"), avant);
+    T.plancheDeps.annee = () => 2026;
+    T.plancheDeps.domaines = async () => { throw new Error("le domaine ne doit pas être revérifié"); };
+    const r = await essaiDesPlanches({ sortie, plafondEuros: "3", logos, client: ECUME, ai: simule as never, reprendre: { A: sortie } });
+    expect(r.erreurs).toBeUndefined();
+    expect(appels).toEqual(["image:A-1-2", "relecture:A-1-2-relecture", "image:B-1-1", "relecture:B-1-1-relecture"]);
+    expect(textes["A-1-2"].startsWith(await texteA1DAujourdhui())).toBe(true);
+    expect(textes["A-1-2"]).not.toMatch(/logo empilé|logo compact/);
   });
 
   it("REPRENDRE_A : un logo qui n'est pas celui du premier essai, ou des valeurs absentes : rien n'est lancé", async () => {

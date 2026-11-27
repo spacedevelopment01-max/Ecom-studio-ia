@@ -92,9 +92,8 @@ describe("le chemin normal de la planche en vrai, sur les vrais fichiers d'Écum
     // La police des textes suit le spécimen, choisie par l'inventaire (« Nunito » montrée en manuscrite) ; SINA le dit.
     expect(ev.polices!.textes).toMatchObject({ lue: "Nunito", famille: "Sacramento", remplacee: true });
     expect(ev.issues.join("\n")).toMatch(/Sacramento/);
-    // Sans symbole séparable : compact, icône, favicon et badge repris de l'aperçu.
-    // Depuis le 27 novembre 2026, le logo empilé d'Écume, identique au principal, est aussi repris de l'aperçu.
-    expect([...(ev.logosDeLApercu ?? [])].sort()).toEqual(["badge", "favicon", "icone", "logo-compact", "logo-empile"]);
+    // Sans symbole séparable : icône, favicon et badge repris de l'aperçu (ni compact ni empilé depuis le 27 novembre 2026).
+    expect([...(ev.logosDeLApercu ?? [])].sort()).toEqual(["badge", "favicon", "icone"]);
     // La petite finition notée sur la planche choisie est nettoyée par le code dans le bloc 10.
     expect(ev.notes.join("\n")).toMatch(/petite finition nettoyée par le code/);
     // Le site en une seule image, la planche en 3072 × 4608.
@@ -118,21 +117,21 @@ describe("le chemin normal de la planche en vrai, sur les vrais fichiers d'Écum
     expect(differents / a.length).toBeLessThan(0.0005);
   }, 240_000);
 
-  it("LOGO_HD sur le chemin normal : après la planche en vrai, les quatre versions reprises de l'aperçu refaites en haute définition, à la charge du Studio ; logos et planche refaits par le code ; le devis compte la somme des deux", async () => {
+  it("LOGO_HD sur le chemin normal : après la planche en vrai, les petites versions reprises de l'aperçu refaites en haute définition, à la charge du Studio ; logos et planche refaits par le code ; le devis compte la somme des deux", async () => {
     const e = await preparer();
     const r = await essaiDeLaPlancheEnVrai({ sortie: e.sortie, plafondEuros: "10", planche: e.planche, logo: e.logo, client: ECUME, donnees: donnees(), ai: simule as never, logoHd: true, aiLogos: logos as never });
     expect(r.arret).toBeUndefined();
-    // Dans l'ordre : la planche en vrai, puis les quatre versions et leur relecture.
-    const i = appels.indexOf("logo:logo-hd-logo-compact");
+    // Dans l'ordre : la planche en vrai, puis les petites versions et leur relecture.
+    const i = appels.indexOf("logo:logo-hd-icone");
     expect(i).toBeGreaterThan(appels.lastIndexOf("relecture:relecture-site"));
-    expect(appels.slice(i)).toEqual(["logo:logo-hd-logo-compact", "logo:logo-hd-icone", "logo:logo-hd-favicon", "logo:logo-hd-badge", "logo:relecture-logos-hd"]);
+    expect(appels.slice(i)).toEqual(["logo:logo-hd-icone", "logo:logo-hd-favicon", "logo:logo-hd-badge", "logo:relecture-logos-hd"]);
     expect(Object.values(studio).every(Boolean)).toBe(true);
-    expect(r.logosEnHd).toMatchObject({ versions: ["logo-compact", "icone", "favicon", "badge"], gardees: ["logo-compact", "icone", "favicon", "badge"], refusees: [] });
-    expect(r.etat!.logosEnHd).toEqual(["logo-compact", "icone", "favicon", "badge"]);
+    expect(r.logosEnHd).toMatchObject({ versions: ["icone", "favicon", "badge"], gardees: ["icone", "favicon", "badge"], refusees: [] });
+    expect(r.etat!.logosEnHd).toEqual(["icone", "favicon", "badge"]);
     for (const f of ["logos-hd/logo-hd-badge-texte-envoye.txt", "logos-hd/logo-hd-badge-recue.png", "logos-hd/relecture-logos-hd-verdict.json", "etat.json", "essai.json", "planche-en-vrai.png"]) expect(fs.existsSync(path.join(e.sortie, f)), f).toBe(true);
     // Les fichiers à télécharger sont les versions en haute définition ; etat.json les dit, l'écran le relit.
     const etat = JSON.parse(fs.readFileSync(path.join(e.sortie, "etat.json"), "utf8"));
-    expect(etat.logosEnHd).toEqual(["logo-compact", "icone", "favicon", "badge"]);
+    expect(etat.logosEnHd).toEqual(["icone", "favicon", "badge"]);
     const badge = await sharp(path.join(e.sortie, "logos/badge.png")).metadata();
     expect(badge.width).toBeGreaterThanOrEqual(1000);
     expect(fs.readFileSync(path.join(e.sortie, "rapport.txt"), "utf8")).toMatch(/LOGO_HD \(à la charge du Studio\)/);

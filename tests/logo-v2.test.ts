@@ -213,7 +213,9 @@ describe("Phase 4A — Brand & Logo Engine V2", async () => {
     const brand = loadProject(pid).brand!;
     expect(brand.validated).toContain("logo");
     expect(brand.logo.status).toBe("validated");
-    for (const role of ["logo", "logo-svg", "logo-light", "logo-mark", "favicon", "logo-mono", "logo-mono-svg", "logo-stacked", "logo-small", "brand-guide"]) expect(all("SELECT id FROM assets WHERE project_id = ? AND role = ? AND deleted_at IS NULL", pid, role).length, role).toBeGreaterThan(0);
+    // Ni logo compact ni logo empilé (27 novembre 2026) : aucune version empilée.
+    expect(all("SELECT id FROM assets WHERE project_id = ? AND role IN ('logo-stacked', 'logo-stacked-svg')", pid)).toHaveLength(0);
+    for (const role of ["logo", "logo-svg", "logo-light", "logo-mark", "favicon", "logo-mono", "logo-mono-svg", "logo-small", "brand-guide"]) expect(all("SELECT id FROM assets WHERE project_id = ? AND role = ? AND deleted_at IS NULL", pid, role).length, role).toBeGreaterThan(0);
     // Une proposition écartée ne peut pas devenir le logo.
     const r2 = await runEngine(pid, mockAi({ calls: [] }, { reviews: { "Geste abstrait": [(e) => review(4, e, { issues: ["daté"] })] } }));
     const bad = r2.discarded[0];

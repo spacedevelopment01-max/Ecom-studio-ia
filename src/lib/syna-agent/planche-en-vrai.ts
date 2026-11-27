@@ -105,7 +105,14 @@ export const NOMS_DES_ELEMENTS = Object.keys(ELEMENTS) as NomElement[];
 export const def = (n: NomElement): DefElement => ELEMENTS[n];
 /** Les cases faites par le code seul (sans OpenAI), lues par l'inventaire. */
 export const CASES_DU_CODE = ["haut", "palette", "typographies", "ton", "seo"] as const;
+/** Les dix cases du bloc 01 de la disposition ; le logo empilé (logo-3) et le logo compact (logo-4) n'y sont plus faits. */
 export const TUILES_DU_LOGO = Array.from({ length: 10 }, (_, i) => `logo-${i + 1}`);
+/**
+ * Les huit cases du bloc 01 qui servent encore (27 novembre 2026, ni logo compact ni logo empilé), dans l'ordre des huit
+ * versions du logo (`VERSIONS_DU_LOGO`, planche-en-vrai-code.ts) : principal, horizontal, icône, favicon, monochrome foncé,
+ * monochrome clair, inversé, badge.
+ */
+export const TUILES_GARDEES = ["logo-1", "logo-2", "logo-5", "logo-6", "logo-7", "logo-8", "logo-9", "logo-10"] as const;
 export const TITRES = Array.from({ length: 10 }, (_, i) => `titre-${String(i + 1).padStart(2, "0")}`);
 export const TAILLES_DE_LA_PLANCHE_EN_VRAI: readonly string[] = [...new Set(NOMS_DES_ELEMENTS.map((n) => ELEMENTS[n].taille))];
 
@@ -266,6 +273,36 @@ export function bandeDeTitreTouchee(g: { data: Buffer; w: number; h: number }, l
 export const entreDansUneBandeDeTitre = (laquelle: Laquelle, b: Boite): boolean =>
   [...bandesDesTitres(laquelle).values()].some((t) => Math.min(b[2], t[2]) - Math.max(b[0], t[0]) >= 4 && Math.min(b[3], t[3]) - Math.max(b[1], t[1]) >= 4);
 /**
+ * LES HUIT CASES DU BLOC 01 (27 novembre 2026, ni logo compact ni logo empilé) : sur la rangée des cases du logo (la hauteur
+ * des dix cases de la disposition), une colonne est vide quand elle est unie (au plus 6 niveaux de gris d'écart sur la
+ * rangée, ses bords exclus) : les cases d'une planche ont souvent la couleur de la page, seuls leurs dessins (ou une case
+ * sombre) s'y voient. Les dessins sont les suites de colonnes qui ne sont pas vides (deux suites séparées par moins de 3
+ * colonnes vides n'en font qu'une), d'au moins 15 pixels. Quand la planche en montre exactement huit, chaque case va du
+ * milieu de l'écart avec son dessin voisin au milieu de l'écart suivant (aux bords, la même demi-largeur d'écart). Sinon
+ * null, et les dix cases fixes de la disposition restent la règle (une planche d'avant).
+ */
+export function panneauxDuBloc01(g: Gris, laquelle: Laquelle): Boite[] | null {
+  const c = lesCases(laquelle).cases, tuiles = TUILES_DU_LOGO.map((t) => c[t]).filter(Boolean);
+  if (!tuiles.length) return null;
+  const y0 = Math.min(...tuiles.map((t) => t[1])), y1 = Math.max(...tuiles.map((t) => t[3]));
+  const x0 = Math.max(0, Math.min(...tuiles.map((t) => t[0])) - 12), x1 = Math.min(g.w, Math.max(...tuiles.map((t) => t[2])) + 12);
+  const unie = (x: number) => { let mn = 255, mx = 0; for (let y = y0 + 4; y < y1 - 4; y++) { const v = g.data[y * g.w + x]; if (v < mn) mn = v; if (v > mx) mx = v; } return mx - mn <= 6; };
+  const suites: [number, number][] = [];
+  let debut = -1;
+  for (let x = x0; x < x1; x++) {
+    if (!unie(x)) { if (debut < 0) debut = x; }
+    else if (debut >= 0) { suites.push([debut, x]); debut = -1; }
+  }
+  if (debut >= 0) suites.push([debut, x1]);
+  const dessins: [number, number][] = [];
+  for (const s of suites) { const d = dessins.at(-1); if (d && s[0] - d[1] < 3) d[1] = s[1]; else dessins.push([...s]); }
+  const huit = dessins.filter(([a, b]) => b - a >= 15);
+  if (huit.length !== 8) return null;
+  const milieux = huit.slice(1).map((d, i) => Math.round((huit[i][1] + d[0]) / 2));
+  const demi = Math.max(4, Math.round(Math.min(...huit.slice(1).map((d, i) => d[0] - huit[i][1])) / 2));
+  return huit.map(([a, b], i) => [i ? milieux[i - 1] : Math.max(0, a - demi), y0, i < 7 ? milieux[i] : Math.min(g.w, b + demi), y1] as Boite);
+}
+/**
  * `debordes` : les cases dont l'aperçu touche encore la bande d'un titre de bloc (un bout du titre ou du sous-titre peut
  * y être lu, sur un côté). Quand la part prise dans la bande est la page, le haut de la case est d'abord ramené sous la bande.
  */
@@ -279,8 +316,18 @@ export async function decouperLesApercus(planche: Buffer, laquelle: Laquelle, no
   const png = m.width === TAILLE_DEMO.w && m.height === TAILLE_DEMO.h ? planche : await sharp(planche).resize(TAILLE_DEMO.w, TAILLE_DEMO.h, { fit: "fill" }).png().toBuffer();
   const g = await gris(png), c = lesCases(laquelle), page = couleurDeLaPage(g);
   const apercus = new Map<string, Buffer>(), boites = new Map<string, Boite>(), refus: Decoupe["refus"] = [], debordes: string[] = [];
+  // UNE RANGÉE DE HUIT CASES (27 novembre 2026) : une planche dessinée sans le logo compact ni le logo empilé montre huit
+  // cases au bloc 01 ; elles sont lues sur la planche (`panneauxDuBloc01`) et rangées sous les noms des huit cases gardées.
+  const huit = panneauxDuBloc01(g, laquelle);
+  if (huit) for (const [i, b] of huit.entries()) {
+    const nom = TUILES_GARDEES[i];
+    if (noms && !noms.includes(nom)) continue;
+    boites.set(nom, b);
+    apercus.set(nom, await sharp(png).extract({ left: b[0], top: b[1], width: b[2] - b[0], height: b[3] - b[1] }).png().toBuffer());
+  }
   for (const [nom, mesuree] of Object.entries(c.cases)) {
     if (noms && !noms.includes(nom)) continue;
+    if (huit && nom.startsWith("logo-")) continue;
     // Seules les photos et les publications se recalent sur les bords de leur panneau (RECALEES).
     let b = RECALEES.has(nom) ? recalerUneCase(g, mesuree) : mesuree;
     // Jamais le titre ni le sous-titre d'un bloc dans l'aperçu d'une image : son haut est ramené sous la bande du titre.
@@ -669,6 +716,28 @@ export const CASES_AVEC_BARRE_D_ETAT: ReadonlySet<string> = new Set(["site-telep
 /** L'heure d'une barre d'état (« 9:41 », « 12.01 », « 9h41 ») : un micro-texte décoratif, jamais jugé. */
 export const estUneHeure = (t: string) => /^\s*\d{1,2}\s*[:.h]\s*\d{2}\s*$/i.test(t);
 /**
+ * UN FRAGMENT DE MICRO-TEXTE OU D'HEURE (27 novembre 2026, essai réel de Havane, point 9 : « 6.GI », lu dans la barre
+ * d'état du téléphone, était gardé comme texte attendu) : une heure, ou une heure mal lue (un ou deux chiffres, un point ou
+ * deux-points, puis une à trois lettres : « 6.GI », « 9:4l »). Jamais attendu, dans aucune case. Dans une case à barre
+ * d'état, aussi tout mot seul d'au plus 5 signes qui mêle un chiffre et un autre signe (« 5G », « 100% », « 4G+ ») : ni
+ * attendu, ni reproché ; jamais une année (« 2019 »).
+ */
+export const estUnFragmentDHeure = (t: string) => estUneHeure(t) || /^\s*\d{1,2}\s*[:.,]\s*[\p{L}\d]{1,3}\s*$/u.test(t);
+export const estUnFragmentDeMicroTexte = (t: string) => {
+  const x = t.trim();
+  if (estUnFragmentDHeure(x)) return true;
+  if (!x || /\s/.test(x) || [...x].length > 5 || /^\d{4}$/.test(x)) return false;
+  return /\d/.test(x) && /[^\d]/.test(x);
+};
+/** Un numéro de bloc de la planche seul (« 08 », « 09 »). */
+const estUnNumeroDeBloc = (t: string) => /^\s*(0[1-9]|10)\s*$/.test(t);
+/**
+ * UN TITRE DE BLOC (essai réel de Havane, point 10 : « 08 » et « SITE WEB – Une expérience fluide… » attendus dans l'image
+ * du site) : un numéro de bloc, avec ou sans son titre, ou un titre en capitales suivi d'un tiret et de son sous-titre
+ * (« PACKAGING & SUPPORTS – Une marque qui vous suit partout »). Il est hors de la zone d'une image.
+ */
+export const estUnTitreDeBloc = (t: string) => estUnNumeroDeBloc(t) || /^\s*(?:(?:0[1-9]|10)\s+)?[\p{Lu}\d][\p{Lu}\d &/'’.,-]{2,}\s+[–—-]\s+\S/u.test(t);
+/**
  * LES TEXTES ATTENDUS D'UNE CASE : seulement ceux de sa zone (essai réel d'Écume, 26 novembre 2026). `deborde` : l'aperçu
  * relu par l'inventaire entrait dans la bande d'un titre de bloc (`bandeDeTitreTouchee`, une découpe d'avant la règle) ;
  * alors les premières lignes de l'inventaire dont aucun mot n'est dans l'image refaite sont le titre ou le sous-titre du
@@ -676,13 +745,23 @@ export const estUneHeure = (t: string) => /^\s*\d{1,2}\s*[:.h]\s*\d{2}\s*$/i.tes
  */
 export function textesDeLaZone(attendus: readonly string[], lus: readonly string[], o: { element?: string; deborde?: boolean } = {}): { attendus: string[]; lus: string[] } {
   let a = [...attendus], l = [...lus];
+  // UNE IMAGE N'EST JUGÉE QUE SUR LES TEXTES DE SA SEULE ZONE (27 novembre 2026, essai réel de Havane, point 10) : les
+  // premières lignes de l'inventaire qui sont le numéro et le titre d'un bloc de la planche (`estUnTitreDeBloc`), relus
+  // au-dessus de l'image, ne sont jamais attendues quand moins de la moitié de leurs mots est dans l'image refaite.
+  {
+    const vus = new Set(l.flatMap(motsDe));
+    const lu = (t: string) => { const m = motsDe(t).filter((w) => /\p{L}{2}/u.test(w)); return m.length ? m.filter((w) => vus.has(w)).length / m.length : 0; };
+    while (a.length && estUnTitreDeBloc(a[0]) && lu(a[0]) < 0.5) a = a.slice(1);
+  }
+  // Un fragment d'heure n'est jamais un texte attendu (point 9).
+  a = a.filter((t) => !estUnFragmentDHeure(t));
   if (o.deborde) {
     // Seulement les premières lignes qui commencent au milieu d'un mot (une minuscule : un texte coupé par le bord de la
     // case) et dont aucun mot n'est dans l'image refaite ; un vrai titre de la case, qui commence par une majuscule, reste attendu.
     const vus = new Set(l.flatMap(motsDe));
     while (a.length && /^\s*\p{Ll}/u.test(a[0]) && !motsDe(a[0]).some((w) => vus.has(w))) a = a.slice(1);
   }
-  if (o.element && CASES_AVEC_BARRE_D_ETAT.has(o.element)) { a = a.filter((t) => !estUneHeure(t)); l = l.filter((t) => !estUneHeure(t)); }
+  if (o.element && CASES_AVEC_BARRE_D_ETAT.has(o.element)) { a = a.filter((t) => !estUnFragmentDeMicroTexte(t)); l = l.filter((t) => !estUnFragmentDeMicroTexte(t)); }
   // UN MOT ENTIER PERDU AU BORD GAUCHE (essai réel du torréfacteur, 26 novembre 2026) : le bandeau de la planche est découpé
   // au bord de la page, et l'aperçu y perd parfois un mot entier (« la tasse, » pour « à la tasse, »). Une ligne refaite qui
   // est exactement une ligne attendue précédée d'un seul mot n'est pas reprochée, dans ces cases seulement.
@@ -1007,12 +1086,13 @@ export async function refaireLesElements(deps: ElementsDeps, o: {
   return res;
 }
 
-// ---------------------------------------------------------------- 8 bis. les quatre petites versions du logo en HD
+// ---------------------------------------------------------------- 8 bis. les petites versions du logo en HD
 
 /**
- * LES QUATRE PETITES VERSIONS DU LOGO EN HAUTE DÉFINITION (26 novembre 2026 ; décision du propriétaire relayée par le chef
- * d'orchestre : oui pour les refaire en haute définition, identiques à l'aperçu). Sans symbole séparable, le compact,
- * l'icône, le favicon et le badge sont repris de leur tuile de l'aperçu, agrandis quatre fois (`versionDepuisLApercu`) :
+ * LES PETITES VERSIONS DU LOGO EN HAUTE DÉFINITION (26 novembre 2026 ; décision du propriétaire relayée par le chef
+ * d'orchestre : oui pour les refaire en haute définition, identiques à l'aperçu ; le logo compact en est retiré le 27
+ * novembre 2026, comme partout). Sans symbole séparable, l'icône, le favicon et le badge sont repris de leur tuile de
+ * l'aperçu, agrandis quatre fois (`versionDepuisLApercu`) :
  * c'est la règle de base, gratuite. En option payante, chacune est refaite en haute définition à partir de sa tuile, avec
  * le logo officiel joint (le logo fini choisi), par le modèle d'images des logos, comme les autres images de la planche
  * en vrai : la règle des preuves mot pour mot (REGLE_APERCU et la phrase du logo), plus une ligne qui dit l'élément ; la
@@ -1020,7 +1100,6 @@ export async function refaireLesElements(deps: ElementsDeps, o: {
  * charge du Studio avec ses raisons ; refusée deux fois, l'agrandissement de l'aperçu est gardé, et SINA le dit.
  */
 export const LOGOS_EN_HD = {
-  "logo-compact": { tuile: "logo-4", quoi: "C'est la version compacte du logo.", libelle: ["la version compacte du logo", "the compact logo"] },
   icone: { tuile: "logo-5", quoi: "C'est l'icône seule.", libelle: ["l'icône seule", "the icon"] },
   favicon: { tuile: "logo-6", quoi: "C'est le favicon.", libelle: ["le favicon", "the favicon"] },
   badge: { tuile: "logo-10", quoi: "C'est le badge rond.", libelle: ["le badge rond", "the round badge"] },
@@ -1168,8 +1247,8 @@ export const phraseDeLaPoliceRemplacee = (lue: string, prise: string, genreLu?: 
 export const phraseDesLogosDeLApercu = (versions: readonly string[]) => L(
   `Ton logo ne se sépare pas proprement en un symbole et un nom : ${versions.length > 1 ? "ces versions sont reprises" : "cette version est reprise"} de ta planche choisie, agrandie${versions.length > 1 ? "s" : ""}, telle${versions.length > 1 ? "s" : ""} que tu ${versions.length > 1 ? "les " : "l'"}as vue${versions.length > 1 ? "s" : ""} (${versions.map((v) => LIBELLE_VERSION_FR[v] ?? v).join(", ")}). Je peux ${versions.length > 1 ? "les" : "la"} refaire en haute définition, je t'annonce le prix avant.`,
   `Your logo does not split cleanly into a symbol and a name: ${versions.length > 1 ? "these versions are" : "this version is"} taken from your chosen board, enlarged, as you saw ${versions.length > 1 ? "them" : "it"} (${versions.join(", ")}). I can redo ${versions.length > 1 ? "them" : "it"} in high definition; I give you the price first.`);
-const LIBELLE_VERSION_FR: Record<string, string> = { "logo-compact": "le logo compact", icone: "l'icône", favicon: "le favicon", badge: "le badge" };
-const LIBELLE_VERSION_EN: Record<string, string> = { "logo-compact": "the compact logo", icone: "the icon", favicon: "the favicon", badge: "the badge" };
+const LIBELLE_VERSION_FR: Record<string, string> = { icone: "l'icône", favicon: "le favicon", badge: "le badge" };
+const LIBELLE_VERSION_EN: Record<string, string> = { icone: "the icon", favicon: "the favicon", badge: "the badge" };
 /**
  * Les versions refaites en haute définition qui n'ont pas passé la relecture, même refaites : leur agrandissement de
  * l'aperçu est gardé, et c'est dit simplement (aucune promesse de plus).

@@ -46,8 +46,8 @@ export function extraVariants(spec: LogoSpec): { role: string; name: string; spe
   const out: { role: string; name: string; spec: LogoSpec; width: number }[] = [
     { role: "logo-mono", name: C("logo-noir.svg", "logo-black.svg"), spec: { ...spec, color: "#111111", accent: "#111111" }, width: 1200 },
   ];
-  // Empilée : seulement si le logo a une marque (symbole ou monogramme) et n'est pas déjà empilé.
-  if (spec.custom && spec.layout !== "vertical") out.push({ role: "logo-stacked", name: C("logo-empile.svg", "logo-stacked.svg"), spec: { ...spec, layout: "vertical", tagline: undefined }, width: 900 });
+  // Plus de version empilée (27 novembre 2026, les mots du propriétaire : « En même temps logo Compact et logo empiler j'en
+  // veux plus sur la planche et nul part »).
   return out;
 }
 
@@ -185,7 +185,7 @@ async function applyArtwork(ctx: JobContext | null, projectId: string, assetId: 
 
 /**
  * Application d'une proposition Logo V2 : typographie des titres, logo principal et déclinaisons (principal, clair,
- * horizontal, marque réduite, favicon, noir seul, empilée, petite taille), boutique mise à jour ; kit et charte
+ * horizontal, marque réduite, favicon, noir seul, petite taille ; jamais d'empilée), boutique mise à jour ; kit et charte
  * seulement pour un logo non provisoire. `provisional` : version du studio sans relecture IA (jamais présentée comme finale).
  */
 async function applyProposal(ctx: JobContext | null, projectId: string, assetId: string, meta: any, opts: { provisional: boolean }) {
@@ -200,7 +200,7 @@ async function applyProposal(ctx: JobContext | null, projectId: string, assetId:
   if (handle && !(cur.validated ?? []).includes("fonts")) saveBrand(projectId, { ...cur, fonts: { ...cur.fonts, heading: handle } });
   const pr: LogoProposal = { id: assetId, key: KEY[t.markType], label: t.name, concept: `${t.name} — ${t.concept}`, spec: { ...rest, tagline: undefined }, colors: { color, accent: accent ?? color } };
   const applied = await applyLogo(ctx, projectId, pr, { noTagline: true, provisional: opts.provisional });
-  // Variantes utiles en plus (noir seul, empilée si pertinente, petite taille).
+  // Variantes utiles en plus (noir seul, petite taille).
   const base = { projectId, userId: p.userId, folderKey: "brand.logos", origin: "generated" as const, sourceAssetId: applied.main.id, meta: { engine: "logo-v2", territory: t.id } };
   for (const v of extraVariants({ ...spec, tagline: undefined })) {
     await saveAsset({ ...base, data: Buffer.from(buildLogo(v.spec).svg), name: v.name, mime: "image/svg+xml", kind: "logo", role: `${v.role}-svg` });

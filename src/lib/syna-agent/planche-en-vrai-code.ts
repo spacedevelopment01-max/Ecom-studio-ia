@@ -1,7 +1,7 @@
 /**
  * LA PLANCHE EN VRAI : CE QUE FAIT LE CODE SEUL, SANS OPENAI (plan accepté du 25 novembre 2026 ; voir planche-en-vrai.ts).
  *
- * - les dix versions du logo, d'après assembler-planche.py (preuves, branche du chef d'orchestre), tirées du logo au fond
+ * - les huit versions du logo (ni compact ni empilé), d'après assembler-planche.py (preuves, branche du chef d'orchestre), tirées du logo au fond
  *   retiré par le Studio (`logoDetoure` : creux des lettres compris) ;
  * - la séparation du symbole et du nom, sur le masque d'encre d'assembler-planche.py (le masque du fond retiré ne sert
  *   qu'au fond) ; si elle n'est pas fiable, le symbole complet est gardé, et c'est dit ;
@@ -80,6 +80,53 @@ function boiteDEncre(m: Uint8Array, w: number, b: [number, number, number, numbe
 }
 
 /**
+ * LES LIGNES DE LA PHRASE sous le nom, sur le masque d'encre d'un logo rogné à son encre : les blocs de lignes pleines du
+ * bas qui sont des lignes de texte (au moins deux fois et demie plus larges que hautes, chacune sous 20 % de la hauteur du
+ * logo, faites de plusieurs signes : un trait plein sous une lettre n'en est pas une), sous une bande vide d'au moins 1,2 % de la hauteur, la phrase au plus moitié moins haute que ce qui est au-dessus.
+ * Rend [haut de la phrase, bas du logo, bas de ce qui est au-dessus] ; null sans phrase nette.
+ */
+function lignesDeLaPhrase(m: Uint8Array, w: number, h: number): [number, number, number] | null {
+  const vide = (y: number) => { for (let x = 0; x < w; x++) if (m[y * w + x] >= ENCRE) return false; return true; };
+  const blocs: [number, number][] = [];
+  let deb = -1;
+  for (let y = 0; y <= h; y++) { const v = y >= h || vide(y); if (!v && deb < 0) deb = y; if (v && deb >= 0) { blocs.push([deb, y]); deb = -1; } }
+  // Une ligne de texte a plusieurs signes (au moins trois suites de colonnes pleines) ; un trait plein n'en est pas une.
+  const signes = (y0: number, y1: number) => { let n = 0, dans = false; for (let x = 0; x < w; x++) { let plein = false; for (let y = y0; y < y1; y++) if (m[y * w + x] >= ENCRE) { plein = true; break; } if (plein && !dans) n++; dans = plein; } return n; };
+  let i = blocs.length;
+  while (i > 1) {
+    const [y0, y1] = blocs[i - 1], b = boiteDEncre(m, w, [0, y0, w, y1]);
+    if (!b || (b[2] - b[0]) / (b[3] - b[1]) < 2.5 || b[3] - b[1] > h * 0.2 || signes(y0, y1) < 3) break;
+    i--;
+  }
+  if (i >= blocs.length || i < 1) return null;
+  const d = blocs[i - 1][1], f = blocs[i][0];
+  if (f - d < h * 0.012) return null;
+  const a = boiteDEncre(m, w, [0, 0, w, d]), b = boiteDEncre(m, w, [0, f, w, h]);
+  if (!a || !b || b[3] - b[1] > (a[3] - a[1]) / 2) return null;
+  return [f, h, d];
+}
+/**
+ * UNE LETTRE DU NOM, pas un symbole : la partie gauche a le haut du nom (à 12 % près) et presque sa hauteur (de 80 à 125 %),
+ * et l'écart qui la sépare du nom n'est pas plus grand qu'une fois et demie le plus grand écart entre les lettres du nom (ou, sans écart
+ * entre elles, que 35 % de la hauteur du nom).
+ */
+function uneLettreDuNom(m: Uint8Array, w: number, zoneA: [number, number, number, number], zoneB: [number, number, number, number]): boolean {
+  const a = boiteDEncre(m, w, zoneA), b = boiteDEncre(m, w, zoneB);
+  if (!a || !b) return false;
+  const ha = a[3] - a[1], hb = b[3] - b[1], H = Math.max(ha, hb);
+  // Le même haut ; une hauteur proche (un trait sous une lettre, comme un soulignement, l'allonge un peu).
+  if (Math.abs(a[1] - b[1]) > H * 0.12 || ha / hb < 0.8 || ha / hb > 1.25) return false;
+  let plusGrand = 0, run = 0;
+  for (let x = b[0]; x < b[2]; x++) {
+    let videCol = true;
+    for (let y = b[1]; y < b[3]; y++) if (m[y * w + x] >= ENCRE) { videCol = false; break; }
+    if (videCol) run++; else { plusGrand = Math.max(plusGrand, run); run = 0; }
+  }
+  const ecart = b[0] - a[2];
+  return ecart <= Math.max(1.5 * plusGrand, 0.35 * hb);
+}
+
+/**
  * LE SYMBOLE ET LE NOM, séparés comme dans assembler-planche.py : sur le masque d'encre, la plus grande bande vide entre
  * le symbole et le nom ; HORIZONTALE pour un logo empilé (le symbole au-dessus du nom), VERTICALE pour un logo en ligne (le
  * symbole à gauche du nom). Une ligne (ou une colonne) est vide quand aucun point n'y atteint l'encre. Les bandes sont
@@ -113,6 +160,13 @@ export async function separerSymbole(logoDetoure: Buffer): Promise<Separation> {
     ...bandes(r.h, ligneVide).map(([d, f]) => ({ sens: "dessus" as const, a: [0, 0, r.w, d] as [number, number, number, number], b: [0, f, r.w, r.h] as [number, number, number, number], part: (f - d) / r.h })),
     ...bandes(r.w, colonneVide).map(([d, f]) => ({ sens: "gauche" as const, a: [0, 0, d, r.h] as [number, number, number, number], b: [f, 0, r.w, r.h] as [number, number, number, number], part: (f - d) / r.w })),
   ].sort((x, y) => y.part - x.part);
+  // LA PHRASE SOUS LE NOM ET LES LETTRES DU NOM (27 novembre 2026, essai réel de Havane, point 6 : le code prenait le « H »
+  // du nom, avec « SACS », le premier mot de la phrase coupée, pour un symbole ; sur l'aperçu, le symbole était un chevron
+  // posé dans le nom). Les lignes de la phrase (`lignesDeLaPhrase`) ne comptent pas pour chercher le symbole : une coupe
+  // verticale qui passe dans la phrase n'est jamais une séparation ; une partie gauche qui n'est faite que de lettres du nom (le
+  // même haut, presque la même hauteur, un écart pas plus grand que ceux qui séparent les lettres du nom) non plus.
+  const phrase = lignesDeLaPhrase(m, r.w, r.h);
+  const sansPhrase: [number, number, number, number] = [0, 0, r.w, phrase ? phrase[0] : r.h];
   for (const e of essais) {
     if (e.part < 0.015) continue;
     const ba = boiteDEncre(m, r.w, e.a), bb2 = boiteDEncre(m, r.w, e.b);
@@ -121,6 +175,9 @@ export async function separerSymbole(logoDetoure: Buffer): Promise<Separation> {
     const rapportA = (ba[2] - ba[0]) / (ba[3] - ba[1]), rapportB = (bb2[2] - bb2[0]) / (bb2[3] - bb2[1]);
     if (pa < 0.08 || pb < 0.08) continue;
     if (rapportB < 1.8 || rapportA < 0.33 || rapportA > 3) continue;
+    if (phrase && e.sens === "gauche" && ba[3] > phrase[0]) continue;
+    if (phrase && e.sens === "dessus" && bb2[1] >= phrase[0]) continue;
+    if (e.sens === "gauche" && uneLettreDuNom(m, r.w, [e.a[0], 0, e.a[2], sansPhrase[3]], [e.b[0], 0, e.b[2], sansPhrase[3]])) continue;
     // Les pixels du logo au fond retiré, découpés aux boîtes d'encre (les franges du fond retiré n'y entrent pas).
     return { symbole: await versPng(decouper(r, ba)), nom: await versPng(decouper(r, bb2)), fiable: true, raison: null, sens: e.sens };
   }
@@ -139,24 +196,10 @@ export async function separerLaPhrase(logoDetoure: Buffer): Promise<{ marque: Bu
   if (!bb) return null;
   const r = decouper(r0, bb), m = new Uint8Array(r.w * r.h);
   for (let y = 0; y < r.h; y++) m.set(m0.subarray((bb[1] + y) * r0.w + bb[0], (bb[1] + y) * r0.w + bb[2]), y * r.w);
-  const vide = (y: number) => { for (let x = 0; x < r.w; x++) if (m[y * r.w + x] >= ENCRE) return false; return true; };
-  // Les blocs de lignes pleines, de haut en bas (séparés par des lignes vides).
-  const blocs: [number, number][] = [];
-  let deb = -1;
-  for (let y = 0; y <= r.h; y++) { const v = y >= r.h || vide(y); if (!v && deb < 0) deb = y; if (v && deb >= 0) { blocs.push([deb, y]); deb = -1; } }
-  // Depuis le bas : les blocs qui sont des lignes de texte (au moins deux fois et demie plus larges que hautes, chacune
-  // sous 20 % de la hauteur du logo) forment la phrase ; le premier bloc qui n'en est pas une arrête.
-  let i = blocs.length;
-  while (i > 1) {
-    const [y0, y1] = blocs[i - 1], b = boiteDEncre(m, r.w, [0, y0, r.w, y1]);
-    if (!b || (b[2] - b[0]) / (b[3] - b[1]) < 2.5 || b[3] - b[1] > r.h * 0.2) break;
-    i--;
-  }
-  if (i >= blocs.length || i < 1) return null;
-  const d = blocs[i - 1][1], f = blocs[i][0];
-  if (f - d < r.h * 0.012) return null;
-  const a = boiteDEncre(m, r.w, [0, 0, r.w, d]), b = boiteDEncre(m, r.w, [0, f, r.w, r.h]);
-  if (!a || !b || b[3] - b[1] > (a[3] - a[1]) / 2) return null;
+  const l = lignesDeLaPhrase(m, r.w, r.h);
+  if (!l) return null;
+  const a = boiteDEncre(m, r.w, [0, 0, r.w, l[2]]), b = boiteDEncre(m, r.w, [0, l[0], r.w, r.h]);
+  if (!a || !b) return null;
   return { marque: await versPng(decouper(r, a)), phrase: await versPng(decouper(r, b)) };
 }
 /** Le logo horizontal sans symbole séparé : la marque à gauche, la phrase à droite, centrée sur sa hauteur. */
@@ -167,7 +210,7 @@ async function marqueEtPhrase(marque: Buffer, phrase: Buffer): Promise<Buffer> {
   return c.encode("png");
 }
 /**
- * UNE VERSION REPRISE DE L'APERÇU (essai réel d'Écume, 26 novembre 2026) : sans symbole séparable, le compact, l'icône, le
+ * UNE VERSION REPRISE DE L'APERÇU (essai réel d'Écume, 26 novembre 2026) : sans symbole séparable, l'icône, le
  * favicon et le badge de la planche choisie sont des dessins que le logo seul ne donne pas (« É » et ses bulles, la vague,
  * le sceau). Ils sont repris de leur tuile de l'aperçu, agrandis quatre fois, le fond de la tuile retiré (le fond est la
  * couleur médiane du pourtour ; un point s'en écartant de plus de 40 niveaux est plein, en fondu entre 12 et 40).
@@ -187,14 +230,25 @@ export async function versionDepuisLApercu(tuile: Buffer): Promise<Buffer> {
   const r: Rgba = { data: out, w, h }, b = boiteOpaque(r);
   return versPng(b ? decouper(r, [Math.max(0, b[0] - 4), Math.max(0, b[1] - 4), Math.min(w, b[2] + 4), Math.min(h, b[3] + 4)]) : r);
 }
-/** Les versions reprises de l'aperçu quand le symbole ne se sépare pas : leurs tuiles (logo-4, logo-5, logo-6, logo-10). */
-export const VERSIONS_DE_L_APERCU = ["logo-compact", "icone", "favicon", "badge"] as const satisfies readonly VersionDuLogoPre[];
-type VersionDuLogoPre = "logo-compact" | "icone" | "favicon" | "badge";
-export const TUILE_DE_LA_VERSION: Record<VersionDuLogoPre, string> = { "logo-compact": "logo-4", icone: "logo-5", favicon: "logo-6", badge: "logo-10" };
+/** Les versions reprises de l'aperçu quand le symbole ne se sépare pas : leurs tuiles (logo-5, logo-6, logo-10). */
+export const VERSIONS_DE_L_APERCU = ["icone", "favicon", "badge"] as const satisfies readonly VersionDuLogoPre[];
+type VersionDuLogoPre = "icone" | "favicon" | "badge";
+/**
+ * LA TUILE DE CHAQUE VERSION SUR L'APERÇU : les dix cases de la disposition (logo-1 à logo-10), dans l'ordre de la planche
+ * d'avant le 27 novembre 2026 (principal, horizontal, empilé, compact, icône, favicon, monochrome foncé, monochrome clair,
+ * inversé, badge). Le logo empilé (logo-3) et le logo compact (logo-4) ne sont plus faits ni montrés nulle part : leurs
+ * cases ne servent plus. Une planche à huit cases (`panneauxDuBloc01`) range ses cases sous ces mêmes noms.
+ */
+export const TUILE_DE_LA_VERSION: Record<VersionDuLogo, string> = {
+  "logo-principal": "logo-1", "logo-horizontal": "logo-2", icone: "logo-5", favicon: "logo-6",
+  "monochrome-fonce": "logo-7", "monochrome-clair": "logo-8", inverse: "logo-9", badge: "logo-10",
+};
+/** Les cases de l'aperçu qui ne servent plus (le logo empilé et le logo compact, retirés le 27 novembre 2026). */
+export const TUILES_RETIREES = ["logo-3", "logo-4"] as const;
 /** Les versions faites par le code dont la tuile est comparée à celle de l'aperçu avant d'être posée (`tuilesDuBloc01`). */
-export const VERSIONS_COMPAREES_A_L_APERCU = ["logo-horizontal", "logo-empile", "monochrome-fonce", "monochrome-clair", "inverse"] as const satisfies readonly VersionDuLogo[];
-/** La tuile du bloc 01 de chaque version : logo-1 à logo-10, dans l'ordre des dix versions. */
-export const tuileDeLaVersion = (v: VersionDuLogo): string => `logo-${VERSIONS_DU_LOGO.indexOf(v) + 1}`;
+export const VERSIONS_COMPAREES_A_L_APERCU = ["logo-horizontal", "monochrome-fonce", "monochrome-clair", "inverse"] as const satisfies readonly VersionDuLogo[];
+/** La tuile du bloc 01 de chaque version sur l'aperçu. */
+export const tuileDeLaVersion = (v: VersionDuLogo): string => TUILE_DE_LA_VERSION[v];
 
 /**
  * UNE VERSION EN HAUTE DÉFINITION SUR LA PLANCHE (26 novembre 2026) : la planche en vrai reste identique à l'aperçu. La
@@ -261,7 +315,7 @@ export async function tuilesDuBloc01(o: { demo: Buffer; boites: ReadonlyMap<stri
     notes.push(`${v} fait par le code : ${c.garde ? `posé sur la planche (${Math.round(c.part * 1000) / 10} % des points changés)` : `la planche garde l'aperçu agrandi (${c.raison}) ; la version du code sert aux fichiers à télécharger`}`);
   }
   for (const v of o.enHd ?? []) {
-    const t = o.boites.get(TUILE_DE_LA_VERSION[v as VersionDuLogoPre] ?? "");
+    const t = o.boites.get(TUILE_DE_LA_VERSION[v] ?? "");
     if (!t) { tuilesDeLApercu.push(v); continue; }
     const c = await caseDuLogoEnHd(data, info.width, t, o.versions[v]);
     if (c.garde) tuilesEnHd.set(v, c.png); else tuilesDeLApercu.push(v);
@@ -277,13 +331,21 @@ export async function couleurDuLogo(logo: Buffer): Promise<string> {
   return hexDe(c.map(mediane));
 }
 
-// ---------------------------------------------------------------- les dix versions
+// ---------------------------------------------------------------- les huit versions
 
-export const VERSIONS_DU_LOGO = ["logo-principal", "logo-horizontal", "logo-empile", "logo-compact", "icone", "favicon", "monochrome-fonce", "monochrome-clair", "inverse", "badge"] as const;
+/**
+ * LES VERSIONS DU LOGO (27 novembre 2026, essai réel de Havane ; les mots du propriétaire : « En même temps logo Compact et
+ * logo empiler j'en veux plus sur la planche et nul part »). Huit versions : ni logo compact, ni logo empilé, ni sur la
+ * planche, ni dans l'onglet Marque, ni dans le zip, ni ailleurs. Un ancien projet qui a encore leurs fichiers ne les montre
+ * plus (`estUneVersionDuLogo`).
+ */
+export const VERSIONS_DU_LOGO = ["logo-principal", "logo-horizontal", "icone", "favicon", "monochrome-fonce", "monochrome-clair", "inverse", "badge"] as const;
 export type VersionDuLogo = (typeof VERSIONS_DU_LOGO)[number];
+/** Une version encore faite et montrée (un ancien projet garde peut-être « logo-compact » ou « logo-empile » : jamais montrés). */
+export const estUneVersionDuLogo = (v: string): v is VersionDuLogo => (VERSIONS_DU_LOGO as readonly string[]).includes(v);
 export const LIBELLE_DES_VERSIONS: Record<VersionDuLogo, { fr: string; en: string }> = {
-  "logo-principal": { fr: "Logo principal", en: "Main logo" }, "logo-horizontal": { fr: "Logo horizontal", en: "Horizontal logo" }, "logo-empile": { fr: "Logo empilé", en: "Stacked logo" },
-  "logo-compact": { fr: "Logo compact", en: "Compact logo" }, icone: { fr: "Icône seule", en: "Icon" }, favicon: { fr: "Favicon", en: "Favicon" },
+  "logo-principal": { fr: "Logo principal", en: "Main logo" }, "logo-horizontal": { fr: "Logo horizontal", en: "Horizontal logo" },
+  icone: { fr: "Icône seule", en: "Icon" }, favicon: { fr: "Favicon", en: "Favicon" },
   "monochrome-fonce": { fr: "Monochrome foncé", en: "Dark monochrome" }, "monochrome-clair": { fr: "Monochrome clair", en: "Light monochrome" },
   inverse: { fr: "Inversé sur fond sombre", en: "Reversed on dark" }, badge: { fr: "Badge / sceau", en: "Badge / seal" },
 };
@@ -298,12 +360,6 @@ async function teinte(png: Buffer, couleur: string): Promise<Buffer> {
 const dessiner = (x: SKRSContext2D, i: Img, dx: number, dy: number, w: number, h: number) => x.drawImage(i, dx, dy, w, h);
 function arrondi(x: SKRSContext2D, x0: number, y0: number, w: number, h: number, r: number) {
   x.beginPath(); x.moveTo(x0 + r, y0); x.arcTo(x0 + w, y0, x0 + w, y0 + h, r); x.arcTo(x0 + w, y0 + h, x0, y0 + h, r); x.arcTo(x0, y0 + h, x0, y0, r); x.arcTo(x0, y0, x0 + w, y0, r); x.closePath();
-}
-async function empile(sym: Buffer, nom: Buffer, ecart: number): Promise<Buffer> {
-  const s = await img(sym), n = await img(nom), g = Math.round(s.height * ecart), w = Math.max(s.width, n.width), h = s.height + g + n.height;
-  const c = createCanvas(w, h), x = c.getContext("2d");
-  dessiner(x, s, (w - s.width) / 2, 0, s.width, s.height); dessiner(x, n, (w - n.width) / 2, s.height + g, n.width, n.height);
-  return c.encode("png");
 }
 async function horizontal(sym: Buffer, nom: Buffer): Promise<Buffer> {
   const s = await img(sym), n = await img(nom), h = Math.round(n.height * 1.35), sw = Math.round((s.width * h) / s.height), g = Math.round(n.height * 0.35);
@@ -353,7 +409,41 @@ export async function logoAAplats(logo: Buffer): Promise<{ seuil: number; partCl
   let a = 0, sa = 0, b = 0, sb = 0;
   for (let k = 0; k < 256; k++) if (k < seuil) { a += hist[k]; sa += k * hist[k]; } else { b += hist[k]; sb += k * hist[k]; }
   if (!a || !b || a / n < 0.08 || b / n < 0.08 || (sb / b - sa / a) / 255 < 0.35) return null;
+  // LES PARTS CLAIRES SONT ENFERMÉES DANS L'APLAT (27 novembre 2026, essai réel de Havane, point 7 : des lettres foncées, un
+  // trait cognac et la frange claire laissée par le fond retiré passaient pour un logo à aplats ; l'inversé ne gardait que
+  // la frange et le trait, et le nom, foncé sur la bande foncée, était illisible). Dans un vrai logo à aplats, les lettres
+  // claires sont dans l'aplat : en partant d'un point clair, dans les quatre directions, le premier point qui n'est plus
+  // clair est un point plein de l'aplat, jamais le vide. Une frange, au bord du dessin, touche le vide ; un trait de
+  // couleur posé à côté des lettres aussi. Au moins la moitié des points clairs doivent être enfermés.
+  if (partEnfermee(r, seuil) < 0.5) return null;
   return { seuil, partClaire: b / n };
+}
+/**
+ * La part des points clairs (pleins, au-dessus du seuil) enfermés dans l'aplat, dans les quatre directions. Le dehors est
+ * le vide relié au bord de l'image (rempli depuis les bords) : les fins creux que le fond retiré laisse autour des lettres,
+ * à l'intérieur de l'aplat, ne sont pas le dehors et se traversent, comme les points à demi transparents.
+ */
+function partEnfermee(r: Rgba, seuil: number): number {
+  const w = r.w, h = r.h, etat = new Uint8Array(w * h); // 0 : vide ; 1 : aplat (plein et sombre) ; 2 : clair (plein et clair) ; 3 : à demi transparent ; 4 : dehors
+  for (let i = 0; i < w * h; i++) {
+    const a = r.data[i * 4 + 3];
+    if (a < 30) continue;
+    etat[i] = a < 200 ? 3 : 0.2126 * r.data[i * 4] + 0.7152 * r.data[i * 4 + 1] + 0.0722 * r.data[i * 4 + 2] >= seuil ? 2 : 1;
+  }
+  const file = new Int32Array(w * h);
+  let debut = 0, fin = 0;
+  const pousser = (i: number) => { if (etat[i] === 0) { etat[i] = 4; file[fin++] = i; } };
+  for (let x = 0; x < w; x++) { pousser(x); pousser((h - 1) * w + x); }
+  for (let y = 0; y < h; y++) { pousser(y * w); pousser(y * w + w - 1); }
+  while (debut < fin) { const i = file[debut++], x = i % w; if (x > 0) pousser(i - 1); if (x < w - 1) pousser(i + 1); if (i >= w) pousser(i - w); if (i < w * (h - 1)) pousser(i + w); }
+  let clairs = 0, enfermes = 0;
+  for (let y = 0; y < h; y += 2) for (let x = 0; x < w; x += 2) {
+    if (etat[y * w + x] !== 2) continue;
+    clairs++;
+    const ferme = (dx: number, dy: number) => { let xx = x + dx, yy = y + dy; while (xx >= 0 && yy >= 0 && xx < w && yy < h && etat[yy * w + xx] !== 1 && etat[yy * w + xx] !== 4) { xx += dx; yy += dy; } return xx >= 0 && yy >= 0 && xx < w && yy < h && etat[yy * w + xx] === 1; };
+    if (ferme(1, 0) && ferme(-1, 0) && ferme(0, 1) && ferme(0, -1)) enfermes++;
+  }
+  return clairs ? enfermes / clairs : 0;
 }
 /**
  * LE MONOCHROME AUX CREUX d'un logo à aplats : un seul ton, et les parts claires du dessin (les lettres, la flamme, les
@@ -397,6 +487,24 @@ export async function contrasteDesLettres(original: Buffer, version: Buffer, fon
 }
 /** Le contraste minimal entre les lettres d'une version et ce qui les entoure : 3, le seuil WCAG des grands textes. */
 export const CONTRASTE_MIN_DES_LETTRES = 3;
+/**
+ * LE LOGO SE VOIT-IL SUR SON FOND ? (27 novembre 2026, essai réel de Havane, point 7 : l'inversé posait des lettres foncées
+ * sur la bande foncée.) La version est posée sur `fond`, ramenée à la taille du logo d'origine ; parmi les points pleins du
+ * dessin d'origine (opacité de 90 % au moins), la part de ceux dont la couleur rendue a, avec le fond, un contraste WCAG
+ * d'au moins CONTRASTE_MIN_DES_LETTRES. Une version lisible montre tout son dessin : PART_VISIBLE_MIN au moins.
+ */
+export async function partVisibleSurLeFond(original: Buffer, version: Buffer, fond: string): Promise<number> {
+  const o = await rgba(original), v = await rgba(await sharp(version).resize(o.w, o.h, { fit: "fill" }).png().toBuffer()), f = rgbDe(fond), lf = lumRel(f[0], f[1], f[2]);
+  let n = 0, vus = 0;
+  for (let i = 0; i < o.data.length; i += 4) {
+    if (o.data[i + 3] < 230) continue;
+    n++;
+    const a = v.data[i + 3] / 255, px = [0, 1, 2].map((k) => v.data[i + k] * a + f[k] * (1 - a));
+    if (contrasteWcag(lumRel(px[0], px[1], px[2]), lf) >= CONTRASTE_MIN_DES_LETTRES) vus++;
+  }
+  return n ? vus / n : 0;
+}
+export const PART_VISIBLE_MIN = 0.6;
 
 // ---------------------------------------------------------------- les polices du catalogue
 
@@ -571,20 +679,19 @@ export async function badge(symbole: Buffer, couleur: string, haut: string, bas:
 }
 
 /**
- * LES DIX VERSIONS DU LOGO (assembler-planche.py), en PNG haute définition sur fond transparent, à partir du logo au fond
- * retiré. Avec une séparation fiable : le compact, l'icône et le favicon montrent le symbole seul, l'horizontal le symbole
- * à gauche du nom, l'empilé le symbole au-dessus du nom (essai réel du 25 novembre 2026 : la condition d'avant, « l'icône
- * de la planche reprend le logo », gardait le logo complet partout dès que l'icône de la démonstration montrait un autre
- * dessin). Sans séparation fiable, le symbole est le logo complet (`symboleComplet`), et c'est dit.
- * `bas` : le texte du bas du badge (`texteDuBasDuBadge`).
+ * LES HUIT VERSIONS DU LOGO (assembler-planche.py, sans le compact ni l'empilé depuis le 27 novembre 2026), en PNG haute
+ * définition sur fond transparent, à partir du logo au fond retiré. Avec une séparation fiable : l'icône et le favicon
+ * montrent le symbole seul, l'horizontal le symbole à gauche du nom (essai réel du 25 novembre 2026). Sans séparation
+ * fiable (`symboleComplet`), l'icône, le favicon et le badge reprennent ce que montre l'aperçu, ou le logo entier, jamais
+ * un bout du logo (essai réel de Havane, point 6) ; et c'est dit. `bas` : le texte du bas du badge (`texteDuBasDuBadge`).
  */
 export async function versionsDuLogo(o: {
   logo: Buffer; separation: Separation; couleur: string; sombre: string; clair: string; monoClair: string; nom: string; bas: string; police: Pick<PoliceChoisie, "cle" | "poids">;
-  /** Les tuiles du bloc 01 de l'aperçu (logo-1 à logo-10) : sans symbole séparable, le compact, l'icône, le favicon et le badge en sont repris. */
+  /** Les tuiles du bloc 01 de l'aperçu (`TUILE_DE_LA_VERSION`) : sans symbole séparable, l'icône, le favicon et le badge en sont repris. */
   tuiles?: ReadonlyMap<string, Buffer>;
   /**
    * Les versions refaites en haute définition et gardées (fond retiré) : elles remplacent l'agrandissement de leur tuile
-   * (26 novembre 2026, option des quatre petites versions en haute définition).
+   * (26 novembre 2026, option des petites versions en haute définition).
    */
   hd?: ReadonlyMap<VersionDuLogo, Buffer>;
 }): Promise<{ versions: Record<VersionDuLogo, Buffer>; symboleComplet: boolean; symbole: Buffer; depuisLApercu: VersionDuLogo[]; enHd: VersionDuLogo[] }> {
@@ -592,8 +699,8 @@ export async function versionsDuLogo(o: {
   const r = await rgba(o.logo), bb = boiteOpaque(r), logo = bb ? await versPng(decouper(r, bb)) : o.logo;
   const symbole = sep ? sep.symbole : logo, nom = sep?.nom ?? null;
   const blanc = "#FFFFFF";
-  // Sans symbole séparable : la marque et sa phrase pour l'horizontal ; le compact, l'icône, le favicon et le badge repris
-  // de leur tuile de l'aperçu (jamais le logo entier en tout petit).
+  // Sans symbole séparable : la marque et sa phrase pour l'horizontal ; l'icône, le favicon et le badge repris de leur
+  // tuile de l'aperçu (jamais le logo entier en tout petit, jamais un bout du logo).
   const phrase = sep ? null : await separerLaPhrase(o.logo);
   const depuisLApercu: VersionDuLogo[] = [], enHd: VersionDuLogo[] = [];
   const apercu = async (v: VersionDuLogoPre, sinon: () => Promise<Buffer>) => {
@@ -607,12 +714,9 @@ export async function versionsDuLogo(o: {
   };
   // LE LOGO HORIZONTAL QUE LE CODE NE SAIT PAS COMPOSER (27 novembre 2026, essai réel de Mouture : « Le logo horizontal est
   // identique au principal. Sur l'aperçu, c'est le symbole à gauche et le nom à droite. ») : sans symbole séparable ni phrase
-  // séparable, il est repris de sa tuile de l'aperçu, comme le compact ; sans tuile, la règle d'avant (le logo complet).
-  //
-  // LE LOGO EMPILÉ AUSSI (27 novembre 2026, décision du chef d'orchestre : « Quand la version faite par le code est identique
-  // au logo principal ou illisible, on reprend celle de l'aperçu », pour tout client) : une version de mise en page (horizontal,
-  // empilé) que le code rend identique au logo principal, ou illisible (logo à aplats, même taille que le principal, contraste
-  // des lettres sous CONTRASTE_MIN_DES_LETTRES), est reprise de sa tuile de l'aperçu ; sans tuile, la version du code reste.
+  // séparable, il est repris de sa tuile de l'aperçu ; sans tuile, la règle d'avant (le logo complet). Une version de mise
+  // en page que le code rend identique au logo principal, ou illisible (logo à aplats, même taille que le principal,
+  // contraste des lettres sous CONTRASTE_MIN_DES_LETTRES), est reprise de sa tuile de l'aperçu, pour tout client.
   const sinonDeLApercu = async (v: VersionDuLogo, png: Buffer): Promise<Buffer> => {
     const t = o.tuiles?.get(tuileDeLaVersion(v));
     if (!t) return png;
@@ -641,24 +745,38 @@ export async function versionsDuLogo(o: {
   const monoFonce = aplats ? await monochromeAuxCreux(logo, "#222222", aplats.seuil) : await teinte(logo, "#222222");
   const monoClair = aplats ? await monochromeAuxCreux(logo, o.monoClair, aplats.seuil) : await teinte(logo, o.monoClair);
   const clairsSurSombre = aplats ? await monochromeAuxCreux(logo, blanc, aplats.seuil, "claires") : await teinte(logo, blanc);
+  // SUR FOND SOMBRE, LE LOGO EST TOUJOURS CLAIR ET LISIBLE (27 novembre 2026, essai réel de Havane, point 7) : le contraste
+  // de l'inversé est mesuré (`partVisibleSurLeFond`, sur le fond où il sert). Un logo d'un seul ton dont le dessin ne se
+  // voit pas assez sur le fond sombre est repris de sa tuile de l'aperçu ; sans tuile, sa silhouette entière, en blanc, sur
+  // le fond sombre (ou sur un gris très foncé, si le sombre de la marque est trop clair pour le blanc).
+  const inverseLisible = async (): Promise<Buffer> => {
+    const png = await inverse(clairsSurSombre, o.sombre);
+    if (aplats) return lisibleOuApercu("inverse", png, clairsSurSombre, o.sombre);
+    if ((await partVisibleSurLeFond(logo, clairsSurSombre, o.sombre)) >= PART_VISIBLE_MIN) return png;
+    const t = o.tuiles?.get(tuileDeLaVersion("inverse"));
+    if (t) { depuisLApercu.push("inverse"); return versionDepuisLApercu(t); }
+    const blancPlein = await teinte(logo, blanc);
+    return inverse(blancPlein, (await partVisibleSurLeFond(logo, blancPlein, o.sombre)) >= PART_VISIBLE_MIN ? o.sombre : FOND_SOMBRE_DE_SECOURS);
+  };
   const versions: Record<VersionDuLogo, Buffer> = {
     "logo-principal": logo,
     "logo-horizontal": sep && nom ? (sep.sens === "gauche" ? logo : await horizontal(symbole, nom)) : phrase ? await marqueEtPhrase(phrase.marque, phrase.phrase) : await horizontalDeLApercu(),
-    "logo-empile": await sinonDeLApercu("logo-empile", sep && nom ? await empile(symbole, nom, 0.14) : logo),
-    "logo-compact": await apercu("logo-compact", async () => symbole),
     icone: await apercu("icone", async () => carre(await teinte(symbole, blanc), o.sombre, 0.18, 0.2)),
     favicon: await apercu("favicon", async () => carre(await teinte(symbole, blanc), o.sombre, 0.22, 0.16)),
     // Le foncé sert sur un fond clair (le clair de la marque), le clair sur un fond foncé (le gris du monochrome foncé :
     // le « sombre » d'une marque peut être une couleur vive) : chacun est mesuré là où il sert.
     "monochrome-fonce": await lisibleOuApercu("monochrome-fonce", monoFonce, monoFonce, o.clair),
     "monochrome-clair": await lisibleOuApercu("monochrome-clair", monoClair, monoClair, "#222222"),
-    // Sur fond sombre, le logo est toujours clair.
-    inverse: await lisibleOuApercu("inverse", await inverse(clairsSurSombre, o.sombre), clairsSurSombre, o.sombre),
+    inverse: await inverseLisible(),
     badge: await apercu("badge", async () => badge(symbole, o.couleur, o.nom, o.bas, o.police)),
   };
-  // Le symbole de la marque (le site, l'avatar) : le compact repris de l'aperçu quand il l'est.
-  return { versions, symboleComplet: !sep, symbole: depuisLApercu.includes("logo-compact") || enHd.includes("logo-compact") ? versions["logo-compact"] : symbole, depuisLApercu, enHd };
+  // Le symbole de la marque (le site, l'avatar) : le symbole séparé ; sans lui, l'icône reprise de l'aperçu (ou refaite en
+  // haute définition) ; sinon le logo entier, jamais un bout du logo.
+  const iconeDeLApercu = !sep && (depuisLApercu.includes("icone") || enHd.includes("icone"));
+  return { versions, symboleComplet: !sep, symbole: iconeDeLApercu ? versions.icone : symbole, depuisLApercu, enHd };
 }
+/** Le fond de l'inversé quand le sombre de la marque est trop clair pour un logo blanc. */
+export const FOND_SOMBRE_DE_SECOURS = "#1C1C1C";
 
 /** Les favicons 32, 64 et 512, et l'avatar des réseaux (le symbole sur le fond clair de la marque). */
 export async function faviconsEtAvatar(favicon: Buffer, symbole: Buffer, clair: string): Promise<{ f32: Buffer; f64: Buffer; f512: Buffer; avatar: Buffer }> {
@@ -799,7 +917,7 @@ export type AssemblageEntree = {
   /** Les lignes de mots lues sous chaque pastille de l'aperçu (`lignesDesMotsLues`), dans l'ordre des pastilles. */
   motsLus?: readonly (readonly string[] | null)[];
   /**
-   * Les quatre petites versions du logo refaites en haute définition et gardées sur la planche (`caseDuLogoEnHd`) : leur
+   * Les petites versions du logo refaites en haute définition et gardées sur la planche (`caseDuLogoEnHd`) : leur
    * tuile, déjà composée à la taille de la planche en vrai, remplace l'aperçu agrandi.
    */
   tuilesEnHd?: ReadonlyMap<VersionDuLogo, Buffer>;
@@ -893,6 +1011,38 @@ function boiteDEncreDeLApercu(data: Buffer, W: number, b: Boite, fond: string): 
     if (estEncre(data[i], data[i + 1], data[i + 2], f, 60)) { if (x < a) a = x; if (y < c) c = y; if (x > d) d = x; if (y > e) e = y; }
   }
   return d < 0 ? null : [a, c, d + 1, e + 1];
+}
+/** La boîte du dessin d'une tuile de l'aperçu, pâle compris : un point à plus de `seuil` niveaux du fond, sur un canal. */
+export function boiteDuDessin(data: Buffer, W: number, b: Boite, fond: string, seuil = 24): Boite | null {
+  const f = rgbDe(fond);
+  let a = b[2], c = b[3], d = -1, e = -1;
+  for (let y = b[1]; y < b[3]; y++) for (let x = b[0]; x < b[2]; x++) {
+    const i = (y * W + x) * 3;
+    if (Math.max(Math.abs(data[i] - f[0]), Math.abs(data[i + 1] - f[1]), Math.abs(data[i + 2] - f[2])) > seuil) { if (x < a) a = x; if (y < c) c = y; if (x > d) d = x; if (y > e) e = y; }
+  }
+  return d < 0 ? null : [a, c, d + 1, e + 1];
+}
+/**
+ * LA LÉGENDE D'UNE CASE, sous la rangée du bloc 01 : dans la zone, les colonnes qui portent de l'encre forment des mots ;
+ * deux groupes séparés par plus de 8 colonnes vides sont deux légendes. Rend la boîte du groupe le plus proche du milieu de
+ * la case (jamais la fin de la légende voisine), ou null.
+ */
+export function legendeDeLaCase(data: Buffer, W: number, zone: Boite, fond: string, milieu: number): Boite | null {
+  const f = rgbDe(fond), groupes: [number, number][] = [];
+  let debut = -1, fin = -1;
+  for (let x = zone[0]; x < zone[2]; x++) {
+    let encre = false;
+    for (let y = zone[1]; y < zone[3] && !encre; y++) { const i = (y * W + x) * 3; encre = estEncre(data[i], data[i + 1], data[i + 2], f, 60); }
+    if (!encre) continue;
+    if (debut >= 0 && x - fin > 8) { groupes.push([debut, fin + 1]); debut = -1; }
+    if (debut < 0) debut = x;
+    fin = x;
+  }
+  if (debut >= 0) groupes.push([debut, fin + 1]);
+  if (!groupes.length) return null;
+  const loin = (g: [number, number]) => (milieu < g[0] ? g[0] - milieu : milieu > g[1] ? milieu - g[1] : 0);
+  const g = groupes.reduce((m, x) => (loin(x) < loin(m) ? x : m));
+  return boiteDEncreDeLApercu(data, W, [g[0], zone[1], g[1], zone[3]], fond);
 }
 /**
  * LES ENCRES DU HAUT, colonne par colonne (27 novembre 2026, essai réel de Mouture : sous le logo de la planche en vrai
@@ -1192,10 +1342,72 @@ function ligneDuSpecimen(x: SKRSContext2D, t: string, f100: string, l: LigneDuSp
 
 /**
  * L'ASSEMBLAGE (assembler-planche.py) : la démonstration agrandie deux fois sert de décor ; le haut (logo et signature),
- * les dix versions du logo, la palette mesurée et les typographies sont posés par le code ; les images refaites sont
+ * les huit versions du logo, la palette mesurée et les typographies sont posés par le code ; les images refaites sont
  * posées dans leurs cases (photos en plein cadre, écrans et publications ENTIERS, à leurs proportions) ; les titres et les
  * blocs à redessiner le sont avec les textes de l'inventaire. Rend la planche en vrai, 3072 × 4608.
  */
+/**
+ * LA RANGÉE DU BLOC 01 (27 novembre 2026, ni logo compact ni logo empilé ; « les cases libérées ne laissent pas de vide ») :
+ * pour chacune des huit versions, sa case sur l'aperçu (`source`) et sa case sur la planche en vrai (`cible`). Une planche à
+ * huit cases garde les siennes. Une planche d'avant, à dix cases (celles du logo empilé et du logo compact y sont), répartit
+ * les huit cases gardées sur toute la rangée : les écarts de l'aperçu entre deux cases voisines sont gardés (celui qui
+ * remplace une case retirée prend l'écart le plus courant de la rangée), et chaque case grandit en proportion de sa largeur.
+ * `voisines` : les cases de l'aperçu de part et d'autre (pour les marges d'une tuile reprise telle quelle).
+ */
+export function rangeeDuBloc01(boites: ReadonlyMap<string, Boite>): { refaite: boolean; lignes: { version: VersionDuLogo; source: Boite; cible: Boite; voisines: [Boite | undefined, Boite | undefined] }[] } {
+  const num = (v: VersionDuLogo) => Number(TUILE_DE_LA_VERSION[v].slice(5));
+  const gardees = VERSIONS_DU_LOGO.flatMap((v) => { const b = boites.get(TUILE_DE_LA_VERSION[v]); return b ? [{ version: v, source: b, n: num(v) }] : []; });
+  const refaite = TUILES_RETIREES.some((t) => boites.has(t)) && gardees.length > 1;
+  const toutes = Array.from({ length: 10 }, (_, i) => boites.get(`logo-${i + 1}`)).filter((b): b is Boite => !!b).sort((a, b) => a[0] - b[0]);
+  let cibles = gardees.map((g) => g.source);
+  if (refaite) {
+    const ecarts = toutes.slice(1).map((b, i) => b[0] - toutes[i][2]).sort((a, b) => a - b), courant = ecarts[ecarts.length >> 1] ?? 5;
+    const x0 = toutes[0][0], x1 = toutes.at(-1)![2];
+    const gaps = gardees.slice(1).map((g, i) => (g.n === gardees[i].n + 1 ? g.source[0] - gardees[i].source[2] : courant));
+    const largeurs = gardees.map((g) => g.source[2] - g.source[0]), place = x1 - x0 - gaps.reduce((a, b) => a + b, 0), total = largeurs.reduce((a, b) => a + b, 0);
+    let x = x0;
+    cibles = gardees.map((g, i) => { const w = i === gardees.length - 1 ? x1 - x : Math.round((largeurs[i] * place) / total); const c: Boite = [x, g.source[1], x + w, g.source[3]]; x += w + (gaps[i] ?? 0); return c; });
+  }
+  const lignes = gardees.map((g, i) => {
+    const av = boites.get(`logo-${g.n - 1}`), ap = boites.get(`logo-${g.n + 1}`);
+    return { version: g.version, source: g.source, cible: cibles[i], voisines: [av, ap] as [Boite | undefined, Boite | undefined] };
+  });
+  return { refaite, lignes };
+}
+/** La bande des légendes sous la rangée du bloc 01 : du bas des cases à 40 pixels plus bas, sans toucher le titre du bloc 02. */
+export function bandeDesLegendes(boites: ReadonlyMap<string, Boite>): Boite | null {
+  const tuiles = [...boites.entries()].filter(([n]) => /^logo-\d+$/.test(n)).map(([, t]) => t);
+  if (!tuiles.length) return null;
+  const bas = Math.max(...tuiles.map((t) => t[3])), titre = boites.get("titre-02");
+  const fin = Math.min(bas + 40, titre ? titre[1] - 6 : bas + 40);
+  return fin - bas > 8 ? [Math.max(0, Math.min(...tuiles.map((t) => t[0])) - 8), bas + 1, Math.min(TAILLE_DEMO.w, Math.max(...tuiles.map((t) => t[2])) + 8), fin] : null;
+}
+/**
+ * LE PANNEAU CLAIR AU DÉBUT D'UN BANDEAU (27 novembre 2026, essai réel de Havane, point 8) : sur une image (`data`, RVB, de
+ * largeur `W`), dans la boîte `b`, les colonnes du bord gauche dont au moins 75 % des points sont à 24 niveaux au plus de
+ * `fond` (la couleur de la page) ; le panneau s'arrête à la première suite de 4 colonnes qui n'en ont plus la moitié. Rend
+ * sa largeur, ou 0 quand il n'y en a pas de net (moins de 2 % de la largeur, ou plus de 40 %), ou que le fond est foncé.
+ */
+export function largeurDuPanneauClair(data: Buffer, W: number, b: Boite, fond: string): number {
+  const f = rgbDe(fond);
+  if (luminance(fond) < 0.55) return 0;
+  const w = b[2] - b[0], part = (x: number) => { let n = 0, p = 0; for (let y = b[1]; y < b[3]; y += 2) { n++; const i = (y * W + x) * 3; if (Math.max(Math.abs(data[i] - f[0]), Math.abs(data[i + 1] - f[1]), Math.abs(data[i + 2] - f[2])) <= 24) p++; } return n ? p / n : 0; };
+  let fin = 0, sous = 0;
+  for (let x = b[0]; x < b[2]; x++) {
+    const q = part(x);
+    if (q >= 0.75) { fin = x - b[0] + 1; sous = 0; continue; }
+    if (q < 0.5 && ++sous >= 4) break;
+  }
+  return fin >= w * 0.02 && fin <= w * 0.4 ? fin : 0;
+}
+/** L'image refaite du bandeau sans son panneau clair du bord gauche (la couleur de ses premières colonnes), sinon telle quelle. */
+export async function sansPanneauClair(png: Buffer): Promise<Buffer> {
+  const { data, info } = await sharp(png).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const c: number[][] = [[], [], []];
+  for (let y = 0; y < info.height; y += 2) for (let x = 0; x < 3; x++) { const i = (y * info.width + x) * 3; for (let k = 0; k < 3; k++) c[k].push(data[i + k]); }
+  const l = largeurDuPanneauClair(data, info.width, [0, 0, info.width, info.height], hexDe(c.map(mediane)));
+  return l ? sharp(png).extract({ left: l, top: 0, width: info.width - l, height: info.height }).png().toBuffer() : png;
+}
 /** La part haute de la case « haut » réservée au logo (la signature commence en dessous, vers 79 %). */
 export const HAUT_DU_LOGO = 0.76;
 export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
@@ -1211,8 +1423,14 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
   // en page de l'aperçu, en lettres simples.
   const pT = o.polices.titres, pX = o.polices.textes, gris = "#5A605C", mp = fonteDeMiseEnPage, G = GRAISSE_DE_MISE_EN_PAGE;
 
-  // Le haut : le logo principal et la signature.
-  const haut = B("haut");
+  // LE PANNEAU CLAIR DU BANDEAU (27 novembre 2026, essai réel de Havane, point 8) : sur l'aperçu, le grand logo du haut
+  // déborde dans la case du bandeau, sur un panneau de la couleur de la page, avant la photo ; l'image refaite en haute
+  // définition en faisait un panneau avec un second logo, entier, posé au milieu du bandeau. Ce panneau revient au haut :
+  // le logo y est cherché et posé en entier, l'image refaite perd son panneau clair (`sansPanneauClair`) et n'est posée que
+  // sur la photo.
+  const haut0 = B("haut"), ob0 = B("ouverture-planche"), ouv0 = o.images.get("ouverture-planche");
+  const panneau = haut0 && ob0 && ouv0 && ob0[0] - haut0[2] <= 8 ? largeurDuPanneauClair(d0, info.width, ob0, fond(haut0)) : 0;
+  const haut: Boite | undefined = haut0 && ob0 && panneau ? [haut0[0], haut0[1], ob0[0] + panneau, haut0[3]] : haut0;
   if (haut) {
     const h = X(haut), W = h[2] - h[0], H = h[3] - h[1], f = fond(haut), signature = o.signature.filter((l) => l.trim());
     // Sans signature lue, seule la place du logo est effacée : la ligne de la démonstration sous le logo est gardée telle
@@ -1233,8 +1451,8 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
     await poser(x, o.versions["logo-principal"], plausible ? X(ink!) : [h[0] + W * 0.146, h[1] + H * 0.078, h[2] - W * 0.142, h[1] + H * 0.727]);
     signature.slice(0, 2).forEach((l, i) => texte(x, l, h[0] + W / 2, h[1] + H * (0.794 + i * 0.067), mp(H * 0.044, G.code), o.encre, "center", W * 0.9));
   }
-  // Le bandeau d'ouverture de la planche.
-  const ob = B("ouverture-planche"), ouv = o.images.get("ouverture-planche");
+  // Le bandeau d'ouverture de la planche (sans le panneau clair rendu au haut).
+  const ob: Boite | undefined = ob0 && panneau ? [ob0[0] + panneau, ob0[1], ob0[2], ob0[3]] : ob0, ouv = ouv0 && panneau ? await sansPanneauClair(ouv0) : ouv0;
   // Déjà rogné avant sa relecture (`rognerLesMargesBlanches`), puis posé sans jamais être déformé : en plein cadre quand
   // le plein cadre n'en coupe presque rien ; sinon entier, sur le fond de la case, pour qu'aucun texte près d'un bord ne
   // soit coupé.
@@ -1244,8 +1462,15 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
   if (ob && ouv && haut && haut[2] < ob[0] && ob[0] - haut[2] <= 8) await nettoyer(x, d0, info.width, [haut[2], ob[1], ob[0], ob[3]], fondAutour([haut[2], ob[1], ob[0], ob[3]]));
   if (ob && ouv) {
     const r = await rognerLesMargesBlanches(ouv), m = await sharp(r).metadata(), b = X(ob);
+    const k = Math.min((b[2] - b[0]) / m.width!, (b[3] - b[1]) / m.height!);
     if (coupeDuPleinCadre(m.width!, m.height!, b[2] - b[0], b[3] - b[1]) <= COUPE_MAX_DU_BANDEAU) await couvrir(x, r, b, 0);
-    else {
+    else if (m.height! * k < b[3] - b[1] - 2 * S) {
+      // LA PHOTO NE DÉBORDE JAMAIS DE SON CADRE (27 novembre 2026, essai réel de Havane, point 8 : l'image entière, plus
+      // large que la case, laissait voir au-dessus et au-dessous la photo floue de l'aperçu). Plus large que la case : elle
+      // est posée entière, et les bandes du dessus et du dessous prennent la couleur de la page, jamais la photo de l'aperçu.
+      x.fillStyle = haut ? fond(haut) : fond(ob); x.fillRect(b[0], b[1], b[2] - b[0], b[3] - b[1]);
+      await poser(x, r, b);
+    } else {
       // LE FOND DU BANDEAU EST CELUI DE L'APERÇU, PHOTO COMPRISE (27 novembre 2026, essai réel de Mouture : de chaque côté de
       // l'image entière, un aplat crème remplaçait la photo de l'aperçu). Les bandes de part et d'autre de l'image gardent
       // l'aperçu sans son encre (ses textes retirés, `fondSansEncre`) ; l'image entière est posée dessus, ses bords fondus
@@ -1256,40 +1481,69 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
       await poserFondu(x, r, b, FONDU_DU_BANDEAU);
     }
   }
-  // Les dix versions du logo.
+  // Les huit versions du logo (ni compact ni empilé), sur la rangée du bloc 01 (`rangeeDuBloc01`) : sur une planche d'avant,
+  // à dix cases, les huit cases gardées se répartissent sur toute la rangée, sans vide, et chaque légende de l'aperçu suit
+  // sa case ; sur une planche à huit cases, chaque version garde la sienne.
   const MARGES: Partial<Record<VersionDuLogo, number>> = { favicon: 0.3, icone: 0.2, badge: 0.06, inverse: 0.05 };
-  // La rangée des tuiles est d'abord effacée (fond de la page, un peu au-delà des tuiles) : un logo de la démonstration
-  // plus grand que sa tuile n'en dépasse plus ; le trait entre le favicon et les monochromes est redessiné.
-  const tuiles = VERSIONS_DU_LOGO.map((_, i) => B(`logo-${i + 1}`)).filter((t): t is Boite => !!t);
-  if (tuiles.length) {
+  const rangee = rangeeDuBloc01(o.boites);
+  const tuiles = [...o.boites.entries()].filter(([n]) => /^logo-\d+$/.test(n)).map(([, t]) => t);
+  if (tuiles.length && rangee.lignes.length) {
+    // La rangée des tuiles est d'abord effacée (fond de la page, un peu au-delà des tuiles) : un logo de la démonstration
+    // plus grand que sa tuile n'en dépasse plus ; quand la rangée est refaite, les légendes de l'aperçu aussi (elles sont
+    // reposées sous leur case). Le trait entre le favicon et les monochromes est redessiné.
     const u: Boite = [Math.max(0, Math.min(...tuiles.map((t) => t[0])) - 8), Math.max(0, Math.min(...tuiles.map((t) => t[1])) - 6), Math.min(TAILLE_DEMO.w, Math.max(...tuiles.map((t) => t[2])) + 8), Math.min(TAILLE_DEMO.h, Math.max(...tuiles.map((t) => t[3])) + 6)];
+    const legendes = rangee.refaite ? bandeDesLegendes(o.boites) : null;
+    const fondLegendes = legendes ? fond(legendes) : null;
     const ux = X(u);
     x.fillStyle = fond(u); x.fillRect(ux[0], ux[1], ux[2] - ux[0], ux[3] - ux[1]);
-    const t6 = B("logo-6"), t7 = B("logo-7");
-    if (t6 && t7 && t7[0] - t6[2] > 6) { const sx = ((t6[2] + t7[0]) / 2) * S; x.strokeStyle = "#D7D3CB"; x.lineWidth = 2; x.beginPath(); x.moveTo(sx, (t6[1] + 6) * S); x.lineTo(sx, (t6[3] + 14) * S); x.stroke(); }
-  }
-  const grandImg = o.tuilesDeLApercu?.length ? await img(grand) : null;
-  for (const [i, v] of VERSIONS_DU_LOGO.entries()) {
-    const t = B(`logo-${i + 1}`);
-    if (!t) continue;
-    const f = fond(t), b = X(t);
-    // Une version reprise de l'aperçu : sa tuile agrandie, telle que le client l'a vue.
-    // Elle prend aussi la moitié de l'espace qui la sépare de ses voisines (au plus 8 pixels de l'aperçu), et les 6 pixels
-    // effacés au-dessus et au-dessous de la rangée (27 novembre 2026, essai réel de Mouture : un fin trait clair restait au
-    // bord des tuiles reprises, la rangée effacée ne tombant pas exactement sur le panneau de l'aperçu).
-    if (grandImg && o.tuilesDeLApercu!.includes(v)) {
-      const av = B(`logo-${i}`), ap = B(`logo-${i + 2}`);
-      const g = av && t[0] - av[2] <= 16 ? Math.min(8, (t[0] - av[2]) / 2) : 0, d = ap && ap[0] - t[2] <= 16 ? Math.min(8, (ap[0] - t[2]) / 2) : 0;
-      const e = X([Math.max(0, t[0] - g), Math.max(0, t[1] - 6), Math.min(TAILLE_DEMO.w, t[2] + d), Math.min(TAILLE_DEMO.h, t[3] + 6)]);
-      x.drawImage(grandImg, e[0], e[1], e[2] - e[0], e[3] - e[1], e[0], e[1], e[2] - e[0], e[3] - e[1]);
-      continue;
+    if (legendes && fondLegendes) { const lx = X(legendes); x.fillStyle = fondLegendes; x.fillRect(lx[0], lx[1], lx[2] - lx[0], lx[3] - lx[1]); }
+    const fav = rangee.lignes.find((r) => r.version === "favicon"), mono = rangee.lignes.find((r) => r.version === "monochrome-fonce");
+    if (fav && mono && mono.source[0] - fav.source[2] > 6) { const sx = ((fav.cible[2] + mono.cible[0]) / 2) * S; x.strokeStyle = "#D7D3CB"; x.lineWidth = 2; x.beginPath(); x.moveTo(sx, (fav.cible[1] + 6) * S); x.lineTo(sx, (fav.cible[3] + 14) * S); x.stroke(); }
+    const grandImg = o.tuilesDeLApercu?.length || legendes ? await img(grand) : null;
+    for (const { version: v, source: t, cible, voisines } of rangee.lignes) {
+      const f = fond(t), b = X(cible), meme = cible.every((c, k) => c === t[k]);
+      // Une version reprise de l'aperçu : sa tuile agrandie, telle que le client l'a vue.
+      // Elle prend aussi la moitié de l'espace qui la sépare de ses voisines (au plus 8 pixels de l'aperçu), et les 6 pixels
+      // effacés au-dessus et au-dessous de la rangée (27 novembre 2026, essai réel de Mouture : un fin trait clair restait au
+      // bord des tuiles reprises, la rangée effacée ne tombant pas exactement sur le panneau de l'aperçu). Dans une rangée
+      // refaite, la tuile est posée sur sa nouvelle case : la carte de son fond, puis son dessin, à sa taille, centré.
+      if (grandImg && o.tuilesDeLApercu?.includes(v)) {
+        if (meme) {
+          const [av, ap] = voisines;
+          const g = av && t[0] - av[2] <= 16 ? Math.min(8, (t[0] - av[2]) / 2) : 0, d = ap && ap[0] - t[2] <= 16 ? Math.min(8, (ap[0] - t[2]) / 2) : 0;
+          const e = X([Math.max(0, t[0] - g), Math.max(0, t[1] - 6), Math.min(TAILLE_DEMO.w, t[2] + d), Math.min(TAILLE_DEMO.h, t[3] + 6)]);
+          x.drawImage(grandImg, e[0], e[1], e[2] - e[0], e[3] - e[1], e[0], e[1], e[2] - e[0], e[3] - e[1]);
+        } else {
+          x.fillStyle = f; arrondi(x, b[0], b[1], b[2] - b[0], b[3] - b[1], 20 * S); x.fill();
+          // Un dessin pâle (un monochrome clair sur sa carte) compte aussi : un point à plus de 24 niveaux de la carte.
+          const ink = boiteDuDessin(d0, info.width, [t[0] + 3, t[1] + 3, t[2] - 3, t[3] - 3], f);
+          if (ink) {
+            const e = X([Math.max(t[0], ink[0] - 2), Math.max(t[1], ink[1] - 2), Math.min(t[2], ink[2] + 2), Math.min(t[3], ink[3] + 2)]), w = e[2] - e[0], h = e[3] - e[1];
+            const k = Math.min(1, (b[2] - b[0]) / w, (b[3] - b[1]) / h);
+            x.drawImage(grandImg, e[0], e[1], w, h, b[0] + ((b[2] - b[0]) - w * k) / 2, b[1] + ((b[3] - b[1]) - h * k) / 2 + ((e[1] + e[3]) / 2 - (X(t)[1] + X(t)[3]) / 2), w * k, h * k);
+          }
+        }
+      } else {
+        // Une version refaite en haute définition, gardée sur la planche : sa tuile composée (`caseDuLogoEnHd`), à sa place.
+        const enHd = meme ? o.tuilesEnHd?.get(v) : undefined;
+        if (enHd) x.drawImage(await img(enHd), b[0], b[1], b[2] - b[0], b[3] - b[1]);
+        else {
+          x.fillStyle = f; arrondi(x, b[0], b[1], b[2] - b[0], b[3] - b[1], 20 * S); x.fill();
+          // Chaque version tient entière dans sa tuile, avec sa marge : réduite si besoin, jamais déformée ni coupée.
+          await poserDansLaTuile(x, o.versions[v], b, MARGES[v] ?? 0.14);
+        }
+      }
+      // La légende de l'aperçu, reposée sous sa nouvelle case, centrée, à sa hauteur.
+      if (legendes && fondLegendes && grandImg && !meme) {
+        const zone: Boite = [Math.max(0, t[0] - 3), legendes[1], Math.min(TAILLE_DEMO.w, t[2] + 3), legendes[3]];
+        const ink = legendeDeLaCase(d0, info.width, zone, fondLegendes, (t[0] + t[2]) / 2);
+        if (ink) {
+          const e = X([ink[0] - 1, ink[1] - 1, ink[2] + 1, ink[3] + 1]), w = e[2] - e[0];
+          const cx = ((cible[0] + cible[2]) / 2) * S, k = Math.min(1, ((cible[2] - cible[0]) * S) / w);
+          x.drawImage(grandImg, e[0], e[1], w, e[3] - e[1], cx - (w * k) / 2, e[1], w * k, (e[3] - e[1]) * k);
+        }
+      }
     }
-    // Une version refaite en haute définition, gardée sur la planche : sa tuile composée (`caseDuLogoEnHd`).
-    const enHd = o.tuilesEnHd?.get(v);
-    if (enHd) { x.drawImage(await img(enHd), b[0], b[1], b[2] - b[0], b[3] - b[1]); continue; }
-    x.fillStyle = f; arrondi(x, b[0], b[1], b[2] - b[0], b[3] - b[1], 20 * S); x.fill();
-    // Chaque version tient entière dans sa tuile, avec sa marge : réduite si besoin, jamais déformée ni coupée.
-    await poserDansLaTuile(x, o.versions[v], b, MARGES[v] ?? 0.14);
   }
   // La palette, couleurs mesurées sur la planche.
   const pal = B("palette");
@@ -1406,6 +1660,27 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
   return c.encode("png");
 }
 
+/**
+ * LE BAS DE LA CARTE D'UN PRODUIT (27 novembre 2026, essai réel de Havane, point 11 : l'image du produit 2, à l'écran,
+ * gardait le bas de sa carte, son nom et le rond de son bouton). Sur la planche, une photo de produit est parfois posée sur
+ * une carte : sous la photo, une bande claire et unie, puis le nom du produit et un bouton. L'image refaite à l'identique
+ * les reprend. Montrée seule, elle s'arrête à la photo : en partant du bas, les lignes de la carte (au moins 25 % de leurs
+ * points à 20 niveaux au plus de la couleur du bas, une couleur claire), dont au moins une ligne entièrement unie (97 %),
+ * sur 3 à 30 % de la hauteur, sous une photo, sont retirées. Sans carte nette, l'image ne change pas.
+ */
+export async function sansLeBasDeCarte(png: Buffer): Promise<Buffer> {
+  const { data, info } = await sharp(png).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const W = info.width, H = info.height, c: number[][] = [[], [], []];
+  for (let y = H - 3; y < H; y++) for (let x = 0; x < W; x += 2) { const i = (y * W + x) * 3; for (let k = 0; k < 3; k++) c[k].push(data[i + k]); }
+  const f = c.map(mediane);
+  if (luminance(hexDe(f)) < 0.7) return png;
+  const part = (y: number) => { let p = 0, n = 0; for (let x = 0; x < W; x += 2) { n++; const i = (y * W + x) * 3; if (Math.max(Math.abs(data[i] - f[0]), Math.abs(data[i + 1] - f[1]), Math.abs(data[i + 2] - f[2])) <= 20) p++; } return p / n; };
+  let y = H - 1, unie = false;
+  while (y >= 0) { const q = part(y); if (q < 0.25) break; if (q >= 0.97) unie = true; y--; }
+  const haut = y + 1;
+  if (!unie || y < 0 || H - haut < H * 0.03 || H - haut > H * 0.3) return png;
+  return sharp(png).extract({ left: 0, top: 0, width: W, height: haut }).png().toBuffer();
+}
 /**
  * LE ROGNAGE AU CONTENU (26 novembre 2026, onglet Marque d'Écume ; le propriétaire : « Sinon c'est pas trop mal juste mieux
  * découper les images ») : une image à télécharger ou à montrer est découpée au plus juste de son contenu. Le fond est mesuré

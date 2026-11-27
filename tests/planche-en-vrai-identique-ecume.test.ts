@@ -117,7 +117,7 @@ describe("3. un titre redessiné ne laisse aucune encre de l'ancien", () => {
 });
 
 describe("4. le bloc 01 du vrai logo 10 : les cases fidèles à l'aperçu, sans rien payer", () => {
-  it("sans symbole séparable : compact, icône, favicon et badge repris de leur tuile ; horizontal : la marque et sa phrase", async () => {
+  it("sans symbole séparable : icône, favicon et badge repris de leur tuile ; horizontal : la marque et sa phrase ; ni compact ni empilé", async () => {
     const logo = fs.readFileSync(`${F}/esquisse-10-logo-garde-512.png`);
     const det = await (await import("@/lib/syna-agent/brand-images")).logoDetoure(logo, "#C14706");
     expect(det.ok).toBe(true);
@@ -132,8 +132,8 @@ describe("4. le bloc 01 du vrai logo 10 : les cases fidèles à l'aperçu, sans 
     expect(mp.height! / mp.width!).toBeGreaterThan(0.15);
     const decoupe = await P.decouperLesApercus(fs.readFileSync(`${F}/planche-B-gardee.jpg`), "standard");
     const v = await C.versionsDuLogo({ logo: det.ok ? det.png : logo, separation: sep, couleur: "#C44912", sombre: "#C44912", clair: "#F6E8DA", monoClair: "#A7B89B", nom: "Écume", bas: "SAVONNERIE ARTISANALE", police: T.POLICE_DU_BADGE, tuiles: decoupe.apercus });
-    // Depuis le 27 novembre 2026, le logo empilé d'Écume, identique au principal, est aussi repris de l'aperçu.
-    expect(v.depuisLApercu.sort()).toEqual(["badge", "favicon", "icone", "logo-compact", "logo-empile"]);
+    // Depuis le 27 novembre 2026, ni logo compact ni logo empilé.
+    expect(v.depuisLApercu.sort()).toEqual(["badge", "favicon", "icone"]);
     const hz = await sharp(v.versions["logo-horizontal"]).metadata();
     expect(hz.width! / hz.height!).toBeGreaterThan(1.8);
     // Une version reprise : la tuile agrandie quatre fois, fond retiré (coins transparents).
@@ -142,7 +142,8 @@ describe("4. le bloc 01 du vrai logo 10 : les cases fidèles à l'aperçu, sans 
       expect(info.width).toBeGreaterThan(200);
       expect(data[3]).toBe(0);
     }
-    expect(v.symbole.equals(v.versions["logo-compact"])).toBe(true);
+    // Le symbole de la marque : l'icône reprise de l'aperçu, jamais un bout du logo.
+    expect(v.symbole.equals(v.versions.icone)).toBe(true);
     expect(P.phraseDesLogosDeLApercu(v.depuisLApercu)).toContain("reprises de ta planche choisie");
   });
 });

@@ -206,8 +206,8 @@ describe("le code seul : les dix versions, la palette, les polices", async () =>
       const sep = await C.separerSymbole(lg);
       const v = await C.versionsDuLogo({ logo: lg, separation: sep, couleur: "#630A29", sombre: "#630A29", clair: "#F7F3EC", monoClair: "#A0B79B", nom: "Aplomb", bas: "Le bois bien fait", police });
       for (const l of ["standard", "animaux"] as const) {
-        for (const [i, k] of C.VERSIONS_DU_LOGO.entries()) {
-          const t = P.lesCases(l).cases[`logo-${i + 1}`].map((n) => n * 2) as [number, number, number, number];
+        for (const k of C.VERSIONS_DU_LOGO) {
+          const t = P.lesCases(l).cases[C.tuileDeLaVersion(k)].map((n) => n * 2) as [number, number, number, number];
           const r = await C.rendreDansLaTuile(v.versions[k], t, MARGES[k] ?? 0.14);
           const { data, info } = await sharp(r.png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
           const [ix0, iy0, ix1, iy1] = r.interieur;
@@ -387,7 +387,7 @@ describe("l'onglet Marque : le zip, « Copier », la police remplacée", async (
   it("chaque couleur avec son code et « Copier » ; les polices avec leur nom à copier et leur fichier ; l'image d'ambiance marquée", async () => {
     const v = S.vueEnVrai(ev, "pid", (id, d) => `/f/${id}${d ? "?dl" : ""}`)!;
     expect(v.zip).toBe("/api/projects/pid/brand/zip");
-    expect(v.logos).toHaveLength(10);
+    expect(v.logos).toHaveLength(8);
     expect(v.polices.map((p) => p.url)).toEqual([`/api/syna/fonts/${ev.polices!.titres.fichier}`, `/api/syna/fonts/${police.fichier}`]);
     expect(v.images[0].label).toMatch(/image d'ambiance, ce n'est pas ton produit/);
     expect(v.sansFichier).toHaveLength(1);

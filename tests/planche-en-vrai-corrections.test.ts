@@ -54,11 +54,11 @@ describe("1. les logos : le symbole et le nom séparés sur le vrai logo de l'es
     expect(blocsDeLignes(await pixels(v.versions["logo-principal"]), [0x5d, 0x01, 0x26], 6)).toHaveLength(2);
   });
 
-  it("le compact, l'icône et le favicon ne montrent que le symbole", async () => {
+  it("l'icône et le favicon ne montrent que le symbole ; ni logo compact ni logo empilé (27 novembre 2026)", async () => {
     const { sep, v } = await versions("");
     const sym = await sharp(sep.symbole).metadata();
-    const compact = await sharp(v.versions["logo-compact"]).metadata();
-    expect([compact.width, compact.height]).toEqual([sym.width, sym.height]);
+    expect(Object.keys(v.versions)).toEqual([...C.VERSIONS_DU_LOGO]);
+    expect(Object.keys(v.versions).join(" ")).not.toMatch(/compact|empile/);
     for (const k of ["icone", "favicon"] as const) {
       const p = await pixels(v.versions[k]);
       // Le signe est blanc sur le carré sombre : un seul bloc de lignes blanches, aux proportions du symbole.
@@ -70,7 +70,7 @@ describe("1. les logos : le symbole et le nom séparés sur le vrai logo de l'es
     }
   });
 
-  it("l'horizontal met le symbole à gauche du nom, et l'empilé le symbole au-dessus", async () => {
+  it("l'horizontal met le symbole à gauche du nom", async () => {
     const { sep, v } = await versions("");
     const p = await pixels(v.versions["logo-horizontal"]);
     expect(p.w / p.h).toBeGreaterThan(3);
@@ -79,7 +79,6 @@ describe("1. les logos : le symbole et le nom séparés sur le vrai logo de l'es
     // Le premier bloc de colonnes, à gauche, est le symbole : de la hauteur du logo, aux proportions du symbole.
     const sym = await sharp(sep.symbole).metadata(), gauche = cols[0][1] - cols[0][0] + 1;
     expect(Math.abs(gauche / p.h - sym.width! / sym.height!)).toBeLessThan(0.1);
-    expect(blocsDeLignes(await pixels(v.versions["logo-empile"]), [0x5d, 0x01, 0x26], 6)).toHaveLength(2);
   });
 
   it("le badge porte un texte en bas, comme sur la planche : la ligne du logo, sinon le métier court", async () => {

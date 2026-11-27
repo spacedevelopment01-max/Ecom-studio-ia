@@ -479,3 +479,45 @@ images refaites en HD. On y lit « L'ARABY DE PÉROU », « 100% ARABICA », des
 Épreuve ajoutée et scellée : `planche-en-vrai-textes-du-logo-et-faits-inventes`. Tests :
 `tests/planche-en-vrai-torrefacteur-etape-5.test.ts` et `tests/planche-en-vrai-rejuger-puis-reprendre.test.ts`
 (inventaire et verdicts réels de Mouture, appels simulés).
+
+## Ni logo compact ni logo empilé, et les défauts de Havane (27 novembre 2026, sans dépense)
+
+Les mots du propriétaire, relayés par le chef d'orchestre : « En même temps logo Compact et logo empiler j'en veux plus
+sur la planche et nul part ». Défauts relevés pendant l'essai réel de Havane (maroquinerie) :
+`docs/studio/essais-complets/havane-defauts.md`, points 6 à 11, branche `claude/essais-complets` (commit ca5327a).
+
+**Le retrait, partout** (construit ; il ne part qu'avec l'accord écrit du propriétaire, épreuve `ni-logo-compact-ni-logo-empile`) :
+
+- **Planche de marque** : dans le texte envoyé, la liste du système de logos perd ses deux lignes « - logo empilé » et
+  « - logo compact » (`sansLeCompactNiLEmpile`) ; tout le reste du texte de base est mot pour mot, le texte des preuves
+  (Tenon et Racine) ne change pas. Les huit variantes se répartissent sur la rangée du bloc 01. Une planche déjà payée avec
+  le texte d'avant est reconnue par le script d'essai (jamais repayée).
+- **Planche en vrai** : huit versions du logo (`VERSIONS_DU_LOGO`). Sur une planche d'avant, à dix cases, les huit cases
+  gardées se répartissent sur toute la rangée, sans vide, et la légende de l'aperçu de chaque case la suit
+  (`rangeeDuBloc01`, `legendeDeLaCase`) ; une planche dessinée à huit cases est lue telle quelle (`panneauxDuBloc01`).
+  Les petites versions en haute définition : l'icône, le favicon et le badge.
+- **Onglet Marque et zip** : huit versions ; un ancien projet qui a encore les fichiers du compact ou de l'empilé ne les
+  montre plus (`estUneVersionDuLogo`).
+- **Le symbole de la marque** (site, avatar, favicons) : le symbole séparé ; sans lui, l'icône reprise de l'aperçu ;
+  sinon le logo entier.
+
+**Les défauts de Havane** :
+
+- 6. La séparation du symbole ne prend jamais une lettre du nom avec un morceau de la phrase : une coupe verticale qui
+  passe dans les lignes de la phrase n'en est pas une, et une partie gauche qui n'est faite que de lettres du nom (même
+  haut, presque la même hauteur, même écart que les lettres) non plus. Sans symbole séparable : l'icône, le favicon et le
+  badge reprennent l'aperçu, ou le logo entier.
+- 7. L'inversé : la frange claire d'un fond retiré et un trait de couleur ne font plus passer un logo pour un logo à aplats
+  (les parts claires d'un vrai logo à aplats sont enfermées dans l'aplat) ; le contraste de l'inversé est mesuré
+  (`partVisibleSurLeFond`, contraste WCAG 3 sur 60 % au moins du dessin), sinon l'aperçu, sinon le logo entier en blanc.
+- 8. Le bandeau du haut : le panneau clair où le grand logo déborde revient au haut (le logo y est cherché en entier) ;
+  l'image refaite perd son panneau clair et son second logo (`sansPanneauClair`) ; plus large que sa case, elle est posée
+  entière, et la page remplit le dessus et le dessous, jamais la photo floue de l'aperçu.
+- 9. Un fragment d'heure (« 6.GI ») n'est jamais un texte attendu ; dans une barre d'état, ni attendu ni reproché.
+- 10. Le numéro et le titre d'un bloc relus au-dessus d'une image (« 08 », « SITE WEB – … ») ne sont jamais attendus.
+- 11. À l'écran, la photo d'un produit posée sur une carte s'arrête à la photo (`sansLeBasDeCarte`).
+
+Vérifié sans appel sur les vrais fichiers de l'essai (non copiés dans le dépôt) : le logo 2 ne se sépare plus ; l'icône,
+le favicon, le badge et le symbole sont le chevron de l'aperçu ; l'inversé est blanc sur le vert ; le bloc 01 a huit
+cases, sans vide, chacune avec sa légende ; le bandeau n'a plus de second logo ; le produit 2 montré fait 912 × 949.
+Tests : `tests/planche-en-vrai-havane.test.ts`, dessins faits dans le test, sans image de l'essai.

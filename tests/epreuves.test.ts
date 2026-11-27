@@ -7,7 +7,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
-import { EPREUVES, type Epreuve } from "./epreuves/catalogue";
+import { ACCORD_NI_COMPACT_NI_EMPILE, EPREUVES, VERSIONS_IDENTIQUES, phraseDeLaVersionIdentique, type Epreuve } from "./epreuves/catalogue";
 import { route } from "./sina-routes-fixtures";
 
 process.env.STUDIO_SYNA_AGENT = "1";
@@ -34,7 +34,7 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
   });
   it("une épreuve remplacée par une décision datée garde son sceau à jamais et ne se rescelle pas", () => {
     const remplacees = EPREUVES.filter((e) => e.remplaceePar);
-    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule", "planches-de-recherche-demande-exacte", "relecteur-du-logo-fini", "finalisation-ecrite-par-le-plus-fort", "relecteur-sans-refus-pour-trop-proche", "logo-refait-une-fois-avec-ses-raisons", "relecteur-juge-l-execution-pas-l-idee", "planche-refusee-deux-fois-jamais-montree", "vrai-produit-du-client-joint", "relecteur-petites-finitions-sans-refus", "planche-phrase-par-lignes-et-reprise-qui-part-toujours", "relecteur-de-planche-texte-lisible-et-promesses-mesurables", "planche-reprend-la-phrase-du-logo", "planche-en-vrai-a-l-identique", "planche-en-vrai-symbole-seul-et-bandeau-sans-marges", "planche-en-vrai-palette-mesuree-et-logos-en-hd", "accord-des-noms-compte-la-verification", "planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu", "planche-en-vrai-identique-a-l-apercu", "planche-en-vrai-pas-identique-a-l-apercu-mouture", "planche-produits-de-la-fiche-seulement", "planche-en-vrai-textes-du-logo-et-faits-inventes"].sort());
+    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule", "planches-de-recherche-demande-exacte", "relecteur-du-logo-fini", "finalisation-ecrite-par-le-plus-fort", "relecteur-sans-refus-pour-trop-proche", "logo-refait-une-fois-avec-ses-raisons", "relecteur-juge-l-execution-pas-l-idee", "planche-refusee-deux-fois-jamais-montree", "vrai-produit-du-client-joint", "relecteur-petites-finitions-sans-refus", "planche-phrase-par-lignes-et-reprise-qui-part-toujours", "relecteur-de-planche-texte-lisible-et-promesses-mesurables", "planche-reprend-la-phrase-du-logo", "planche-en-vrai-a-l-identique", "planche-en-vrai-symbole-seul-et-bandeau-sans-marges", "planche-en-vrai-palette-mesuree-et-logos-en-hd", "accord-des-noms-compte-la-verification", "planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu", "planche-en-vrai-identique-a-l-apercu", "planche-en-vrai-pas-identique-a-l-apercu-mouture", "planche-produits-de-la-fiche-seulement", "planche-en-vrai-textes-du-logo-et-faits-inventes", "planche-de-marque-openai", "planche-signe-parasite-petite-finition", "faits-a-montrer-demandes-avant-la-marque", "planche-en-vrai-specimen-mesure-et-ecran-du-reassemblage", "cout-probable-seul-et-arret-au-double", "planche-en-vrai-reprise-hd-petits-textes-logo-et-coupe"].sort());
     for (const e of remplacees) {
       const r = e.remplaceePar!;
       // Le sceau ne change pas : celui du catalogue, celui de sceaux.json et celui figé au jour du remplacement.
@@ -50,7 +50,7 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
       while (par?.remplaceePar) { expect(vus.has(par.id), `boucle : ${par.id}`).toBe(false); vus.add(par.id); par = EPREUVES.find((x) => x.id === par!.remplaceePar!.epreuve); }
       expect(par && SCEAUX[par.id] && par.rejeu === "gratuit", `${e.id} → ${par?.id}`).toBeTruthy();
       expect(["23 novembre 2026", "24 novembre 2026", "25 novembre 2026", "26 novembre 2026", "27 novembre 2026"]).toContain(r.decision);
-      expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin|Oui, marque planches-de-recherche-demande-exacte|Oui, marque finalisation-ecrite-par-le-plus-fort|Oui, marque relecteur-sans-refus-pour-trop-proche|Oui, marque logo-refait-une-fois-avec-ses-raisons|Oui, marque vrai-produit-du-client-joint|Oui, marque relecteur-petites-finitions-sans-refus|Oui, marque relecteur-de-planche-texte-lisible-et-promesses-mesurables|Oui, marque planche-phrase-par-lignes-et-reprise-qui-part-toujours|Oui, marque planche-en-vrai-a-l-identique|Oui, marque planche-en-vrai-palette-mesuree-et-logos-en-hd|Oui, marque planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu|Oui, marque planche-en-vrai-pas-identique-a-l-apercu-mouture|Oui, marque planche-produits-de-la-fiche-seulement)/);
+      expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin|Oui, marque planches-de-recherche-demande-exacte|Oui, marque finalisation-ecrite-par-le-plus-fort|Oui, marque relecteur-sans-refus-pour-trop-proche|Oui, marque logo-refait-une-fois-avec-ses-raisons|Oui, marque vrai-produit-du-client-joint|Oui, marque relecteur-petites-finitions-sans-refus|Oui, marque relecteur-de-planche-texte-lisible-et-promesses-mesurables|Oui, marque planche-phrase-par-lignes-et-reprise-qui-part-toujours|Oui, marque planche-en-vrai-a-l-identique|Oui, marque planche-en-vrai-palette-mesuree-et-logos-en-hd|Oui, marque planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu|Oui, marque planche-en-vrai-pas-identique-a-l-apercu-mouture|Oui, marque planche-produits-de-la-fiche-seulement|Oui, marque planche-de-marque-openai)/);
       // Les accords écrits du 24 au 27 novembre 2026 nomment chaque épreuve qu'il remplace, et celle qui la remplace.
       if (r.decision === "24 novembre 2026" || r.decision === "25 novembre 2026" || r.decision === "26 novembre 2026" || r.decision === "27 novembre 2026") { expect(r.mots, e.id).toContain(e.id); expect(r.mots, r.epreuve).toContain(r.epreuve); }
     }
@@ -62,7 +62,14 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
 });
 
 /** Les rejeux d'une épreuve remplacée que l'épreuve qui la remplace rejoue (remplis à la lecture des blocs, avant les tests). */
-const rejeuxPartages: { finitionsEtPolice?: (o: { policeNommeeRemplacee: boolean }) => Promise<void>; identiqueALApercu?: (o: { empileDuCode: boolean }) => Promise<void>; produitsDeLaFiche?: () => Promise<void>; textesDuLogoEtFaitsInventes?: () => Promise<void> } = {};
+/**
+ * `Retrait` : le rejeu d'une épreuve remplacée par ni-logo-compact-ni-logo-empile (27 novembre 2026). Rejouée seule (avant
+ * son remplacement), elle garde ses attentes d'avant ; rejouée par l'épreuve qui la remplace (`sansCompactNiEmpile`), ce qui
+ * nomme le logo compact ou le logo empilé suit le retrait, et tout le reste est rejoué tel quel.
+ */
+type Retrait = { sansCompactNiEmpile?: boolean };
+const rejeuxPartages: { finitionsEtPolice?: (o: { policeNommeeRemplacee: boolean }) => Promise<void>; identiqueALApercu?: (o: { empileDuCode: boolean } & Retrait) => Promise<void>; produitsDeLaFiche?: (o?: Retrait) => Promise<void>; textesDuLogoEtFaitsInventes?: () => Promise<void>;
+  openai?: (o?: Retrait) => Promise<void>; signeParasite?: (o?: Retrait) => Promise<void>; specimen?: () => Promise<void>; coutProbable?: (o?: Retrait) => Promise<void>; repriseHd?: (o?: Retrait) => Promise<void>; faits?: (o?: Retrait) => Promise<void> } = {};
 
 /** Une épreuve gratuite : son verdict en titre. Une épreuve remplacée reste au catalogue, mais n'est plus rejouée. */
 const epreuve = (id: string, fn: () => Promise<void> | void) => {
@@ -1476,7 +1483,7 @@ describe("les épreuves de la planche de marque par OpenAI (24 novembre 2026, fa
     } finally { T.plancheDeps.domaines = undefined; T.plancheDeps.annee = undefined; }
   }
 
-  epreuve("planche-de-marque-openai", async () => {
+  const rejeuOpenAI = async (o: Retrait = {}) => {
     // Les champs exacts des requêtes de preuve, le chemin permis, sans secours.
     const preuve = JSON.parse(fs.readFileSync(`${F}/tenon-requete.json`, "utf8"));
     const { prompt: _p, n, ...reglages } = preuve.champs;
@@ -1496,9 +1503,15 @@ describe("les épreuves de la planche de marque par OpenAI (24 novembre 2026, fa
     const { assetData, getAsset } = await import("@/lib/library");
     expect(appels[0].logo.equals(assetData(getAsset(logo.id)!))).toBe(true);
     expect(crypto.createHash("sha256").update(appels[0].disposition).digest("hex")).toBe(P.DISPOSITION.sha256);
-    expect(appels[0].texte.startsWith(fs.readFileSync(`${F}/tenon-prompt.txt`, "utf8"))).toBe(true);
+    // Depuis le 27 novembre 2026 (ni-logo-compact-ni-logo-empile) : sans les deux lignes du logo empilé et du logo compact.
+    const tenon = fs.readFileSync(`${F}/tenon-prompt.txt`, "utf8");
+    expect(appels[0].texte.startsWith(o.sansCompactNiEmpile ? P.sansLeCompactNiLEmpile(tenon) : tenon)).toBe(true);
     expect(r.route.board.planche!.image).toBeTruthy();
-  });
+  };
+  rejeuxPartages.openai = rejeuOpenAI;
+  epreuve("planche-de-marque-openai", () => rejeuOpenAI());
+  // Sa version identique sans logo compact ni logo empilé : le même rejeu, sans eux.
+  epreuve("planche-de-marque-openai-v2", () => rejeuOpenAI({ sansCompactNiEmpile: true }));
 
   epreuve("planche-donnees-verifiees", async () => {
     const libre = await tache({ verdicts: () => bon("Tenon", "tenon.fr — disponible") });
@@ -1616,7 +1629,7 @@ describe("les épreuves de la planche de marque par OpenAI (24 novembre 2026, fa
     expect(I.devisDesImages(j as never, ["A"], ["planche"])).toMatchObject({ studio: true });
   });
 
-  const rejeuPhrase = async () => {
+  const rejeuPhrase = async (o: Retrait = {}) => {
     const DEUX = ["SAVONNERIE ARTISANALE", "SAVONS · SHAMPOINGS · BAUMES"];
     const lue = (l: string[]) => ({ phrasesLues: [l.join(" / ")] });
     // 1. Le Studio retrouve la phrase choisie pour CE logo fini (par le numéro de son esquisse) ; « aucune » : aucune.
@@ -1625,7 +1638,7 @@ describe("les épreuves de la planche de marque par OpenAI (24 novembre 2026, fa
     // 2. Le texte : la phrase, toutes ses lignes dans l'ordre, posée par le code dans la ligne de la marque ; le reste du
     // texte des preuves mot pour mot (une seule ligne diffère), la phrase des données vérifiées toujours à la toute fin.
     const avec = await tache({ phrase: DEUX, verdicts: () => ({ ...bon("Tenon", "tenon.fr — disponible"), ...lue(DEUX) }) });
-    const preuve = fs.readFileSync(`${F}/tenon-prompt.txt`, "utf8").split("\n"), envoye = avec.appels[0].texte.split("\n");
+    const tenon = fs.readFileSync(`${F}/tenon-prompt.txt`, "utf8"), preuve = (o.sansCompactNiEmpile ? P.sansLeCompactNiLEmpile(tenon) : tenon).split("\n"), envoye = avec.appels[0].texte.split("\n");
     expect(envoye.slice(0, preuve.length).filter((l, i) => l !== preuve[i])).toEqual([`- Tenon, ${TENON.metier} : marque artisanale, chaleureuse, précise et haut de gamme. Sa phrase, choisie par le client et écrite sous le logo, en 2 lignes, dans cet ordre : « SAVONNERIE ARTISANALE » puis « SAVONS · SHAMPOINGS · BAUMES » ; c'est aussi son slogan : partout où la planche l'écrit, écris-la exactement, toutes ses lignes dans cet ordre, sans en changer une lettre ni un accent.`]);
     expect(avec.appels[0].texte.endsWith("écris exactement « tenon.fr — disponible » et « © 2026 Tenon » ; n'ajoute aucune promesse, aucun chiffre ni aucun avis ; aucune personne visible.")).toBe(true);
     // L'appel des valeurs ne la voit jamais (sa demande ne la porte pas) ; le contrôle gratuit la retrouve mot pour mot.
@@ -1649,7 +1662,7 @@ describe("les épreuves de la planche de marque par OpenAI (24 novembre 2026, fa
     expect(P.raisonsDuRefusDeLaPlanche({ ...bon("Tenon", "tenon.fr — disponible") }, a).join(" ")).toMatch(/n'est lue nulle part/);
     // 4. Sans phrase (« aucune » ou rien de choisi) : rien ne change (le texte des preuves, cinq paramètres au relecteur).
     const sans = await tache({ verdicts: () => bon("Tenon", "tenon.fr — disponible") });
-    expect(sans.appels[0].texte.startsWith(fs.readFileSync(`${F}/tenon-prompt.txt`, "utf8"))).toBe(true);
+    expect(sans.appels[0].texte.startsWith(o.sansCompactNiEmpile ? P.sansLeCompactNiLEmpile(tenon) : tenon)).toBe(true);
     expect(sans.relectures[0]).toMatchObject({ nbArgs: 5 });
     expect(sans.relectures[0].demande).not.toMatch(/phrase écrite sous son logo|phrasesLues/);
     expect(sans.r.route.board.planche!.phrase).toBeUndefined();
@@ -1658,14 +1671,14 @@ describe("les épreuves de la planche de marque par OpenAI (24 novembre 2026, fa
     expect(src).toContain("`${m[1]}-phrase-du-logo.txt`");
     expect(src).toContain("...(l.phrase ? { phrase: l.phrase } : {}) });");
   };
-  epreuve("planche-reprend-la-phrase-du-logo", rejeuPhrase);
+  epreuve("planche-reprend-la-phrase-du-logo", () => rejeuPhrase());
 
   // Le rejeu de planche-phrase-par-lignes-et-reprise-qui-part-toujours, remplacée le 26 novembre 2026 par
   // planche-signe-parasite-petite-finition : inchangé, rejoué par l'épreuve qui la remplace.
-  const rejeuLignes = async () => {
+  const rejeuLignes = async (o: Retrait = {}) => {
     // 1. Tout ce que demandaient les deux épreuves remplacées reste vrai.
     await rejeuLisible();
-    await rejeuPhrase();
+    await rejeuPhrase(o);
     const E = "tests/fixtures/ecume-planches", PH = ["SAVONNERIE ARTISANALE", "BULLES DE SOIN AU NATUREL"];
     const ECUME = { nom: "Écume", annee: 2026, domaine: { domaine: "ecumefrance.fr", statut: "disponible" as const }, personnes: false, animaux: false, phrase: PH };
     // 2. Le verdict réel de la planche A d'Écume (premier essai), copié tel quel : plus aucun des quinze refus faux.
@@ -1690,7 +1703,8 @@ describe("les épreuves de la planche de marque par OpenAI (24 novembre 2026, fa
     const donnees = { nom: "Écume", valeurs, annee: 2026, domaine: ECUME.domaine, personnes: false, phrase: PH };
     // Le texte réel du premier essai, mot pour mot ; depuis le 26 novembre 2026 (essai réel du torréfacteur), la partie
     // « produits » d'une boutique, l'une des six parties du métier, porte en plus la ligne des noms des produits.
-    expect(P.texteDeLaPlanche(donnees)).toBe(P.texteAvecLesNomsDesProduits(fs.readFileSync(`${E}/planche-A-1-texte-envoye.txt`, "utf8"), valeurs));
+    const reel = P.texteAvecLesNomsDesProduits(fs.readFileSync(`${E}/planche-A-1-texte-envoye.txt`, "utf8"), valeurs);
+    expect(P.texteDeLaPlanche(donnees)).toBe(o.sansCompactNiEmpile ? P.sansLeCompactNiLEmpile(reel) : reel);
     expect(Buffer.byteLength(fs.readFileSync(`${E}/planche-A-2-texte-envoye.txt`, "utf8"))).toBeGreaterThan(mp.PLANCHE_TEXTE_MAX_OCTETS);
     expect(Buffer.byteLength(P.texteDeLaPlanche({ ...donnees, raisons: lu.raisons }))).toBeLessThanOrEqual(mp.PLANCHE_TEXTE_MAX_OCTETS);
     const trente = Array.from({ length: 30 }, (_x, i) => `fautes : « un long texte relevé numéro ${i} ${"encore ".repeat(20)}»`);
@@ -1729,11 +1743,11 @@ describe("les épreuves de la planche de marque par OpenAI (24 novembre 2026, fa
     expect(d.lignes.filter((l) => l.planche === 1).map((l) => l.charge)).toEqual(["Studio", "Studio"]);
     expect(d.lignes.some((l) => l.planche == null)).toBe(false);
   };
-  epreuve("planche-phrase-par-lignes-et-reprise-qui-part-toujours", rejeuLignes);
+  epreuve("planche-phrase-par-lignes-et-reprise-qui-part-toujours", () => rejeuLignes());
 
-  epreuve("planche-signe-parasite-petite-finition", async () => {
+  const rejeuSigneParasite = async (o: Retrait = {}) => {
     // 1. Tout ce que demandait l'épreuve remplacée reste vrai.
-    await rejeuLignes();
+    await rejeuLignes(o);
     const E2 = "tests/fixtures/ecume-planches-2", PH = ["SAVONNERIE ARTISANALE", "BULLES DE SOIN AU NATUREL"];
     const FAUTE = "Titre SEO (bloc 10) : « Écume – Savonnerie artisanale |´ » — accent parasite après la barre de séparation";
     const texte = fs.readFileSync(`${E2}/planche-A-2-texte-envoye.txt`, "utf8");
@@ -1776,7 +1790,11 @@ describe("les épreuves de la planche de marque par OpenAI (24 novembre 2026, fa
     expect(JSON.parse(fs.readFileSync(path.join(dir, "planche-A-resultat.json"), "utf8")).planche.image).toBeTruthy();
     expect(fs.readFileSync(path.join(dir, "rapport.txt"), "utf8")).toContain("dépense de ce rejugement : 0 € (aucun appel)");
     expect(fs.readFileSync("scripts/syna-recette/essai-planches.mts", "utf8")).toContain("if (process.env.REJUGER?.trim())");
-  });
+  };
+  rejeuxPartages.signeParasite = rejeuSigneParasite;
+  epreuve("planche-signe-parasite-petite-finition", () => rejeuSigneParasite());
+  // Sa version identique sans logo compact ni logo empilé : le même rejeu, sans eux.
+  epreuve("planche-signe-parasite-petite-finition-v2", () => rejeuSigneParasite({ sansCompactNiEmpile: true }));
 });
 
 describe("les épreuves de la planche en vrai (25 novembre 2026, aucun appel)", async () => {
@@ -1813,7 +1831,7 @@ describe("les épreuves de la planche en vrai (25 novembre 2026, aucun appel)", 
     expect(T.produitsImagines({ elements: [{ element: "produit-2", id: "y", essais: 1, ambiance: true }] } as never)).toEqual(["produit-2"]);
   });
 
-  const rejeuEnVraiALIdentique = async () => {
+  const rejeuEnVraiALIdentique = async (rt: Retrait = {}) => {
     // Les 17 images, leurs tailles des preuves, les champs exacts.
     expect(V.NOMS_DES_ELEMENTS).toHaveLength(17);
     expect(mp.champsDElementDeLaPlanche("t", "1088x1088")).toEqual({ model: "gpt-image-2.5-sunburst", prompt: "t", quality: "high", size: "1088x1088", background: "opaque", output_format: "png", n: 1 });
@@ -1842,16 +1860,17 @@ describe("les épreuves de la planche en vrai (25 novembre 2026, aucun appel)", 
     const past = V.lesCases("animaux").pastilles;
     expect(await C.mesurerLaPalette(await C.plancheDeTest(past, ["#0A4E2B", "#6B8F5A", "#A7C0A0", "#F8F6EE", "#D9B89A"]), past)).toEqual(["#0A4E2B", "#6B8F5A", "#A7C0A0", "#F8F6EE", "#D9B89A"]);
     expect(C.policeDuCatalogue({ nom: "Inter", genre: "sans" }, 400)).toMatchObject({ famille: "Inter", remplacee: false });
-    expect(C.VERSIONS_DU_LOGO).toHaveLength(10);
+    // Depuis le 27 novembre 2026 : huit versions, ni compact ni empilé.
+    expect(C.VERSIONS_DU_LOGO).toHaveLength(rt.sansCompactNiEmpile ? 8 : 10);
     // L'assemblage en 3072 × 4608.
     expect(V.TAILLE_EN_VRAI).toEqual({ w: 3072, h: 4608 });
     // Plus de mélange une fois la planche de marque faite.
     expect(V.phraseDuMelangeRefuse()).toMatch(/le mélange de deux identités n'est plus possible/);
     expect(fs.readFileSync("src/lib/syna-agent/tools/identity.ts", "utf8")).toContain("return { ok: false, summary: phraseDuMelangeRefuse()");
   };
-  epreuve("planche-en-vrai-a-l-identique", rejeuEnVraiALIdentique);
+  epreuve("planche-en-vrai-a-l-identique", () => rejeuEnVraiALIdentique());
 
-  const rejeuSymboleSeulEtBandeau = async () => {
+  const rejeuSymboleSeulEtBandeau = async (rt: Retrait = {}) => {
     // 1. Le vrai logo de l'essai : symbole et nom séparés sur le masque d'encre ; le compact, l'icône et le favicon en symbole seul.
     const logo = fs.readFileSync("tests/fixtures/planche-en-vrai/esquisse-11-logo-garde-512.png");
     const sep = await C.separerSymbole(logo);
@@ -1862,8 +1881,16 @@ describe("les épreuves de la planche en vrai (25 novembre 2026, aucun appel)", 
     expect(C.texteDuBasDuBadge({ ligneDuLogo: "Le bois bien fait", metierCourt: "la menuiserie" })).toBe("Le bois bien fait");
     const v = await C.versionsDuLogo({ logo, separation: sep, couleur: "#5D0126", sombre: "#640B29", clair: "#F7F3EC", monoClair: "#A1B89B", nom: "Aplomb", bas, police });
     expect(v.symboleComplet).toBe(false);
-    const sym = await sharp(sep.symbole).metadata(), compact = await sharp(v.versions["logo-compact"]).metadata();
-    expect([compact.width, compact.height]).toEqual([sym.width, sym.height]);
+    const sym = await sharp(sep.symbole).metadata();
+    if (rt.sansCompactNiEmpile) {
+      // Ni logo compact ni logo empilé ; le symbole de la marque est le symbole séparé.
+      expect(Object.keys(v.versions)).toEqual([...C.VERSIONS_DU_LOGO]);
+      const s2 = await sharp(v.symbole).metadata();
+      expect([s2.width, s2.height]).toEqual([sym.width, sym.height]);
+    } else {
+      const compact = await sharp((v.versions as Record<string, Buffer>)["logo-compact"]).metadata();
+      expect([compact.width, compact.height]).toEqual([sym.width, sym.height]);
+    }
     const hz = await sharp(v.versions["logo-horizontal"]).metadata();
     expect(hz.width! / hz.height!).toBeGreaterThan(3);
     const bloc = await uni(300, 300, "#0A0A0A");
@@ -1886,16 +1913,16 @@ describe("les épreuves de la planche en vrai (25 novembre 2026, aucun appel)", 
     // Les publications incompréhensibles restent hors du calendrier.
     expect(V.phraseDeLaPublicationIncomprehensible(1)).toMatch(/je ne la mets pas à ton calendrier/);
   };
-  epreuve("planche-en-vrai-symbole-seul-et-bandeau-sans-marges", rejeuSymboleSeulEtBandeau);
+  epreuve("planche-en-vrai-symbole-seul-et-bandeau-sans-marges", () => rejeuSymboleSeulEtBandeau());
   /**
    * Le rejeu de planche-en-vrai-identique-a-l-apercu, partagé : remplacée le 27 novembre 2026, elle n'est plus rejouée seule ;
    * planche-en-vrai-pas-identique-a-l-apercu-mouture le rejoue en entier, sauf la règle remplacée (`empileDuCode` faux : le logo empilé identique au
    * principal est repris de l'aperçu).
    */
-  const rejeuIdentiqueALApercu = async (o: { empileDuCode: boolean }) => {
+  const rejeuIdentiqueALApercu = async (o: { empileDuCode: boolean } & Retrait) => {
     // Tout ce que demandaient les deux épreuves remplacées reste rejoué.
-    await rejeuEnVraiALIdentique();
-    await rejeuSymboleSeulEtBandeau();
+    await rejeuEnVraiALIdentique(o);
+    await rejeuSymboleSeulEtBandeau(o);
     const Fx = "tests/fixtures/ecume-planche-en-vrai";
     const inv = V.InventaireSchema.parse(JSON.parse(fs.readFileSync(`${Fx}/inventaire-reponse.json`, "utf8")));
     const verdictDe = (f: string, n: string) => (JSON.parse(fs.readFileSync(`${Fx}/${f}`, "utf8")) as { verdict: import("@/lib/syna-agent/planche-en-vrai").RelectureDuGroupe }).verdict.images.find((x) => x.case === n)!;
@@ -1940,7 +1967,8 @@ describe("les épreuves de la planche en vrai (25 novembre 2026, aucun appel)", 
     const d = await V.decouperLesApercus(demo, "standard");
     const v = await C.versionsDuLogo({ logo, separation: sep, couleur: "#C44912", sombre: "#C44912", clair: "#F6E8DA", monoClair: "#A7B89B", nom: "Écume", bas: "SAVONNERIE ARTISANALE", police: T.POLICE_DU_BADGE, tuiles: d.apercus });
     // La règle remplacée le 27 novembre 2026 : le logo empilé identique au principal est désormais repris de l'aperçu.
-    expect([...v.depuisLApercu].sort()).toEqual(o.empileDuCode ? ["badge", "favicon", "icone", "logo-compact"] : ["badge", "favicon", "icone", "logo-compact", "logo-empile"]);
+    // Et, depuis le 27 novembre 2026, ni logo compact ni logo empilé : l'icône, le favicon et le badge seuls.
+    expect([...v.depuisLApercu].sort()).toEqual(o.sansCompactNiEmpile ? ["badge", "favicon", "icone"] : o.empileDuCode ? ["badge", "favicon", "icone", "logo-compact"] : ["badge", "favicon", "icone", "logo-compact", "logo-empile"]);
     expect(await C.separerLaPhrase(logo)).not.toBeNull();
     // 6. La zone d'une case et l'heure du téléphone, sur les verdicts réels.
     expect(d.boites.get("publication-4x5")![1]).toBeGreaterThan(V.bandesDesTitres("standard").get("titre-07")![3]);
@@ -2155,7 +2183,7 @@ describe("l'épreuve du spécimen mesuré et de l'écran qui suit le réassembla
   const C = await import("@/lib/syna-agent/planche-en-vrai-code");
   const Fx = "tests/fixtures/ecume-planche-en-vrai";
 
-  epreuve("planche-en-vrai-specimen-mesure-et-ecran-du-reassemblage", async () => {
+  const rejeuSpecimen = async () => {
     const os = await import("node:os"), path = await import("node:path");
     // 1. Le spécimen du bloc 03, sur l'aperçu réel de B : l'encre, la hauteur et le trait de l'aperçu.
     const demo = fs.readFileSync(`${Fx}/planche-B-gardee.jpg`), cases = V.lesCases("standard");
@@ -2206,7 +2234,11 @@ describe("l'épreuve du spécimen mesuré et de l'écran qui suit le réassembla
     // La tâche et le réassemblage rangent par les mêmes fonctions du Studio.
     const src = fs.readFileSync("src/lib/syna-agent/planche-en-vrai-tache.ts", "utf8");
     for (const f of ["rangerLesImages(", "rangerLesLogos(", "marqueRelueSurLaPlanche(", "publicationsDeLaPlanche("]) expect(src.split(f).length, f).toBeGreaterThanOrEqual(4);
-  });
+  };
+  rejeuxPartages.specimen = rejeuSpecimen;
+  epreuve("planche-en-vrai-specimen-mesure-et-ecran-du-reassemblage", () => rejeuSpecimen());
+  // Sa version identique sans logo compact ni logo empilé : le même rejeu, sans eux.
+  epreuve("planche-en-vrai-specimen-mesure-et-ecran-du-reassemblage-v2", () => rejeuSpecimen());
 });
 
 describe("l'épreuve de la palette mesurée et des quatre petites versions du logo en haute définition (essai d'Écume, 26 novembre 2026, aucun appel)", async () => {
@@ -2318,7 +2350,7 @@ describe("l'épreuve du coût probable seul et de l'arrêt au double (26 novembr
   const Fx = "tests/fixtures/ecume-planche-en-vrai";
   const PIRE = /au plus|at most|jusqu'à|fourchette|pire|plafond/i;
 
-  epreuve("cout-probable-seul-et-arret-au-double", async () => {
+  const rejeuCoutProbable = async (o: Retrait = {}) => {
     // 1. Ce qui reste vrai de planche-en-vrai-palette-mesuree-et-logos-en-hd (palette, versions HD, ordre du script).
     const demo = fs.readFileSync(`${Fx}/planche-B-gardee.jpg`), cases = V.lesCases("standard");
     const inv = V.InventaireSchema.parse(JSON.parse(fs.readFileSync(`${Fx}/inventaire-reponse.json`, "utf8")));
@@ -2351,7 +2383,8 @@ describe("l'épreuve du coût probable seul et de l'arrêt au double (26 novembr
       relire: async (items, _d, tour) => ({ versions: items.map((it) => ({ ...ok, version: it.version, note: tour === 1 && it.version === "badge" ? 7 : 9 })) }),
       aLaChargeDuStudio: (fn) => fn(), sansFond: T.sansFondDuLogoEnHd,
     }, { nom: "Écume", personnes: false, logo: Buffer.alloc(0), tuiles });
-    expect(tours).toEqual([1, 1, 1, 1, 2]);
+    // Depuis le 27 novembre 2026, sans le logo compact : l'icône, le favicon et le badge, puis la reprise du badge.
+    expect(tours).toEqual(o.sansCompactNiEmpile ? [1, 1, 1, 2] : [1, 1, 1, 1, 2]);
     expect([...res.values()].every((r) => r.ok)).toBe(true);
     const d = T.devisDesLogosEnHd();
     expect(d.maxMicro).toBe(2 * d.repriseMicro);
@@ -2466,7 +2499,11 @@ describe("l'épreuve du coût probable seul et de l'arrêt au double (26 novembr
     expect(worker).toContain("attendreLAccordDeLaTache(jobId)");
     expect(pub).toContain('if (j.status === "paused") { toast("ok", `${j.message ?? ""}');
     for (const f of ["tests/depense-annoncee-ecran-images.test.ts", "tests/depense-annoncee-ecran-publicites.test.ts"]) expect(fs.existsSync(f), f).toBe(true);
-  });
+  };
+  rejeuxPartages.coutProbable = rejeuCoutProbable;
+  epreuve("cout-probable-seul-et-arret-au-double", () => rejeuCoutProbable());
+  // Sa version identique sans logo compact ni logo empilé : le même rejeu, sans eux.
+  epreuve("cout-probable-seul-et-arret-au-double-v2", () => rejeuCoutProbable({ sansCompactNiEmpile: true }));
 });
 
 describe("les épreuves de l'essai réel du torréfacteur, étape 4 : les produits de la fiche seulement, le signe déclaré isolé (26 novembre 2026, aucun appel)", async () => {
@@ -2484,12 +2521,13 @@ describe("les épreuves de l'essai réel du torréfacteur, étape 4 : les produi
   const ARABICA = "promesses ou chiffres inventés : « Bloc 09, sachet Éthiopie : « 100% Arabica » »";
 
   // Les points 1 à 4 du rejeu de planche-produits-de-la-fiche-seulement.
-  const rejeuProduits = async () => {
+  const rejeuProduits = async (rt: Retrait = {}) => {
     // 1. Le texte envoyé : la ligne des noms, en positif, dans la partie « produits » ; aucune origine ni variété nommée.
     const t = P.texteDeLaPlanche({ nom: "Mouture", valeurs, annee: 2026, domaine: DOM, personnes: false, phrase: PH });
     const ligne = "Sur les étiquettes, les emballages, les fiches produits et le site, chaque produit porte seulement l'un de ces noms, ceux du client, au singulier pour un seul article : « Cafés en grains », « Cafés moulus », « Coffrets ».";
     expect(t).toContain(`Montrer clairement :\n- cafés en grains\n- cafés moulus\n- coffrets\n${ligne}\nLes visuels doivent être propres`);
-    expect(t.replace(`${ligne}\n`, "")).toBe(MOUTURE.texte.split("\n\nÀ corriger : ")[0]);
+    const reel = MOUTURE.texte.split("\n\nÀ corriger : ")[0];
+    expect(t.replace(`${ligne}\n`, "")).toBe(rt.sansCompactNiEmpile ? P.sansLeCompactNiLEmpile(reel) : reel);
     expect(t).not.toMatch(/origine|variété|gamme|arabica|éthiopie|brésil/i);
     // Le texte des preuves refait toujours Tenon et Racine à l'identique ; un site de marque ne change pas.
     expect(P.texteAvecLesNomsDesProduits("x", { site: "marque", produits: ["cuisines"] })).toBe("x");
@@ -2520,9 +2558,9 @@ describe("les épreuves de l'essai réel du torréfacteur, étape 4 : les produi
   ];
   const INTERDITS = /brésil|bresil|éthiopie|ethiopie|guatemala|colombie|yirgacheffe|sul de minas|antigua/i;
 
-  const rejeuProduitsDeLaFiche = async () => {
+  const rejeuProduitsDeLaFiche = async (o: Retrait = {}) => {
     // 1. Le texte, le contrôle des valeurs, la consigne, la lecture du verdict réel de B-2 (points 1 à 4).
-    await rejeuProduits();
+    await rejeuProduits(o);
     // 2. Le verdict réel de B-2, avec les quatre origines relevées : refusée ; le compte rendu garde les noms exacts.
     const avec = { ...v, produitsInventes: ORIGINES };
     const lu = P.lectureDeLaPlanche(avec, MOUTURE);
@@ -2560,7 +2598,7 @@ describe("les épreuves de l'essai réel du torréfacteur, étape 4 : les produi
   };
   // Remplacée le 27 novembre 2026 par faits-a-montrer-demandes-avant-la-marque, qui la rejoue en entier (sans fait donné).
   rejeuxPartages.produitsDeLaFiche = rejeuProduitsDeLaFiche;
-  epreuve("planche-produits-de-la-fiche-seulement", rejeuProduitsDeLaFiche);
+  epreuve("planche-produits-de-la-fiche-seulement", () => rejeuProduitsDeLaFiche());
 
   epreuve("planche-signe-isole-declare-par-le-relecteur", () => {
     // 1. Le verdict réel de B-2, tel quel : le signe reste dans fautes (il n'est pas recopié entre deux espaces).
@@ -2850,12 +2888,12 @@ describe("l'épreuve de la planche en vrai de Mouture identique à l'aperçu A (
   const raisons = (n: NomElement) => P.raisonsDuRefusEnVrai(v2(n), { inventaire: P.caseLue(inventaire, n), personnes: false, photo: false, element: n, logo: LOGO, produits: PRODUITS });
   const routeMouture = { key: "A", name: "Mouture", slogan: "TORRÉFACTION ARTISANALE", palette: { dark: "#2B140E" }, board: { planche: { domaine: "mouturefrance.fr", statut: "disponible", annee: 2026 } } } as unknown as import("@/lib/syna-agent/brand-routes").Route;
   const lum = (r: number, g: number, b: number) => 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  const rejeuMouture = async () => {
+  const rejeuMouture = async (o: Retrait = {}) => {
     // Tout ce que demandaient les deux épreuves remplacées, sauf la police nommée au catalogue de genre compatible et le
     // logo empilé identique au principal.
     expect(rejeuxPartages.finitionsEtPolice && rejeuxPartages.identiqueALApercu).toBeTruthy();
     await rejeuxPartages.finitionsEtPolice!({ policeNommeeRemplacee: false });
-    await rejeuxPartages.identiqueALApercu!({ empileDuCode: false });
+    await rejeuxPartages.identiqueALApercu!({ empileDuCode: false, ...o });
     const demo = await sharp(`${F}/apercu-planche-A-gardee.jpg`).resize(P.TAILLE_DEMO.w, P.TAILLE_DEMO.h, { fit: "fill" }).png().toBuffer();
     const d = await P.decouperLesApercus(demo, "standard");
     const det = await logoDetoure(fs.readFileSync(`${F}/logo-joint.png`)), logo = det.ok ? det.png : fs.readFileSync(`${F}/logo-joint.png`);
@@ -2868,9 +2906,10 @@ describe("l'épreuve de la planche en vrai de Mouture identique à l'aperçu A (
     expect(await C.contrasteDesLettres(ref, v.versions["monochrome-clair"], "#222222", a.seuil)).toBeGreaterThanOrEqual(C.CONTRASTE_MIN_DES_LETTRES);
     expect(await C.contrasteDesLettres(logo, await C.monochromeAuxCreux(logo, "#FFFFFF", a.seuil, "claires"), "#2E1A12", a.seuil)).toBeGreaterThanOrEqual(C.CONTRASTE_MIN_DES_LETTRES);
     expect(v.depuisLApercu).toContain("logo-horizontal");
-    expect(v.depuisLApercu).toContain("logo-empile");
+    if (o.sansCompactNiEmpile) expect(Object.keys(v.versions).join(" ")).not.toMatch(/compact|empile/);
+    else expect(v.depuisLApercu).toContain("logo-empile");
     expect(v.versions["logo-horizontal"].equals(ref)).toBe(false);
-    expect(v.versions["logo-empile"].equals(ref)).toBe(false);
+    if (!o.sansCompactNiEmpile) expect((v.versions as Record<string, Buffer>)["logo-empile"].equals(ref)).toBe(false);
     const tu = await C.tuilesDuBloc01({ demo, boites: d.boites, versions: v.versions, depuisLApercu: v.depuisLApercu });
     for (const x of ["logo-horizontal", "monochrome-fonce", "monochrome-clair", "inverse"] as const) expect(tu.tuilesDeLApercu, x).toContain(x);
     // 3. Les polices : Montserrat en titres (à gauche), jamais remplacée ; Playfair Display en textes.
@@ -2903,11 +2942,11 @@ describe("l'épreuve de la planche en vrai de Mouture identique à l'aperçu A (
     expect(raisons("reference-5").join(" ")).toMatch(/« Qualité »/);
     expect(P.RELECTEUR_EN_VRAI).toContain("aussiSurLApercu");
   };
-  epreuve("planche-en-vrai-pas-identique-a-l-apercu-mouture", rejeuMouture);
+  epreuve("planche-en-vrai-pas-identique-a-l-apercu-mouture", () => rejeuMouture());
 
-  epreuve("planche-en-vrai-reprise-hd-petits-textes-logo-et-coupe", async () => {
+  const rejeuRepriseHd = async (o: Retrait = {}) => {
     // Tout ce que demandait l'épreuve remplacée (son rejeu ne juge pas la coupe de reference-4).
-    await rejeuMouture();
+    await rejeuMouture(o);
     const R = `${F}/reprise-trois-images`;
     const reprise = [
       ...P.RelectureDuGroupeSchema.parse(JSON.parse(fs.readFileSync(`${R}/relecture-produits-reprise-verdict.json`, "utf8"))).images,
@@ -2971,7 +3010,11 @@ describe("l'épreuve de la planche en vrai de Mouture identique à l'aperçu A (
         expect(contraste(z.l[i]![k].couleur, z.fond), `${i}:${k}`).toBeGreaterThan(contraste(a.l[i]![k].couleur, a.fond));
       }
     }
-  });
+  };
+  rejeuxPartages.repriseHd = rejeuRepriseHd;
+  epreuve("planche-en-vrai-reprise-hd-petits-textes-logo-et-coupe", () => rejeuRepriseHd());
+  // Sa version identique sans logo compact ni logo empilé : le même rejeu, sans eux.
+  epreuve("planche-en-vrai-reprise-hd-petits-textes-logo-et-coupe-v2", () => rejeuRepriseHd({ sansCompactNiEmpile: true }));
 });
 
 describe("l'épreuve des faits à montrer, demandés avant la marque (27 novembre 2026, aucun appel)", async () => {
@@ -2981,10 +3024,10 @@ describe("l'épreuve des faits à montrer, demandés avant la marque (27 novembr
   const V = await import("@/lib/syna-agent/planche-en-vrai");
   const { lintClaims } = await import("@/lib/ai/tasks");
 
-  epreuve("faits-a-montrer-demandes-avant-la-marque", async () => {
+  const rejeuFaits = async (rt: Retrait = {}) => {
     // Tout ce que demandaient les deux épreuves remplacées, rejoué sans fait donné.
     expect(rejeuxPartages.produitsDeLaFiche && rejeuxPartages.textesDuLogoEtFaitsInventes).toBeTruthy();
-    await rejeuxPartages.produitsDeLaFiche!();
+    await rejeuxPartages.produitsDeLaFiche!(rt);
     await rejeuxPartages.textesDuLogoEtFaitsInventes!();
     // 1. Le cahier, lu par le code ; ses parties choisies d'après l'activité et l'offre ; aucune question sur le logo.
     const j = { start: { business: { value: "products", status: "answered", source: "client", at: 1 }, offer: { value: "Je torréfie et je vends en ligne des cafés en grains et moulus.", status: "answered", source: "client", at: 1 } } } as never;
@@ -3026,7 +3069,11 @@ describe("l'épreuve des faits à montrer, demandés avant la marque (27 novembr
     const p = { business: "products", product: { facts: [], questions: [] }, settings: {} } as never;
     expect(lintClaims("Torréfié depuis 2019.", p, { facts: F.faitsPourLeControle(faits), interdits: faits.interdits })).toEqual([]);
     expect(lintClaims("À Nantes.", p, { facts: F.faitsPourLeControle(faits), interdits: faits.interdits }).map((c) => c.term)).toEqual(["Nantes"]);
-  });
+  };
+  rejeuxPartages.faits = rejeuFaits;
+  epreuve("faits-a-montrer-demandes-avant-la-marque", () => rejeuFaits());
+  // Sa version identique sans logo compact ni logo empilé : le même rejeu, sans eux.
+  epreuve("faits-a-montrer-demandes-avant-la-marque-v2", () => rejeuFaits({ sansCompactNiEmpile: true }));
 });
 
 describe("l'épreuve des noms de produits comparés aux noms exacts du client (27 novembre 2026, aucun appel)", async () => {
@@ -3064,5 +3111,155 @@ describe("l'épreuve des noms de produits comparés aux noms exacts du client (2
     expect(V.demandeAuRelecteurEnVrai({ ...o, faits: F.AUCUN_FAIT })).toBe(V.demandeAuRelecteurEnVrai(o));
     const reel = fs.readFileSync(`${R}/reference-4-texte-envoye.txt`, "utf8"), envoyees = ["ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « CAFÉ »)"];
     expect(V.texteSansLesMentionsVraies(V.texteDeLElement({ element: "reference-4", nom: "Mouture", logo: true, photo: false, personnes: false, produits: PRODUITS, faits: FAITS, raisons: envoyees }), PRODUITS, FAITS)).toBe(reel);
+  });
+});
+
+describe("l'épreuve du retrait du logo compact et du logo empilé (27 novembre 2026, aucun appel)", async () => {
+  const P = await import("@/lib/syna-agent/planche-de-marque");
+  const V = await import("@/lib/syna-agent/planche-en-vrai");
+  const C = await import("@/lib/syna-agent/planche-en-vrai-code");
+  const T = await import("@/lib/syna-agent/planche-en-vrai-tache");
+  const S = await import("@/lib/syna-agent/brand-sheet");
+  const Z = await import("@/lib/syna-agent/brand-zip");
+  const { runWithLang } = await import("@/lib/i18n-server");
+  const Fx = "tests/fixtures/ecume-planche-en-vrai";
+
+  epreuve("ni-logo-compact-ni-logo-empile", async () => {
+    // Tout ce que demandaient les six épreuves remplacées, sauf ce qui nomme le logo compact ou le logo empilé.
+    const r = rejeuxPartages;
+    expect(r.openai && r.signeParasite && r.faits && r.specimen && r.coutProbable && r.repriseHd).toBeTruthy();
+    const retrait = { sansCompactNiEmpile: true };
+    await r.openai!(retrait);
+    await r.signeParasite!(retrait);
+    await r.faits!(retrait);
+    await r.specimen!();
+    await r.coutProbable!(retrait);
+    await r.repriseHd!(retrait);
+    // 1. Le texte envoyé : les deux lignes, et elles seules, retirées ; le texte des preuves ne change pas.
+    const tenon = fs.readFileSync("tests/fixtures/planche-de-marque/tenon-prompt.txt", "utf8");
+    const sans = P.sansLeCompactNiLEmpile(tenon);
+    expect(sans).not.toMatch(/logo empilé|logo compact/i);
+    expect(tenon.split("\n").filter((l) => !sans.split("\n").includes(l))).toEqual(["- logo empilé", "- logo compact"]);
+    expect(() => P.sansLeCompactNiLEmpile("autre texte")).toThrow(/Texte de base inattendu/);
+    // 2. Huit versions ; sur une planche à dix cases, les huit cases gardées couvrent la rangée, sans vide.
+    expect([...C.VERSIONS_DU_LOGO]).toEqual(["logo-principal", "logo-horizontal", "icone", "favicon", "monochrome-fonce", "monochrome-clair", "inverse", "badge"]);
+    const cases = V.lesCases("standard").cases, boites = new Map(Object.entries(cases).filter(([n]) => n.startsWith("logo-")) as [string, import("@/lib/syna-agent/planche-en-vrai").Boite][]);
+    const rg = C.rangeeDuBloc01(boites);
+    expect(rg.refaite).toBe(true);
+    expect([rg.lignes[0].cible[0], rg.lignes.at(-1)!.cible[2]]).toEqual([cases["logo-1"][0], cases["logo-10"][2]]);
+    for (const [i, l] of rg.lignes.entries()) if (i) expect(l.cible[0] - rg.lignes[i - 1].cible[2]).toBeLessThanOrEqual(15);
+    // Les versions d'Écume (sans symbole séparable) : l'icône, le favicon et le badge repris de l'aperçu ; le symbole est l'icône.
+    const det = await (await import("@/lib/syna-agent/brand-images")).logoDetoure(fs.readFileSync(`${Fx}/esquisse-10-logo-garde-512.png`), "#C14706");
+    const logo = det.ok ? det.png : Buffer.alloc(0), d = await V.decouperLesApercus(fs.readFileSync(`${Fx}/planche-B-gardee.jpg`), "standard");
+    const v = await C.versionsDuLogo({ logo, separation: await C.separerSymbole(logo), couleur: "#C44912", sombre: "#C44912", clair: "#F6E8DA", monoClair: "#A7B89B", nom: "Écume", bas: "SAVONNERIE ARTISANALE", police: T.POLICE_DU_BADGE, tuiles: d.apercus });
+    expect(Object.keys(v.versions)).toEqual([...C.VERSIONS_DU_LOGO]);
+    expect([...v.depuisLApercu].sort()).toEqual(["badge", "favicon", "icone"]);
+    expect(v.symbole.equals(v.versions.icone)).toBe(true);
+    // 3. L'onglet Marque et le zip : un ancien projet qui a encore le compact et l'empilé ne les montre plus.
+    const ev = { key: "A", demo: "d", logo: "l", laquelle: "standard", at: 1, planche: { id: "p", w: 3072, h: 4608 }, elements: [], palette: [], symboleComplet: true, publications: [], issues: [], notes: [],
+      logos: [{ version: "logo-principal", id: "l1" }, { version: "logo-compact", id: "l2" }, { version: "logo-empile", id: "l3" }, { version: "icone", id: "l4" }] } as never as import("@/lib/syna-agent/planche-en-vrai").EtatPlancheEnVrai;
+    const vue = runWithLang({ ui: "fr", content: "fr" }, () => S.vueEnVrai(ev, "pid", (id) => `/f/${id}`))!;
+    expect(vue.logos.map((l) => l.version)).toEqual(["logo-principal", "icone"]);
+    expect(Object.keys(Z.fichiersDeLaMarque(ev, "Nom", (id) => Buffer.from(id), () => null)).filter((k) => k.startsWith("logos/"))).toEqual(["logos/logo-principal.png", "logos/icone.png"]);
+    // 4. Seules l'icône, le favicon et le badge se refont en haute définition.
+    expect([...V.VERSIONS_EN_HD]).toEqual(["icone", "favicon", "badge"]);
+    expect(T.devisDesLogosEnHd().images).toBe(3);
+  });
+});
+
+describe("les versions identiques sans logo compact ni logo empilé : aucune autre vérification des six épreuves ne se perd (27 novembre 2026)", () => {
+  const src = fs.readFileSync("tests/epreuves.test.ts", "utf8");
+  const corps = (nom: string) => { const i = src.indexOf(`  const ${nom} = async`); expect(i, nom).toBeGreaterThan(0); return src.slice(i, src.indexOf("\n  };", i)); };
+  /**
+   * Pour chaque épreuve : la fonction de son rejeu, les fonctions qu'elle rejoue (son arbre), le nombre de vérifications
+   * (`expect(`) de chacune, et les seules lignes qui dépendent du retrait : celles qui nomment le compact, l'empilé, le texte
+   * envoyé avec leurs deux lignes, ou le nombre de versions.
+   */
+  const ARBRES: Record<string, { rejeu: string; arbre: [string, number][]; enCause: string[] }> = {
+    "planche-de-marque-openai": { rejeu: "rejeuOpenAI", arbre: [["rejeuOpenAI", 12]],
+      enCause: ["expect(appels[0].texte.startsWith(o.sansCompactNiEmpile ? P.sansLeCompactNiLEmpile(tenon) : tenon)).toBe(true);"] },
+    "planche-signe-parasite-petite-finition": { rejeu: "rejeuSigneParasite", arbre: [["rejeuSigneParasite", 22], ["rejeuLignes", 22], ["rejeuPhrase", 22], ["rejeuLisible", 43]],
+      enCause: ["expect(P.texteDeLaPlanche(donnees)).toBe(o.sansCompactNiEmpile ? P.sansLeCompactNiLEmpile(reel) : reel);",
+        "const tenon = fs.readFileSync(`${F}/tenon-prompt.txt`, \"utf8\"), preuve = (o.sansCompactNiEmpile ? P.sansLeCompactNiLEmpile(tenon) : tenon).split(\"\\n\"), envoye = avec.appels[0].texte.split(\"\\n\");",
+        "expect(sans.appels[0].texte.startsWith(o.sansCompactNiEmpile ? P.sansLeCompactNiLEmpile(tenon) : tenon)).toBe(true);"] },
+    "faits-a-montrer-demandes-avant-la-marque": { rejeu: "rejeuFaits", arbre: [["rejeuFaits", 21], ["rejeuProduitsDeLaFiche", 15], ["rejeuProduits", 15], ["rejeuTextesDuLogoEtFaitsInventes", 15]],
+      enCause: ["expect(t.replace(`${ligne}\\n`, \"\")).toBe(rt.sansCompactNiEmpile ? P.sansLeCompactNiLEmpile(reel) : reel);"] },
+    "planche-en-vrai-specimen-mesure-et-ecran-du-reassemblage": { rejeu: "rejeuSpecimen", arbre: [["rejeuSpecimen", 10]], enCause: [] },
+    "cout-probable-seul-et-arret-au-double": { rejeu: "rejeuCoutProbable", arbre: [["rejeuCoutProbable", 64]],
+      enCause: ["expect(tours).toEqual(o.sansCompactNiEmpile ? [1, 1, 1, 2] : [1, 1, 1, 1, 2]);"] },
+    "planche-en-vrai-reprise-hd-petits-textes-logo-et-coupe": { rejeu: "rejeuRepriseHd",
+      arbre: [["rejeuRepriseHd", 24], ["rejeuMouture", 23], ["rejeuFinitionsEtPolice", 26], ["rejeuIdentiqueALApercu", 34], ["rejeuEnVraiALIdentique", 18], ["rejeuSymboleSeulEtBandeau", 16]],
+      enCause: ["if (o.sansCompactNiEmpile) expect(Object.keys(v.versions).join(\" \")).not.toMatch(/compact|empile/);",
+        "if (!o.sansCompactNiEmpile) expect((v.versions as Record<string, Buffer>)[\"logo-empile\"].equals(ref)).toBe(false);",
+        "expect([...v.depuisLApercu].sort()).toEqual(o.sansCompactNiEmpile ? [\"badge\", \"favicon\", \"icone\"] : o.empileDuCode ? [\"badge\", \"favicon\", \"icone\", \"logo-compact\"] : [\"badge\", \"favicon\", \"icone\", \"logo-compact\", \"logo-empile\"]);",
+        "expect(C.VERSIONS_DU_LOGO).toHaveLength(rt.sansCompactNiEmpile ? 8 : 10);",
+        "if (rt.sansCompactNiEmpile) {"] },
+  };
+
+  it("chaque version identique : la même source et le même verdict, mot pour mot ; l'attendu d'origine mot pour mot, sauf la partie qui nomme le compact ou l'empilé, suivi de la phrase qui le dit ; son épreuve d'origine est remplacée par elle", () => {
+    expect(VERSIONS_IDENTIQUES.map((v) => v.id).sort()).toEqual(Object.keys(ARBRES).sort());
+    for (const v of VERSIONS_IDENTIQUES) {
+      const o = EPREUVES.find((e) => e.id === v.id)!, n = EPREUVES.find((e) => e.id === `${v.id}-v2`)!;
+      expect(n, v.id).toBeTruthy();
+      expect([n.source, n.verdict, n.rejeu, n.date]).toEqual([o.source, o.verdict, o.rejeu, "2026-11-27"]);
+      const phrase = ` ${phraseDeLaVersionIdentique(v.change)}`;
+      expect(n.attendu.endsWith(phrase), v.id).toBe(true);
+      const avant = n.attendu.slice(0, -phrase.length);
+      if (v.remplace) {
+        expect(avant, v.id).toBe(o.attendu.replace(v.remplace[0], v.remplace[1]));
+        expect(o.attendu.split(v.remplace[0]).length, v.id).toBe(2);
+        expect(`${v.remplace[0]} ${v.remplace[1]}`, v.id).toMatch(/compact|empil|dix versions|huit versions/);
+      } else expect(avant, v.id).toBe(o.attendu);
+      expect(o.remplaceePar?.epreuve, v.id).toBe(`${v.id}-v2`);
+      expect(n.remplaceePar, v.id).toBeUndefined();
+    }
+  });
+
+  it("chaque version rejoue la même fonction que son épreuve d'origine, avec le même nombre de vérifications ; seules les lignes listées dépendent du retrait", () => {
+    for (const [id, a] of Object.entries(ARBRES)) {
+      expect(src, id).toContain(`epreuve("${id}", () => ${a.rejeu}());`);
+      expect(src, id).toContain(`epreuve("${id}-v2", () => ${a.rejeu}(${a.rejeu === "rejeuSpecimen" ? "" : "{ sansCompactNiEmpile: true }"}));`);
+      const enCause: string[] = [];
+      for (const [f, n] of a.arbre) {
+        const b = corps(f);
+        expect((b.match(/expect\(/g) ?? []).length, `${id} · ${f}`).toBe(n);
+        for (const l of b.split("\n")) if (l.includes("sansCompactNiEmpile")) enCause.push(l.trim());
+      }
+      expect(enCause, id).toEqual(a.enCause);
+      // Chaque ligne en cause nomme le retrait : le texte sans ses deux lignes, les versions, ou les appels en haute définition.
+      for (const l of enCause) expect(l, id).toMatch(/sansCompactNiEmpile/);
+    }
+    // L'arbre est bien celui que chaque rejeu appelle.
+    expect(corps("rejeuSigneParasite")).toContain("await rejeuLignes(o);");
+    expect(corps("rejeuLignes")).toContain("await rejeuLisible();");
+    expect(corps("rejeuLignes")).toContain("await rejeuPhrase(o);");
+    expect(corps("rejeuFaits")).toContain("await rejeuxPartages.produitsDeLaFiche!(rt);");
+    expect(corps("rejeuFaits")).toContain("await rejeuxPartages.textesDuLogoEtFaitsInventes!();");
+    expect(corps("rejeuProduitsDeLaFiche")).toContain("await rejeuProduits(o);");
+    expect(corps("rejeuRepriseHd")).toContain("await rejeuMouture(o);");
+    expect(corps("rejeuMouture")).toContain("await rejeuxPartages.finitionsEtPolice!({ policeNommeeRemplacee: false });");
+    expect(corps("rejeuMouture")).toContain("await rejeuxPartages.identiqueALApercu!({ empileDuCode: false, ...o });");
+    expect(corps("rejeuIdentiqueALApercu")).toContain("await rejeuEnVraiALIdentique(o);");
+    expect(corps("rejeuIdentiqueALApercu")).toContain("await rejeuSymboleSeulEtBandeau(o);");
+  });
+
+  it("l'accord écrit du propriétaire (27 novembre 2026) : son début est reconnu ; il nomme chaque épreuve remplacée, sa version identique et ni-logo-compact-ni-logo-empile", () => {
+    expect(ACCORD_NI_COMPACT_NI_EMPILE).toMatch(/^« (Oui, marque planche-de-marque-openai)/);
+    expect(src).toContain("|Oui, marque planche-de-marque-openai)/);");
+    for (const v of VERSIONS_IDENTIQUES) {
+      expect(ACCORD_NI_COMPACT_NI_EMPILE, v.id).toContain(`${v.id},`.replace(/,$/, ""));
+      expect(ACCORD_NI_COMPACT_NI_EMPILE, v.id).toContain(`${v.id}-v2`);
+    }
+    expect(ACCORD_NI_COMPACT_NI_EMPILE).toContain("ni-logo-compact-ni-logo-empile");
+    expect(ACCORD_NI_COMPACT_NI_EMPILE).toContain("comme remplacées par ma décision du 27 novembre, chacune par sa version identique sans logo compact ni logo empilé");
+    // Les six épreuves sont remplacées avec cet accord, mot pour mot.
+    const six = EPREUVES.filter((x) => x.remplaceePar?.mots === ACCORD_NI_COMPACT_NI_EMPILE);
+    expect(six.map((x) => x.id).sort()).toEqual(VERSIONS_IDENTIQUES.map((v) => v.id).sort());
+    for (const e of six) {
+      const r = e.remplaceePar!;
+      expect(r.mots, e.id).toContain(e.id);
+      expect(r.mots, r.epreuve).toContain(r.epreuve);
+      expect(r.mots).toMatch(/^« (Oui, marque planche-de-marque-openai)/);
+    }
   });
 });

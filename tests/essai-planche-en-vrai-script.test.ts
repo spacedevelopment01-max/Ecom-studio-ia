@@ -98,7 +98,7 @@ describe("le script de l'essai de la planche en vrai (appels simulés)", async (
       "cases/publication-1x1-1-texte-envoye.txt", "cases/publication-1x1-1-jointe-1-apercu.png", "cases/publication-1x1-1-hd.png", "cases/publication-1x1-gardee-hd.png",
       "relectures/publications-1-demande.txt", "relectures/publications-1-verdict.json", "logos/logo-principal.png", "logos/badge.png", "logos/favicon-32.png", "logos/icone-512.png", "logos/avatar-reseaux.png", "logos/symbole.png",
       "palette.json", "polices.json", "planche-en-vrai.png", "etat.json", "depense.json", "usage.json", "rapport.txt"]) expect(existe(f), f).toBe(true);
-    expect(r.logos.filter((f) => !/favicon-\d|icone-512|avatar|symbole/.test(f))).toHaveLength(10);
+    expect(r.logos.filter((f) => !/favicon-\d|icone-512|avatar|symbole/.test(f))).toHaveLength(8);
     // Les publications aux formats finaux, l'ouverture du site réduite à 1920 × 720.
     for (const [n, w, h] of [["publication-1x1", 1080, 1080], ["publication-4x5", 1080, 1350], ["publication-9x16", 1080, 1920], ["ouverture-site", 1920, 720]] as const) {
       const m = await sharp(path.join(sortie, `cases/${n}-gardee-hd.png`)).metadata();
@@ -350,7 +350,7 @@ describe("le script de l'essai de la planche en vrai (appels simulés)", async (
     const casse = JSON.parse(fs.readFileSync(etat, "utf8"));
     casse.logos[3].id = "media-absent";
     const etatCasse = path.join(sortie, "etat-casse.json"); fs.writeFileSync(etatCasse, JSON.stringify(casse));
-    await expect(preparerLEcran({ projectId: r.projectId!, etat: etatCasse })).rejects.toThrow(/logo logo-compact \(media-absent\)/);
+    await expect(preparerLEcran({ projectId: r.projectId!, etat: etatCasse })).rejects.toThrow(/logo favicon \(media-absent\)/);
     expect(one("SELECT 1 FROM agent_conversations WHERE project_id=?", r.projectId)).toBeUndefined();
     // Sans l'essai.json écrit par l'essai, ni client donné : rien n'est écrit (aucun client par défaut).
     const seul = fs.mkdtempSync(path.join(os.tmpdir(), "ecran-sans-essai-")), etatSeul = path.join(seul, "etat.json");
@@ -400,9 +400,9 @@ describe("le script de l'essai de la planche en vrai (appels simulés)", async (
     expect(appels.length).toBe(appelsAvant);
     expect(e.logosRefaits?.symboleComplet).toBe(false);
     const apres = JSON.parse(fs.readFileSync(fichier, "utf8"));
-    // L'ancien état est gardé ; le nouveau a dix nouvelles versions, de nouveaux favicons, la phrase du symbole complet retirée.
+    // L'ancien état est gardé ; le nouveau a huit nouvelles versions (ni compact ni empilé), de nouveaux favicons, la phrase du symbole complet retirée.
     expect(JSON.parse(fs.readFileSync(path.join(sortie, "etat-avant-logos.json"), "utf8")).logos).toEqual(avant.logos);
-    expect(apres.logos).toHaveLength(10);
+    expect(apres.logos).toHaveLength(8);
     for (const [i, l] of apres.logos.entries()) { expect(l.version).toBe(avant.logos[i].version); expect(l.id).not.toBe(avant.logos[i].id); expect(assetData(getAsset(l.id)!).length).toBeGreaterThan(0); }
     expect(apres.favicons.f32).not.toBe(avant.favicons.f32);
     expect(apres.symboleComplet).toBe(false);
@@ -416,10 +416,11 @@ describe("le script de l'essai de la planche en vrai (appels simulés)", async (
     expect(j.brandFinish?.issues).toEqual(apres.issues);
     const mark = loadProject(r.projectId!).brand?.logo.markAssetId;
     expect(mark && getAsset(mark)?.role).toBe("logo-mark");
-    const compact = await sharp(assetData(getAsset(apres.logos.find((l: { version: string }) => l.version === "logo-compact").id)!)).metadata();
+    const symbole = await sharp(assetData(getAsset(mark!)!)).metadata();
     const complet = await sharp(assetData(getAsset(apres.logos.find((l: { version: string }) => l.version === "logo-principal").id)!)).metadata();
-    // Le compact ne montre que le symbole : bien moins haut par rapport à sa largeur que le logo complet empilé.
-    expect(compact.width! / compact.height!).not.toBeCloseTo(complet.width! / complet.height!, 1);
+    // Le symbole ne montre que le symbole : pas les proportions du logo complet empilé.
+    expect(symbole.width! / symbole.height!).not.toBeCloseTo(complet.width! / complet.height!, 1);
+    expect(apres.logos.map((l: { version: string }) => l.version).join(" ")).not.toMatch(/compact|empile/);
     // L'option ne passe par aucun appel.
     const src = fs.readFileSync("scripts/syna-recette/ecran-planche-en-vrai.mts", "utf8") + fs.readFileSync("scripts/syna-recette/ecran-planche-en-vrai-outil.ts", "utf8");
     expect(src).toContain('refaireLesLogos: process.env.REFAIRE_LOGOS === "1"');
@@ -493,7 +494,7 @@ describe("le script de l'essai de la planche en vrai (appels simulés)", async (
     expect(cas("publication-4x5").essais.at(-1)!.raisonsApres).toEqual(["un texte est coupé ou collé au bord", "sa fidélité n'est pas au niveau (7/10, il faut 8)"]);
     expect(r.palette.map((p) => p.hex)).toEqual(["#C44912", "#D97A52", "#F6E8DA", "#A7B89B", "#8C6F4E"]);
     // Depuis le 27 novembre 2026, le logo empilé d'Écume, identique au principal, est aussi repris de l'aperçu.
-    expect(r.logosDeLApercu.sort()).toEqual(["badge", "favicon", "icone", "logo-compact", "logo-empile"]);
+    expect(r.logosDeLApercu.sort()).toEqual(["badge", "favicon", "icone"]);
     expect((await sharp(path.join(dir, "a-b", "planche-en-vrai.png")).metadata()).width).toBe(3072);
     expect(fs.existsSync(path.join(dir, "a-b", "comparaison-apercu-et-reassemblee.jpg"))).toBe(true);
     // c) : la seule case encore refusée, reprise une fois avec ses raisons d'aujourd'hui, relue.
