@@ -93,7 +93,8 @@ describe("le chemin normal de la planche en vrai, sur les vrais fichiers d'Écum
     expect(ev.polices!.textes).toMatchObject({ lue: "Nunito", famille: "Sacramento", remplacee: true });
     expect(ev.issues.join("\n")).toMatch(/Sacramento/);
     // Sans symbole séparable : compact, icône, favicon et badge repris de l'aperçu.
-    expect([...(ev.logosDeLApercu ?? [])].sort()).toEqual(["badge", "favicon", "icone", "logo-compact"]);
+    // Depuis le 27 novembre 2026, le logo empilé d'Écume, identique au principal, est aussi repris de l'aperçu.
+    expect([...(ev.logosDeLApercu ?? [])].sort()).toEqual(["badge", "favicon", "icone", "logo-compact", "logo-empile"]);
     // La petite finition notée sur la planche choisie est nettoyée par le code dans le bloc 10.
     expect(ev.notes.join("\n")).toMatch(/petite finition nettoyée par le code/);
     // Le site en une seule image, la planche en 3072 × 4608.

@@ -553,7 +553,10 @@ export const phrasesDesPolicesRemplacees = (polices: NonNullable<EtatPlancheEnVr
 export const phrasesDesLogos = (v: { depuisLApercu: readonly VersionDuLogo[]; symboleComplet: boolean; enHd?: readonly VersionDuLogo[] }, refusesEnHd: readonly VersionDuLogo[] = []): string[] => {
   // Les versions refaites en haute définition et refusées deux fois : leur agrandissement reste, et c'est dit simplement ;
   // celles qui n'ont pas été tentées gardent la proposition de les refaire, prix annoncé avant.
-  const refusees = v.depuisLApercu.filter((x) => refusesEnHd.includes(x)), jamais = v.depuisLApercu.filter((x) => !refusesEnHd.includes(x));
+  // Seules les quatre petites versions se refont en haute définition (`VERSIONS_EN_HD`) : le logo horizontal, l'empilé, les
+  // monochromes ou l'inversé repris de l'aperçu (27 novembre 2026) ne sont jamais promis en haute définition.
+  const proposables = v.depuisLApercu.filter((x) => (VERSIONS_EN_HD as readonly string[]).includes(x));
+  const refusees = proposables.filter((x) => refusesEnHd.includes(x)), jamais = proposables.filter((x) => !refusesEnHd.includes(x));
   const out = [...(jamais.length ? [phraseDesLogosDeLApercu(jamais)] : []), ...(refusees.length ? [phraseDesLogosEnHdRefuses(refusees)] : [])];
   return out.length ? out : v.symboleComplet && !v.enHd?.length ? [phraseDuSymboleComplet()] : [];
 };

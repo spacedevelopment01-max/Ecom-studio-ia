@@ -608,12 +608,24 @@ export async function versionsDuLogo(o: {
   // LE LOGO HORIZONTAL QUE LE CODE NE SAIT PAS COMPOSER (27 novembre 2026, essai réel de Mouture : « Le logo horizontal est
   // identique au principal. Sur l'aperçu, c'est le symbole à gauche et le nom à droite. ») : sans symbole séparable ni phrase
   // séparable, il est repris de sa tuile de l'aperçu, comme le compact ; sans tuile, la règle d'avant (le logo complet).
-  const horizontalDeLApercu = async (): Promise<Buffer> => {
-    const t = o.tuiles?.get(tuileDeLaVersion("logo-horizontal"));
-    if (!t) return logo;
-    depuisLApercu.push("logo-horizontal");
+  //
+  // LE LOGO EMPILÉ AUSSI (27 novembre 2026, décision du chef d'orchestre : « Quand la version faite par le code est identique
+  // au logo principal ou illisible, on reprend celle de l'aperçu », pour tout client) : une version de mise en page (horizontal,
+  // empilé) que le code rend identique au logo principal, ou illisible (logo à aplats, même taille que le principal, contraste
+  // des lettres sous CONTRASTE_MIN_DES_LETTRES), est reprise de sa tuile de l'aperçu ; sans tuile, la version du code reste.
+  const sinonDeLApercu = async (v: VersionDuLogo, png: Buffer): Promise<Buffer> => {
+    const t = o.tuiles?.get(tuileDeLaVersion(v));
+    if (!t) return png;
+    let illisible = false;
+    if (!png.equals(logo)) {
+      const a = await logoAAplats(logo), m = await sharp(png).metadata(), l = await sharp(logo).metadata();
+      illisible = !!a && m.width === l.width && m.height === l.height && (await contrasteDesLettres(logo, png, "#FFFFFF", a.seuil)) < CONTRASTE_MIN_DES_LETTRES;
+      if (!illisible) return png;
+    }
+    depuisLApercu.push(v);
     return versionDepuisLApercu(t);
   };
+  const horizontalDeLApercu = () => sinonDeLApercu("logo-horizontal", logo);
   // LES MONOCHROMES ET L'INVERSÉ D'UN LOGO À APLATS (`logoAAplats`) : un seul ton aux creux, le nom lisible ; mesuré
   // (`contrasteDesLettres`), et repris de la tuile de l'aperçu s'il ne l'est pas. Un logo d'un seul ton garde sa silhouette teinte.
   const aplats = await logoAAplats(logo);
@@ -632,7 +644,7 @@ export async function versionsDuLogo(o: {
   const versions: Record<VersionDuLogo, Buffer> = {
     "logo-principal": logo,
     "logo-horizontal": sep && nom ? (sep.sens === "gauche" ? logo : await horizontal(symbole, nom)) : phrase ? await marqueEtPhrase(phrase.marque, phrase.phrase) : await horizontalDeLApercu(),
-    "logo-empile": sep && nom ? await empile(symbole, nom, 0.14) : logo,
+    "logo-empile": await sinonDeLApercu("logo-empile", sep && nom ? await empile(symbole, nom, 0.14) : logo),
     "logo-compact": await apercu("logo-compact", async () => symbole),
     icone: await apercu("icone", async () => carre(await teinte(symbole, blanc), o.sombre, 0.18, 0.2)),
     favicon: await apercu("favicon", async () => carre(await teinte(symbole, blanc), o.sombre, 0.22, 0.16)),

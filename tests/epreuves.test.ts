@@ -7,7 +7,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
-import { EPREUVES, type Epreuve } from "./epreuves/catalogue";
+import { ACCORD_A_COMPLETER, EPREUVES, type Epreuve } from "./epreuves/catalogue";
 import { route } from "./sina-routes-fixtures";
 
 process.env.STUDIO_SYNA_AGENT = "1";
@@ -34,7 +34,7 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
   });
   it("une épreuve remplacée par une décision datée garde son sceau à jamais et ne se rescelle pas", () => {
     const remplacees = EPREUVES.filter((e) => e.remplaceePar);
-    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule", "planches-de-recherche-demande-exacte", "relecteur-du-logo-fini", "finalisation-ecrite-par-le-plus-fort", "relecteur-sans-refus-pour-trop-proche", "logo-refait-une-fois-avec-ses-raisons", "relecteur-juge-l-execution-pas-l-idee", "planche-refusee-deux-fois-jamais-montree", "vrai-produit-du-client-joint", "relecteur-petites-finitions-sans-refus", "planche-phrase-par-lignes-et-reprise-qui-part-toujours", "relecteur-de-planche-texte-lisible-et-promesses-mesurables", "planche-reprend-la-phrase-du-logo", "planche-en-vrai-a-l-identique", "planche-en-vrai-symbole-seul-et-bandeau-sans-marges", "planche-en-vrai-palette-mesuree-et-logos-en-hd", "accord-des-noms-compte-la-verification"].sort());
+    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule", "planches-de-recherche-demande-exacte", "relecteur-du-logo-fini", "finalisation-ecrite-par-le-plus-fort", "relecteur-sans-refus-pour-trop-proche", "logo-refait-une-fois-avec-ses-raisons", "relecteur-juge-l-execution-pas-l-idee", "planche-refusee-deux-fois-jamais-montree", "vrai-produit-du-client-joint", "relecteur-petites-finitions-sans-refus", "planche-phrase-par-lignes-et-reprise-qui-part-toujours", "relecteur-de-planche-texte-lisible-et-promesses-mesurables", "planche-reprend-la-phrase-du-logo", "planche-en-vrai-a-l-identique", "planche-en-vrai-symbole-seul-et-bandeau-sans-marges", "planche-en-vrai-palette-mesuree-et-logos-en-hd", "accord-des-noms-compte-la-verification", "planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu", "planche-en-vrai-identique-a-l-apercu"].sort());
     for (const e of remplacees) {
       const r = e.remplaceePar!;
       // Le sceau ne change pas : celui du catalogue, celui de sceaux.json et celui figé au jour du remplacement.
@@ -49,10 +49,13 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
       expect(par && SCEAUX[par.id], `${e.id} → ${r.epreuve}`).toBeTruthy();
       while (par?.remplaceePar) { expect(vus.has(par.id), `boucle : ${par.id}`).toBe(false); vus.add(par.id); par = EPREUVES.find((x) => x.id === par!.remplaceePar!.epreuve); }
       expect(par && SCEAUX[par.id] && par.rejeu === "gratuit", `${e.id} → ${par?.id}`).toBeTruthy();
-      expect(["23 novembre 2026", "24 novembre 2026", "25 novembre 2026", "26 novembre 2026"]).toContain(r.decision);
-      expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin|Oui, marque planches-de-recherche-demande-exacte|Oui, marque finalisation-ecrite-par-le-plus-fort|Oui, marque relecteur-sans-refus-pour-trop-proche|Oui, marque logo-refait-une-fois-avec-ses-raisons|Oui, marque vrai-produit-du-client-joint|Oui, marque relecteur-petites-finitions-sans-refus|Oui, marque relecteur-de-planche-texte-lisible-et-promesses-mesurables|Oui, marque planche-phrase-par-lignes-et-reprise-qui-part-toujours|Oui, marque planche-en-vrai-a-l-identique|Oui, marque planche-en-vrai-palette-mesuree-et-logos-en-hd)/);
-      // Les accords écrits du 24 et du 25 novembre 2026 nomment chaque épreuve qu'il remplace, et celle qui la remplace.
-      if (r.decision === "24 novembre 2026" || r.decision === "25 novembre 2026" || r.decision === "26 novembre 2026") { expect(r.mots, e.id).toContain(e.id); expect(r.mots, r.epreuve).toContain(r.epreuve); }
+      expect(["23 novembre 2026", "24 novembre 2026", "25 novembre 2026", "26 novembre 2026", "27 novembre 2026"]).toContain(r.decision);
+      // L'accord écrit encore à recevoir (« [À compléter : …] ») ne vaut que pour les deux épreuves contredites par les
+      // corrections de l'essai réel de Mouture, étape 5 (27 novembre 2026) ; à son arrivée, il remplace ce manque.
+      if (r.mots === ACCORD_A_COMPLETER) { expect(["planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu", "planche-en-vrai-identique-a-l-apercu"]).toContain(e.id); expect(r.epreuve).toBe("planche-en-vrai-pas-identique-a-l-apercu-mouture"); expect(r.decision).toBe("27 novembre 2026"); continue; }
+      expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin|Oui, marque planches-de-recherche-demande-exacte|Oui, marque finalisation-ecrite-par-le-plus-fort|Oui, marque relecteur-sans-refus-pour-trop-proche|Oui, marque logo-refait-une-fois-avec-ses-raisons|Oui, marque vrai-produit-du-client-joint|Oui, marque relecteur-petites-finitions-sans-refus|Oui, marque relecteur-de-planche-texte-lisible-et-promesses-mesurables|Oui, marque planche-phrase-par-lignes-et-reprise-qui-part-toujours|Oui, marque planche-en-vrai-a-l-identique|Oui, marque planche-en-vrai-palette-mesuree-et-logos-en-hd|Oui, marque planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu)/);
+      // Les accords écrits du 24 au 27 novembre 2026 nomment chaque épreuve qu'il remplace, et celle qui la remplace.
+      if (r.decision === "24 novembre 2026" || r.decision === "25 novembre 2026" || r.decision === "26 novembre 2026" || r.decision === "27 novembre 2026") { expect(r.mots, e.id).toContain(e.id); expect(r.mots, r.epreuve).toContain(r.epreuve); }
     }
   });
   it("chaque épreuve gratuite est rejouée ci-dessous", () => {
@@ -60,6 +63,9 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
     for (const e of EPREUVES.filter((x) => x.rejeu === "gratuit")) expect(src.includes(`epreuve("${e.id}"`), e.id).toBe(true);
   });
 });
+
+/** Les rejeux d'une épreuve remplacée que l'épreuve qui la remplace rejoue (remplis à la lecture des blocs, avant les tests). */
+const rejeuxPartages: { finitionsEtPolice?: (o: { policeNommeeRemplacee: boolean }) => Promise<void>; identiqueALApercu?: (o: { empileDuCode: boolean }) => Promise<void> } = {};
 
 /** Une épreuve gratuite : son verdict en titre. Une épreuve remplacée reste au catalogue, mais n'est plus rejouée. */
 const epreuve = (id: string, fn: () => Promise<void> | void) => {
@@ -1882,7 +1888,12 @@ describe("les épreuves de la planche en vrai (25 novembre 2026, aucun appel)", 
     expect(V.phraseDeLaPublicationIncomprehensible(1)).toMatch(/je ne la mets pas à ton calendrier/);
   };
   epreuve("planche-en-vrai-symbole-seul-et-bandeau-sans-marges", rejeuSymboleSeulEtBandeau);
-  epreuve("planche-en-vrai-identique-a-l-apercu", async () => {
+  /**
+   * Le rejeu de planche-en-vrai-identique-a-l-apercu, partagé : remplacée le 27 novembre 2026, elle n'est plus rejouée seule ;
+   * planche-en-vrai-pas-identique-a-l-apercu-mouture le rejoue en entier, sauf la règle remplacée (`empileDuCode` faux : le logo empilé identique au
+   * principal est repris de l'aperçu).
+   */
+  const rejeuIdentiqueALApercu = async (o: { empileDuCode: boolean }) => {
     // Tout ce que demandaient les deux épreuves remplacées reste rejoué.
     await rejeuEnVraiALIdentique();
     await rejeuSymboleSeulEtBandeau();
@@ -1929,7 +1940,8 @@ describe("les épreuves de la planche en vrai (25 novembre 2026, aucun appel)", 
     expect(sep.fiable).toBe(false);
     const d = await V.decouperLesApercus(demo, "standard");
     const v = await C.versionsDuLogo({ logo, separation: sep, couleur: "#C44912", sombre: "#C44912", clair: "#F6E8DA", monoClair: "#A7B89B", nom: "Écume", bas: "SAVONNERIE ARTISANALE", police: T.POLICE_DU_BADGE, tuiles: d.apercus });
-    expect([...v.depuisLApercu].sort()).toEqual(["badge", "favicon", "icone", "logo-compact"]);
+    // La règle remplacée le 27 novembre 2026 : le logo empilé identique au principal est désormais repris de l'aperçu.
+    expect([...v.depuisLApercu].sort()).toEqual(o.empileDuCode ? ["badge", "favicon", "icone", "logo-compact"] : ["badge", "favicon", "icone", "logo-compact", "logo-empile"]);
     expect(await C.separerLaPhrase(logo)).not.toBeNull();
     // 6. La zone d'une case et l'heure du téléphone, sur les verdicts réels.
     expect(d.boites.get("publication-4x5")![1]).toBeGreaterThan(V.bandesDesTitres("standard").get("titre-07")![3]);
@@ -1961,7 +1973,9 @@ describe("les épreuves de la planche en vrai (25 novembre 2026, aucun appel)", 
     expect([(await sharp(await C.rognerAuContenu(cadre, 6)).metadata()).width, (await sharp(await C.rognerAuContenu(cadre, 6)).metadata()).height]).toEqual([162, 132]);
     expect(fs.readFileSync("src/components/studio/tab-marque.tsx", "utf8")).toContain('className="columns-2 gap-3 md:columns-3 lg:columns-4" data-brand-envrai-images');
     expect(T.devisDesLogosEnHd().maxMicro).toBeGreaterThan(0);
-  });
+  };
+  rejeuxPartages.identiqueALApercu = rejeuIdentiqueALApercu;
+  epreuve("planche-en-vrai-identique-a-l-apercu", () => rejeuIdentiqueALApercu({ empileDuCode: true }));
 });
 
 describe("les épreuves du texte sous le nom sur plusieurs lignes (essai d'Écume)", async () => {
@@ -2080,7 +2094,11 @@ describe("l'épreuve de la planche en vrai identique en visuel (essai d'Écume, 
   const { runWithLang } = await import("@/lib/i18n-server");
   const F2 = "tests/fixtures/ecume-planches-2";
 
-  epreuve("planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu", async () => {
+  /**
+   * Le rejeu de planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu, partagé : remplacée le 27 novembre 2026, elle n'est plus rejouée seule ;
+   * planche-en-vrai-pas-identique-a-l-apercu-mouture le rejoue en entier, sauf la règle remplacée (`policeNommeeRemplacee` faux).
+   */
+  const rejeuFinitionsEtPolice = async (o: { policeNommeeRemplacee: boolean }) => {
     // 1. La finition de A-2, notée au verdict réel, voyage avec la planche gardée.
     const texte = fs.readFileSync(`${F2}/planche-A-2-texte-envoye.txt`, "utf8");
     const v = PM.VerdictRangeDeLaPlancheSchema.parse(JSON.parse(fs.readFileSync(`${F2}/planche-A-2-relecture-verdict.json`, "utf8")).verdict);
@@ -2122,11 +2140,15 @@ describe("l'épreuve de la planche en vrai identique en visuel (essai d'Écume, 
     // Retenu s'il est au catalogue et dans le genre lu ; sinon la règle d'avant.
     expect(C.policeDuCatalogue({ nom: "Nunito", genre: "manuscrite", procheDuCatalogue: "Caveat" }, 400)).toMatchObject({ famille: "Caveat", remplacee: true, pourquoi: "genre" });
     for (const x of ["Brush Script MT", "Inter", "Nunito"]) expect(C.policeDuCatalogue({ nom: "Nunito", genre: "manuscrite", procheDuCatalogue: x }, 400).famille, x).toBe("Dancing Script");
-    expect(C.policeDuCatalogue({ nom: "Montserrat", genre: "sans", procheDuCatalogue: "Poppins" }, 400)).toMatchObject({ famille: "Poppins", remplacee: true, pourquoi: "apercu" });
+    // La règle remplacée le 27 novembre 2026 : la police nommée, au catalogue et de genre compatible, l'emporte désormais.
+    if (o.policeNommeeRemplacee) expect(C.policeDuCatalogue({ nom: "Montserrat", genre: "sans", procheDuCatalogue: "Poppins" }, 400)).toMatchObject({ famille: "Poppins", remplacee: true, pourquoi: "apercu" });
+    else expect(C.policeDuCatalogue({ nom: "Montserrat", genre: "sans", procheDuCatalogue: "Poppins" }, 400)).toMatchObject({ famille: "Montserrat", remplacee: false });
     expect(C.policeDuCatalogue({ nom: "Montserrat", genre: "sans", procheDuCatalogue: "Montserrat" }, 400)).toMatchObject({ famille: "Montserrat", remplacee: false });
     // Le devis de l'inventaire compte la liste.
     expect(T.APPELS_EN_VRAI.inventaire.input).toBe(32_000 + Math.ceil(Buffer.byteLength(liste) / 3));
-  });
+  };
+  rejeuxPartages.finitionsEtPolice = rejeuFinitionsEtPolice;
+  epreuve("planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu", () => rejeuFinitionsEtPolice({ policeNommeeRemplacee: true }));
 });
 
 describe("l'épreuve du spécimen mesuré et de l'écran qui suit le réassemblage (essai d'Écume, 26 novembre 2026, aucun appel)", async () => {
@@ -2824,6 +2846,11 @@ describe("l'épreuve de la planche en vrai de Mouture identique à l'aperçu A (
   const routeMouture = { key: "A", name: "Mouture", slogan: "TORRÉFACTION ARTISANALE", palette: { dark: "#2B140E" }, board: { planche: { domaine: "mouturefrance.fr", statut: "disponible", annee: 2026 } } } as unknown as import("@/lib/syna-agent/brand-routes").Route;
   const lum = (r: number, g: number, b: number) => 0.2126 * r + 0.7152 * g + 0.0722 * b;
   epreuve("planche-en-vrai-pas-identique-a-l-apercu-mouture", async () => {
+    // Tout ce que demandaient les deux épreuves remplacées, sauf la police nommée au catalogue de genre compatible et le
+    // logo empilé identique au principal.
+    expect(rejeuxPartages.finitionsEtPolice && rejeuxPartages.identiqueALApercu).toBeTruthy();
+    await rejeuxPartages.finitionsEtPolice!({ policeNommeeRemplacee: false });
+    await rejeuxPartages.identiqueALApercu!({ empileDuCode: false });
     const demo = await sharp(`${F}/apercu-planche-A-gardee.jpg`).resize(P.TAILLE_DEMO.w, P.TAILLE_DEMO.h, { fit: "fill" }).png().toBuffer();
     const d = await P.decouperLesApercus(demo, "standard");
     const det = await logoDetoure(fs.readFileSync(`${F}/logo-joint.png`)), logo = det.ok ? det.png : fs.readFileSync(`${F}/logo-joint.png`);
@@ -2836,7 +2863,9 @@ describe("l'épreuve de la planche en vrai de Mouture identique à l'aperçu A (
     expect(await C.contrasteDesLettres(ref, v.versions["monochrome-clair"], "#222222", a.seuil)).toBeGreaterThanOrEqual(C.CONTRASTE_MIN_DES_LETTRES);
     expect(await C.contrasteDesLettres(logo, await C.monochromeAuxCreux(logo, "#FFFFFF", a.seuil, "claires"), "#2E1A12", a.seuil)).toBeGreaterThanOrEqual(C.CONTRASTE_MIN_DES_LETTRES);
     expect(v.depuisLApercu).toContain("logo-horizontal");
+    expect(v.depuisLApercu).toContain("logo-empile");
     expect(v.versions["logo-horizontal"].equals(ref)).toBe(false);
+    expect(v.versions["logo-empile"].equals(ref)).toBe(false);
     const tu = await C.tuilesDuBloc01({ demo, boites: d.boites, versions: v.versions, depuisLApercu: v.depuisLApercu });
     for (const x of ["logo-horizontal", "monochrome-fonce", "monochrome-clair", "inverse"] as const) expect(tu.tuilesDeLApercu, x).toContain(x);
     // 3. Les polices : Montserrat en titres (à gauche), jamais remplacée ; Playfair Display en textes.
