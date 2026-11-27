@@ -1,0 +1,26 @@
+{
+  "images": [
+    {
+      "case": "produit-2",
+      "identique": true,
+      "textesLus": [
+        "MOUTURE",
+        "TORRÉFACTION ARTISANALE",
+        "CAFÉ MOULU"
+      ],
+      "logoPresent": true,
+      "personne": false,
+      "logoFonceSurFondSombre": false,
+      "produitFidele": null,
+      "texteCoupe": false,
+      "coupeCommeSurLApercu": null,
+      "note": 9,
+      "pourquoi": "L'image refaite reprend fidèlement l'aperçu : même sachet kraft, même logo hexagonal, même étiquette « CAFÉ MOULU » et même tas de café moulu sur bois. Les petits textes de l'étiquette restent des traits illisibles et aucune personne n'est visible.",
+      "inventes": [],
+      "aussiSurLApercu": [
+        "MOUTURE",
+        "CAFÉ MOULU"
+      ]
+    }
+  ]
+}

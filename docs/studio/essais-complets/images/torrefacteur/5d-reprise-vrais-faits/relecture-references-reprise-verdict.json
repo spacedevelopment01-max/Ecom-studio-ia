@@ -1,0 +1,57 @@
+{
+  "images": [
+    {
+      "case": "reference-4",
+      "identique": true,
+      "textesLus": [
+        "MOUTURE",
+        "TORRÉFACTION ARTISANALE",
+        "CAFÉ EN GRAINS",
+        "MOUTURE",
+        "TORRÉFACTION ARTISANALE",
+        "CAFÉ MOULUS",
+        "MOUTURE",
+        "TORRÉFACTION ARTISANALE",
+        "CAFÉ EN GRAINS",
+        "MOUTURE",
+        "TORRÉFACTION ARTISANALE",
+        "COFFRETS"
+      ],
+      "logoPresent": true,
+      "personne": false,
+      "logoFonceSurFondSombre": false,
+      "produitFidele": null,
+      "texteCoupe": true,
+      "coupeCommeSurLApercu": true,
+      "note": 8,
+      "pourquoi": "Même étagère, mêmes sachets kraft avec le logo Mouture et la même lumière chaude ; les étiquettes reprennent les produits de la marque. Le sachet de droite est coupé par le bord comme sur l'aperçu.",
+      "inventes": [],
+      "aussiSurLApercu": [
+        "MOUTURE",
+        "CAFÉ EN GRAINS"
+      ]
+    },
+    {
+      "case": "reference-5",
+      "identique": true,
+      "textesLus": [
+        "Cafés"
+      ],
+      "logoPresent": false,
+      "personne": false,
+      "logoFonceSurFondSombre": false,
+      "produitFidele": null,
+      "texteCoupe": false,
+      "coupeCommeSurLApercu": null,
+      "note": 7,
+      "pourquoi": "Le moulin, les grains, le café moulu et le fond flou sont fidèles à l'aperçu. Mais la plaque ovale, illisible sur l'aperçu, porte désormais le mot lisible « Cafés ».",
+      "inventes": [
+        {
+          "ou": "plaque ovale sur le moulin",
+          "texte": "Cafés"
+        }
+      ],
+      "aussiSurLApercu": []
+    }
+  ]
+}
