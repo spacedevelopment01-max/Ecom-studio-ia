@@ -1,0 +1,61 @@
+{
+  "images": [
+    {
+      "case": "reference-4",
+      "identique": true,
+      "textesLus": [
+        "MOUTURE",
+        "TORRÉFACTION ARTISANALE",
+        "CAFÉ EN GRAINS",
+        "100% ARABICA",
+        "TORRÉFIÉ EN FRANCE",
+        "MOU",
+        "CAFÉ E",
+        "100%",
+        "TORRÉF"
+      ],
+      "logoPresent": true,
+      "personne": false,
+      "logoFonceSurFondSombre": false,
+      "produitFidele": null,
+      "texteCoupe": true,
+      "note": 8,
+      "pourquoi": "La composition, les sachets kraft, l'étagère en bois et les logos hexagonaux reprennent fidèlement l'aperçu. Le sachet de droite est coupé par le bord de l'image, ce qui tronque son logo et son étiquette, comme sur l'aperçu. Les mentions « 100% ARABICA » et « TORRÉFIÉ EN FRANCE » ne sont pas lisibles sur l'aperçu.",
+      "inventes": [
+        {
+          "ou": "étiquette des sachets",
+          "texte": "100% ARABICA"
+        },
+        {
+          "ou": "étiquette des sachets",
+          "texte": "TORRÉFIÉ EN FRANCE"
+        }
+      ],
+      "aussiSurLApercu": [
+        "MOUTURE",
+        "CAFÉ EN GRAINS"
+      ]
+    },
+    {
+      "case": "reference-5",
+      "identique": true,
+      "textesLus": [
+        "Café de Paris"
+      ],
+      "logoPresent": false,
+      "personne": false,
+      "logoFonceSurFondSombre": false,
+      "produitFidele": null,
+      "texteCoupe": false,
+      "note": 7,
+      "pourquoi": "Le moulin, les grains, la mouture et l'ambiance reprennent fidèlement l'aperçu, avec une image nette. En revanche, la plaque porte « Café de Paris », un nom inventé qui ne se lit pas sur l'aperçu et qui ne correspond pas à la marque Mouture.",
+      "inventes": [
+        {
+          "ou": "plaque du moulin",
+          "texte": "Café de Paris"
+        }
+      ],
+      "aussiSurLApercu": []
+    }
+  ]
+}

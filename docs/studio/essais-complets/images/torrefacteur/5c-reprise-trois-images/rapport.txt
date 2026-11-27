@@ -1,0 +1,59 @@
+Réassemblage de la planche en vrai de « Mouture » à partir de l'essai /home/user/Ecom-studio-ia/data/essai-torrefacteur/5-planche-en-vrai (aucun appel pour a) et b))
+Images gardées : 13 sur 17
+  publication-1x1 : GARDÉE (essai 1)
+    essai 1 (note 9) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE ») → aujourd'hui gardée
+  publication-4x5 : GARDÉE (essai 2)
+    essai 1 (note 8) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Une », « torréfaction », « de », « caractère », « ÉQUILIBRE », « & », « INTENSITÉ ») → aujourd'hui ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Une », « ÉQUILIBRE », « & », « INTENSITÉ »)
+    essai 2 (note 9) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Saveurs », « intenses ») → aujourd'hui gardée
+  publication-9x16 : GARDÉE (essai 1) — aperçu de l'essai dans la bande d'un titre
+    essai 1 (note 9) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE ») → aujourd'hui gardée
+  ouverture-site : GARDÉE (essai 1)
+    essai 1 (note 9) : avant gardée → aujourd'hui gardée
+  ouverture-planche : GARDÉE (essai 1)
+    essai 1 (note 9) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « à ») → aujourd'hui gardée
+  site-ordinateur : GARDÉE (essai 1)
+    essai 1 (note 9) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE ») → aujourd'hui gardée
+  site-telephone : l'aperçu garde sa case
+    essai 1 (note 7) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « MOUTURE », « TORRÉFACTION », « ARTISANALE », « MOUTURE », « TORRÉFACTION », « ARTISANALE ») ; un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (7/10, il faut 8) → aujourd'hui un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (7/10, il faut 8)
+    essai 2 (note 7) : avant elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « Une », « boutiq », « toujours », « avec », « vous ») (en trop ou mal écrits : « Cafés », « en », « grains », « Cafés », « moulus », « Coffrets ») ; sa fidélité n'est pas au niveau (7/10, il faut 8) → aujourd'hui elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « Une », « boutiq », « toujours », « avec », « vous ») ; sa fidélité n'est pas au niveau (7/10, il faut 8)
+  produit-1 : GARDÉE (essai 2)
+    essai 1 (note 8.5) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « L'EXCELLENCE », « ARABICA », « SÉLECTIONNÉ », « AVEC », « PASSION », « TORRÉFIÉ ») → aujourd'hui faits ou produits inventés, absents de l'aperçu et de la fiche du client : « CLASSÉ | 500 g | 100% ARABICA » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « L'EXCELLENCE », « SÉLECTIONNÉ », « AVEC », « PASSION », « TORRÉFIÉ », « PETITES », « QUANTITÉS »)
+    essai 2 (note 9) : avant gardée → aujourd'hui gardée
+  produit-2 : l'aperçu garde sa case
+    essai 1 (note 9) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « ÉQUILIBRÉ », « DES », « ARÔMES », « RICHES », « ET », « GÉNÉREUX ») → aujourd'hui ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « ÉQUILIBRÉ », « DES », « ARÔMES », « RICHES », « ET », « GÉNÉREUX », « POUR », « UN »)
+    essai 2 (note 7) : avant faits ou produits inventés, absents de l'aperçu et de la fiche du client : « EXCELLENCE » ; sa fidélité n'est pas au niveau (7/10, il faut 8) → aujourd'hui faits ou produits inventés, absents de l'aperçu et de la fiche du client : « EXCELLENCE » ; sa fidélité n'est pas au niveau (7/10, il faut 8)
+  produit-3 : GARDÉE (essai 2)
+    essai 1 (note 6) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « L'ARABY », « DE », « PÉROU », « 100% », « ARABICA », « NOTES ») ; sa fidélité n'est pas au niveau (6/10, il faut 8) → aujourd'hui faits ou produits inventés, absents de l'aperçu et de la fiche du client : « L'ARABY DE PÉROU », « 100% ARABICA » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « NOTES », « CHOCOLATÉES », « ET », « FRUITÉES », « L'ARABICA », « SIGNATURE ») ; sa fidélité n'est pas au niveau (6/10, il faut 8)
+    essai 2 (note 9) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « CAFÉS », « EN », « GRAINS », « CAFÉS », « MOULUS ») → aujourd'hui gardée
+  emballage : GARDÉE (essai 2)
+    essai 1 (note 6) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « L'Instart », « franc », « - », « MÉLANGE », « Notes », « de », « chocolat », « noir ») ; un logo foncé est posé sur un fond sombre : il doit y être clair ; sa fidélité n'est pas au niveau (6/10, il faut 8) → aujourd'hui faits ou produits inventés, absents de l'aperçu et de la fiche du client : « Grains | 250 g » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « L'Instart », « franc », « - », « MÉLANGE », « Notes », « de », « chocolat », « noir ») ; un logo foncé est posé sur un fond sombre : il doit y être clair ; sa fidélité n'est pas au niveau (6/10, il faut 8)
+    essai 2 (note 9) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Cafés », « moulus ») → aujourd'hui gardée
+  reference-1 : GARDÉE (essai 1)
+    essai 1 (note 8) : avant gardée → aujourd'hui gardée
+  reference-2 : GARDÉE (essai 1)
+    essai 1 (note 9) : avant gardée → aujourd'hui gardée
+  reference-3 : GARDÉE (essai 1)
+    essai 1 (note 9) : avant gardée → aujourd'hui gardée
+  reference-4 : l'aperçu garde sa case
+    essai 1 (note 6) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « EN », « EN », « GRAINS », « GRAINS ») (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « ERRANO », « 100% », « ARABICA », « CHOCOLAT », « - », « NOISETTE ») ; un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (6/10, il faut 8) → aujourd'hui faits ou produits inventés, absents de l'aperçu et de la fiche du client : « 100% ARABICA », « 250G e », « 100% ARAI », « 250 » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « EN », « EN », « GRAINS », « GRAINS ») (en trop ou mal écrits : « ERRANO », « CHOCOLAT », « - », « NOISETTE », « DE », « CERROAZUL », « AGRUMES », « - ») ; un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (6/10, il faut 8)
+    essai 2 (note 8) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « CAFÉ », « CAFÉ », « GRAINS ») (en trop ou mal écrits : « COFFRETS », « CAFÉS », « MOULUS », « CAFÉS », « CAFÉS ») ; un texte est coupé ou collé au bord → aujourd'hui ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « CAFÉ ») ; un texte est coupé ou collé au bord
+  reference-5 : l'aperçu garde sa case
+    essai 1 (note 8) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « CAFÉ », « DEPUIS », « 1928 ») → aujourd'hui faits ou produits inventés, absents de l'aperçu et de la fiche du client : « DEPUIS 1928 »
+    essai 2 (note 8) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Café », « de », « Qualité ») → aujourd'hui ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Café », « de », « Qualité »)
+  reference-6 : GARDÉE (essai 2)
+    essai 1 (note 9) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « L'ARABICA », « PUR », « BRÉSIL », « ARÔMES », « DOUX », « ET ») → aujourd'hui faits ou produits inventés, absents de l'aperçu et de la fiche du client : « L'ARABICA PUR BRÉSIL », « TORRÉFIÉ EN FRANCE », « 250 G », « LE MOKA ÉTHIOPIE - BIO » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « ARÔMES », « DOUX », « ET », « ÉQUILIBRÉS », « NOTES », « FRUITÉES », « ET », « FLORALES »)
+    essai 2 (note 9) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Cafés », « en », « grains », « Cafés », « moulus ») → aujourd'hui gardée
+Logos repris de l'aperçu : logo-horizontal, logo-empile ; séparation du symbole non fiable (aucune séparation nette entre un symbole et le nom)
+Palette : #2E1A12 Brun café ; #A86B3A Cuivre ; #C89B6B Caramel ; #F6E9D7 Crème ; #7B8470 Sauge
+Reprise : produit-2, reference-4, reference-5 ; devis probable 0,3801 €, au plus 0,9080 € ; dépense comptée 0,2060 € ; gardées : aucune
+Logos en haute définition : logo-compact, icone, favicon, badge ; devis probable 0,3547 €, au plus 1,6080 € ; dépense comptée 0,0000 € ; gardées : logo-compact, icone, favicon, badge ; refusées deux fois (l'agrandissement de l'aperçu reste) : aucune ; posées sur la planche : favicon
+État et projet mis à jour : etat.json et essai.json (projet zfgqpwuieua1yq4c) ; l'onglet Marque montre la planche réassemblée et ses 13 images gardées
+  note : palette : #2E1A12 (écrit sur l'aperçu, mesuré #32180B, écart 2.9) ; #A86B3A (écrit sur l'aperçu, mesuré #A95D28, écart 5) ; #C89B6B (écrit sur l'aperçu, mesuré #C58D59, écart 4.6) ; #F6E9D7 (écrit sur l'aperçu, mesuré #F7E9D5, écart 0.7) ; #7B8470 (écrit sur l'aperçu, mesuré #7D7F68, écart 3.5)
+  note : haut de la planche : « D », « à », « le », « TO » sont des morceaux du titre du bandeau voisin ; ils ne sont pas réécrits
+  note : monochrome-fonce fait par le code : la planche garde l'aperçu agrandi (elle change visiblement la case (15.7 % des points)) ; la version du code sert aux fichiers à télécharger
+  note : monochrome-clair fait par le code : la planche garde l'aperçu agrandi (elle change visiblement la case (35.6 % des points)) ; la version du code sert aux fichiers à télécharger
+  note : inverse fait par le code : la planche garde l'aperçu agrandi (elle change visiblement la case (21.3 % des points)) ; la version du code sert aux fichiers à télécharger
+  note : logo-compact en haute définition : la planche garde l'aperçu agrandi (ses proportions changent la case (écart 9 %)) ; la haute définition sert aux fichiers à télécharger
+  note : icone en haute définition : la planche garde l'aperçu agrandi (ses proportions changent la case (écart 29 %)) ; la haute définition sert aux fichiers à télécharger
+  note : favicon en haute définition : posé sur la planche (0.7 % des points changés)
+  note : badge en haute définition : la planche garde l'aperçu agrandi (elle change visiblement la case (13.5 % des points)) ; la haute définition sert aux fichiers à télécharger
