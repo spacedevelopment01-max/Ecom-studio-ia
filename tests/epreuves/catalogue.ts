@@ -173,25 +173,16 @@ const SOURCE_EN_VRAI_ECUME_4 = "docs/studio/PLANCHE-EN-VRAI.md (partie « Identi
  * refaire, mais pour ses étiquettes). Elle est remplacée par planche-en-vrai-reprise-hd-petits-textes-logo-et-coupe, qui
  * la rejoue en entier, avec l'accord écrit du propriétaire, mot pour mot.
  */
-export const ACCORD_A_COMPLETER = "[À compléter : phrase d'accord écrite du propriétaire]";
 const REPRISE_HD_DES_TROIS_IMAGES = { decision: "27 novembre 2026", mots: "« Oui, marque planche-en-vrai-pas-identique-a-l-apercu-mouture comme remplacée par ma décision du 27 novembre, ajoute et scelle planche-en-vrai-reprise-hd-petits-textes-logo-et-coupe (les petits textes illisibles de l'aperçu restent des traits sans mot lisible ; le nom et la phrase du logo, exacts, ne sont jamais une faute, où que le logo soit posé ; une coupe au bord fidèle à l'aperçu ne fait jamais refuser ; les codes et les légendes de la palette sont nets, à l'encre pleine de l'aperçu), et mets à jour la partie Identité de CLAUDE.md. »" };
 /**
- * L'ACCORD ÉCRIT ENCORE À RECEVOIR (27 novembre 2026, les faits à montrer). La demande du propriétaire : « Et bien c'est le
- * but de poser des questions au client avant de démarrer le projet afin de savoir ce que peux être générer en image ce qui
- * peux être générer en texte sans que sa porte défaut ». Elle contredit deux épreuves scellées quand le client a donné ses
- * faits : planche-produits-de-la-fiche-seulement (« aucune origine, aucune variété n'y est nommée », tout autre nom fait
- * refuser) et planche-en-vrai-textes-du-logo-et-faits-inventes (« aucune date, aucune origine, aucun chiffre n'y est
- * ajouté », toute ligne absente de l'aperçu qui porte un chiffre ou une origine fait refuser). Elles sont marquées remplacées
- * par faits-a-montrer-demandes-avant-la-marque, qui les rejoue en entier sans fait donné ; la phrase d'accord écrite du
- * propriétaire, mot pour mot, n'est pas encore là : `ACCORD_A_COMPLETER` tient sa place. La phrase à lui faire écrire :
- * « Oui, marque planche-produits-de-la-fiche-seulement et planche-en-vrai-textes-du-logo-et-faits-inventes comme remplacées
- * par ma décision du 27 novembre, ajoute et scelle faits-a-montrer-demandes-avant-la-marque (avant la planche de marque,
- * SINA demande, une question à la fois, les faits que ses images et son site peuvent écrire : les noms exacts, puis ce que
- * son métier demande pour chacun, l'année et la ville ; ce que le client donne peut s'écrire sur les étiquettes et n'est
- * jamais pris pour une invention ; ce qu'il ne sait pas reste sans mot lisible ; ce qu'il ne veut pas montrer n'est jamais
- * écrit), et mets à jour la partie Ce que SINA doit être de CLAUDE.md. »
+ * LES FAITS À MONTRER (27 novembre 2026). La demande du propriétaire : « Et bien c'est le but de poser des questions au
+ * client avant de démarrer le projet afin de savoir ce que peux être générer en image ce qui peux être générer en texte
+ * sans que sa porte défaut ». Elle contredisait deux épreuves scellées quand le client a donné ses faits :
+ * planche-produits-de-la-fiche-seulement et planche-en-vrai-textes-du-logo-et-faits-inventes. Elles sont remplacées par
+ * faits-a-montrer-demandes-avant-la-marque, qui les rejoue en entier sans fait donné, avec l'accord écrit du propriétaire,
+ * mot pour mot.
  */
-const FAITS_A_MONTRER = { decision: "27 novembre 2026", mots: ACCORD_A_COMPLETER, epreuve: "faits-a-montrer-demandes-avant-la-marque" };
+const FAITS_A_MONTRER = { decision: "27 novembre 2026", mots: "« Oui, marque planche-produits-de-la-fiche-seulement et planche-en-vrai-textes-du-logo-et-faits-inventes comme remplacées par ma décision du 27 novembre, ajoute et scelle faits-a-montrer-demandes-avant-la-marque (avant la planche de marque, SINA demande, une question à la fois, les faits que ses images et son site peuvent écrire : les noms exacts, puis ce que son métier demande pour chacun, l'année et la ville ; ce que le client donne peut s'écrire sur les étiquettes et n'est jamais pris pour une invention ; ce qu'il ne sait pas reste sans mot lisible ; ce qu'il ne veut pas montrer n'est jamais écrit), et mets à jour la partie Ce que SINA doit être de CLAUDE.md. »", epreuve: "faits-a-montrer-demandes-avant-la-marque" };
 const MOTS_DES_FAITS_A_MONTRER = "« Et bien c'est le but de poser des questions au client avant de démarrer le projet afin de savoir ce que peux être générer en image ce qui peux être générer en texte sans que sa porte défaut »";
 const POLICE_NOMMEE_JAMAIS_REMPLACEE = { decision: "27 novembre 2026", mots: "« Oui, marque planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu et planche-en-vrai-identique-a-l-apercu comme remplacées par ma décision du 27 novembre, ajoute et scelle planche-en-vrai-pas-identique-a-l-apercu-mouture (une police nommée, au catalogue, de genre compatible avec le spécimen, n'est jamais remplacée ; les rôles des polices se lisent sur leur place dans l'aperçu ; une version du logo que le code rend identique au logo principal ou illisible, l'empilé comme l'horizontal, est reprise de l'aperçu, pour tout client), et mets à jour la partie Identité de CLAUDE.md. »" };
 const SOURCE_EN_VRAI_IDENTIQUE = "docs/studio/PLANCHE-EN-VRAI.md (partie « Identique en visuel : les finitions nettoyées et la police de l'aperçu (26 novembre 2026) » ; essai réel d'Écume, étape 3 reprise : docs/studio/essais-complets/images/ecume/3-planches-2, branche claude/essais-complets ; verdicts réels de A-2 et B-2 copiés tels quels dans tests/fixtures/ecume-planches-2 ; mots du chef d'orchestre)";

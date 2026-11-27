@@ -7,7 +7,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
-import { ACCORD_A_COMPLETER, EPREUVES, type Epreuve } from "./epreuves/catalogue";
+import { EPREUVES, type Epreuve } from "./epreuves/catalogue";
 import { route } from "./sina-routes-fixtures";
 
 process.env.STUDIO_SYNA_AGENT = "1";
@@ -50,14 +50,7 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
       while (par?.remplaceePar) { expect(vus.has(par.id), `boucle : ${par.id}`).toBe(false); vus.add(par.id); par = EPREUVES.find((x) => x.id === par!.remplaceePar!.epreuve); }
       expect(par && SCEAUX[par.id] && par.rejeu === "gratuit", `${e.id} → ${par?.id}`).toBeTruthy();
       expect(["23 novembre 2026", "24 novembre 2026", "25 novembre 2026", "26 novembre 2026", "27 novembre 2026"]).toContain(r.decision);
-      // L'accord écrit encore à recevoir (« [À compléter : …] ») ne vaut, depuis le 27 novembre 2026, que pour les deux épreuves contredites par les faits à montrer, remplacées par
-      // faits-a-montrer-demandes-avant-la-marque.
-      const ACCORDS_A_COMPLETER: Record<string, string> = {
-        "planche-produits-de-la-fiche-seulement": "faits-a-montrer-demandes-avant-la-marque",
-        "planche-en-vrai-textes-du-logo-et-faits-inventes": "faits-a-montrer-demandes-avant-la-marque",
-      };
-      if (r.mots === ACCORD_A_COMPLETER) { expect(Object.keys(ACCORDS_A_COMPLETER)).toContain(e.id); expect(r.epreuve).toBe(ACCORDS_A_COMPLETER[e.id]); expect(r.decision).toBe("27 novembre 2026"); continue; }
-      expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin|Oui, marque planches-de-recherche-demande-exacte|Oui, marque finalisation-ecrite-par-le-plus-fort|Oui, marque relecteur-sans-refus-pour-trop-proche|Oui, marque logo-refait-une-fois-avec-ses-raisons|Oui, marque vrai-produit-du-client-joint|Oui, marque relecteur-petites-finitions-sans-refus|Oui, marque relecteur-de-planche-texte-lisible-et-promesses-mesurables|Oui, marque planche-phrase-par-lignes-et-reprise-qui-part-toujours|Oui, marque planche-en-vrai-a-l-identique|Oui, marque planche-en-vrai-palette-mesuree-et-logos-en-hd|Oui, marque planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu|Oui, marque planche-en-vrai-pas-identique-a-l-apercu-mouture)/);
+      expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin|Oui, marque planches-de-recherche-demande-exacte|Oui, marque finalisation-ecrite-par-le-plus-fort|Oui, marque relecteur-sans-refus-pour-trop-proche|Oui, marque logo-refait-une-fois-avec-ses-raisons|Oui, marque vrai-produit-du-client-joint|Oui, marque relecteur-petites-finitions-sans-refus|Oui, marque relecteur-de-planche-texte-lisible-et-promesses-mesurables|Oui, marque planche-phrase-par-lignes-et-reprise-qui-part-toujours|Oui, marque planche-en-vrai-a-l-identique|Oui, marque planche-en-vrai-palette-mesuree-et-logos-en-hd|Oui, marque planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu|Oui, marque planche-en-vrai-pas-identique-a-l-apercu-mouture|Oui, marque planche-produits-de-la-fiche-seulement)/);
       // Les accords écrits du 24 au 27 novembre 2026 nomment chaque épreuve qu'il remplace, et celle qui la remplace.
       if (r.decision === "24 novembre 2026" || r.decision === "25 novembre 2026" || r.decision === "26 novembre 2026" || r.decision === "27 novembre 2026") { expect(r.mots, e.id).toContain(e.id); expect(r.mots, r.epreuve).toContain(r.epreuve); }
     }
