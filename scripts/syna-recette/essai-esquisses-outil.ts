@@ -313,7 +313,7 @@ export async function essaiDesEsquisses(o: { sortie: string; plafondEuros: strin
       });
     }
     if (cases.length) ecrireFichier("planche-contact-complete.png", await plancheContactComplete(cases));
-    ecrireFichier("esquisses.json", json({ nom: CLIENT.nom, metier, recherche: avant?.recherche ?? 1, compte: res.compte, gardees: res.gardees, ecartees: res.ecartees, reprise: res.reprise }));
+    ecrireFichier("esquisses.json", json({ nom: CLIENT.nom, metier, compte: res.compte, gardees: res.gardees, ecartees: res.ecartees, reprise: res.reprise, recherche: avant?.recherche ?? 1 }));
     lignes.push(...compteEnTexte(res.compte), "",
       `Esquisses gardées par le relecteur : ${res.gardees.length}${res.reprise ? " (remplacements compris, à la charge du Studio)" : ""} — ${r.contact ? "planche-contact.png" : "aucune planche-contact : moins de 12, rien ne serait montré au client"}`,
       ...res.gardees.map((g) => `Esquisse ${nn(g.numero)} : ${g.fichier} ; piste « ${g.piste} » ; phrase sous le nom : ${g.phrase ? `« ${g.phrase.texte} » (${g.phrase.ok ? "proposable telle quelle" : `jamais proposée telle quelle : ${(g.phrase.raisons ?? []).join(", ")}`})` : "aucune"}`),
