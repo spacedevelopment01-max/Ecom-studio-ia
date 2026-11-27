@@ -389,7 +389,14 @@ contre 3,7 pour 1) : posée entière, son titre est un peu plus petit et décal�
 bloc 01 garde, pour l'horizontal, l'empilé, les monochromes et l'inversé, l'aperçu agrandi (net à la taille de la planche,
 mais ce n'est pas la haute définition) ; le logo principal du bloc 01 est le vrai logo, un peu plus petit que celui de
 l'aperçu ; la flèche dessinée à la main entre le site sur ordinateur et le téléphone (bloc 08) n'est pas dans l'image
-refaite du site.
+refaite du site. Dans l'onglet Logos (les fichiers à télécharger) : le logo horizontal est la tuile de l'aperçu agrandie
+quatre fois, moins nette que les autres ; le **logo empilé reste le logo principal** (sur l'aperçu : la flamme, le nom, la
+phrase et le grain l'un sous l'autre) : le reprendre de l'aperçu comme l'horizontal changerait aussi Écume, dont l'épreuve
+scellée `planche-en-vrai-identique-a-l-apercu` attend exactement quatre versions reprises ; il faut l'accord écrit avant.
+Images à regarder : `5-planche-en-vrai-reassemblee/comparaison-apercu-et-reassemblee.jpg` et
+`5-planche-en-vrai-reassemblee/onglet-logos-avant-apres.jpg` (les dix fichiers, avant et après). L'écran a été refait par
+`ecran-planche-en-vrai.mts` (parcours écrit) ; les captures du Studio privé n'ont pas été refaites le 27 novembre : il faut
+une construction du site (`next build`), impossible ce jour-là, le disque du conteneur étant plein.
 
 ## Étape 6 — l'écran (gratuit)
 
