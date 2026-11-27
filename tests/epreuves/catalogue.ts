@@ -167,21 +167,13 @@ const SOURCE_EN_VRAI_ECUME_4 = "docs/studio/PLANCHE-EN-VRAI.md (partie « Identi
  * 2026, écrit dans la conversation de construction).
  */
 /**
- * L'ACCORD ÉCRIT ENCORE À RECEVOIR (27 novembre 2026, reprise des trois images de Mouture). Les corrections demandées par
- * le chef d'orchestre contredisent une épreuve scellée : planche-en-vrai-pas-identique-a-l-apercu-mouture dit que
- * reference-4 reste à refaire pour son « texte coupé » ; le relecteur avait écrit « coupées par le bord, comme dans
- * l'aperçu », et une coupe fidèle à l'aperçu ne fait désormais jamais refuser (reference-4 reste à refaire, mais pour ses
- * étiquettes). Elle est marquée remplacée par planche-en-vrai-reprise-hd-petits-textes-logo-et-coupe, qui la rejoue en
- * entier ; la phrase d'accord écrite du propriétaire, mot pour mot, n'est pas encore là : `ACCORD_A_COMPLETER` tient sa
- * place ; le banc n'accepte ce manque que pour cette épreuve, et la phrase d'accord le remplacera à son arrivée. La phrase
- * à lui faire écrire : « Oui, marque planche-en-vrai-pas-identique-a-l-apercu-mouture comme remplacée par ma décision du
- * 27 novembre, ajoute et scelle planche-en-vrai-reprise-hd-petits-textes-logo-et-coupe (les petits textes illisibles de
- * l'aperçu restent des traits sans mot lisible ; le nom et la phrase du logo, exacts, ne sont jamais une faute, où que le
- * logo soit posé ; une coupe au bord fidèle à l'aperçu ne fait jamais refuser ; les codes et les légendes de la palette
- * sont nets, à l'encre pleine de l'aperçu), et mets à jour la partie Identité de CLAUDE.md. »
+ * LA REPRISE DES TROIS IMAGES DE MOUTURE (27 novembre 2026). Les corrections demandées par le chef d'orchestre
+ * contredisaient une épreuve scellée : planche-en-vrai-pas-identique-a-l-apercu-mouture disait que reference-4 restait à
+ * refaire pour son « texte coupé » ; une coupe fidèle à l'aperçu ne fait désormais jamais refuser (reference-4 reste à
+ * refaire, mais pour ses étiquettes). Elle est remplacée par planche-en-vrai-reprise-hd-petits-textes-logo-et-coupe, qui
+ * la rejoue en entier, avec l'accord écrit du propriétaire, mot pour mot.
  */
-export const ACCORD_A_COMPLETER = "[À compléter : phrase d'accord écrite du propriétaire]";
-const REPRISE_HD_DES_TROIS_IMAGES = { decision: "27 novembre 2026", mots: ACCORD_A_COMPLETER };
+const REPRISE_HD_DES_TROIS_IMAGES = { decision: "27 novembre 2026", mots: "« Oui, marque planche-en-vrai-pas-identique-a-l-apercu-mouture comme remplacée par ma décision du 27 novembre, ajoute et scelle planche-en-vrai-reprise-hd-petits-textes-logo-et-coupe (les petits textes illisibles de l'aperçu restent des traits sans mot lisible ; le nom et la phrase du logo, exacts, ne sont jamais une faute, où que le logo soit posé ; une coupe au bord fidèle à l'aperçu ne fait jamais refuser ; les codes et les légendes de la palette sont nets, à l'encre pleine de l'aperçu), et mets à jour la partie Identité de CLAUDE.md. »" };
 const POLICE_NOMMEE_JAMAIS_REMPLACEE = { decision: "27 novembre 2026", mots: "« Oui, marque planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu et planche-en-vrai-identique-a-l-apercu comme remplacées par ma décision du 27 novembre, ajoute et scelle planche-en-vrai-pas-identique-a-l-apercu-mouture (une police nommée, au catalogue, de genre compatible avec le spécimen, n'est jamais remplacée ; les rôles des polices se lisent sur leur place dans l'aperçu ; une version du logo que le code rend identique au logo principal ou illisible, l'empilé comme l'horizontal, est reprise de l'aperçu, pour tout client), et mets à jour la partie Identité de CLAUDE.md. »" };
 const SOURCE_EN_VRAI_IDENTIQUE = "docs/studio/PLANCHE-EN-VRAI.md (partie « Identique en visuel : les finitions nettoyées et la police de l'aperçu (26 novembre 2026) » ; essai réel d'Écume, étape 3 reprise : docs/studio/essais-complets/images/ecume/3-planches-2, branche claude/essais-complets ; verdicts réels de A-2 et B-2 copiés tels quels dans tests/fixtures/ecume-planches-2 ; mots du chef d'orchestre)";
 const SOURCE_SIGNE_PARASITE = "docs/studio/ESSAI-ECUME.md (essai réel d'Écume du 26 novembre 2026, étape 3 reprise, 0,67 € : docs/studio/essais-complets/images/ecume/3-planches-2, branche claude/essais-complets ; verdict réel de A-2 copié tel quel dans tests/fixtures/ecume-planches-2 ; constat et décision du chef d'orchestre)";

@@ -214,13 +214,15 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   si l'inventaire (un appel au relecteur le plus fort, avant toute retouche) le voit dans la case ; sa photo du produit
   est jointe là où le produit se voit (« remplace le produit par celui de la photo jointe, garde la mise en scène à
   l'identique ») ; les formats larges ont des marges généreuses ; publications recadrées en 1080 × 1080, 1080 × 1350 et
-  1080 × 1920, ouverture réduite en 1920 × 720, jamais rognée. Chaque image est relue face à son aperçu (textes comparés
+  1080 × 1920, ouverture réduite en 1920 × 720, jamais rognée. Les petits textes illisibles de l'aperçu restent des traits sans mot lisible ; le nom et la phrase du logo, exacts, ne
+  sont jamais une faute, où que le logo soit posé ; une coupe au bord fidèle à l'aperçu ne fait jamais refuser (accord
+  écrit du 27 novembre 2026). Chaque image est relue face à son aperçu (textes comparés
   lettre pour lettre par le code, aucun logo ajouté, aucune personne sans accord, logo clair sur fond sombre, produit
   comparé, note de 8 au moins) ; une reprise à la charge du Studio ; refusée deux fois, l'aperçu agrandi garde sa case et
   SINA propose de la refaire à sa charge. **Après le choix, la palette et les polices sont lues sur la planche choisie** (accord
   écrit du 26 novembre 2026, après l'essai réel d'Écume) : sous chaque pastille, le code écrit sur l'aperçu est gardé quand
   la couleur peinte en est proche (écart perceptuel de 10 au plus) et la pastille est peinte de ce code, sinon la médiane
-  mesurée ; ces codes font foi (marque, site, onglet Marque) ; polices du catalogue du Studio : leurs rôles se lisent sur leur place dans l'aperçu (la première nommée est celle des
+  mesurée ; les codes et les légendes de la palette sont nets, à l'encre pleine de l'aperçu ; ces codes font foi (marque, site, onglet Marque) ; polices du catalogue du Studio : leurs rôles se lisent sur leur place dans l'aperçu (la première nommée est celle des
   titres, sauf si l'aperçu dit autrement) ; une police nommée, au catalogue, de genre compatible avec le spécimen, n'est
   jamais remplacée ; absente du catalogue, ou démentie par le genre montré, la plus proche du spécimen, et c'est dit ; elles ne servent que dans leur spécimen : titres de blocs, libellés, codes, légendes et
   badge gardent la police de mise en page de l'aperçu ; rien ne s'ajoute qui ne soit pas sur l'aperçu, et un titre
