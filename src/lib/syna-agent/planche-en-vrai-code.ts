@@ -23,7 +23,7 @@ import { createCanvas, GlobalFonts, loadImage, type SKRSContext2D } from "@napi-
 import { FONT_FILES } from "../theme/render";
 import { FONT_DIR } from "../media/fonts";
 import { lignesDuTexte } from "./phrase-sous-le-nom";
-import { ECHELLE, TAILLE_DEMO, TAILLE_EN_VRAI, rognerLesMargesBlanches, type Boite, type NomElement, type PoliceDeLInventaire } from "./planche-en-vrai";
+import { ECHELLE, TAILLE_DEMO, TAILLE_EN_VRAI, rognerLesMargesBlanches, sansTitreEnHaut, type Boite, type NomElement, type PoliceDeLInventaire } from "./planche-en-vrai";
 
 // ---------------------------------------------------------------- couleurs
 
@@ -265,15 +265,24 @@ export const tuileDeLaVersion = (v: VersionDuLogo): string => TUILE_DE_LA_VERSIO
 export const SEUIL_DE_LA_CASE_EN_HD = { niveaux: 48, part: 0.05, proportions: 0.08 } as const;
 export async function caseDuLogoEnHd(d0: Buffer, W: number, t: Boite, hd: Buffer): Promise<{ png: Buffer; part: number; garde: boolean; raison: string | null }> {
   const f = fondDe(d0, W, t), fr = rgbDe(f), tw = t[2] - t[0], th = t[3] - t[1];
-  const ink = boiteDEncreDeLApercu(d0, W, t, f) ?? t;
+  // UN DESSIN PÂLE EST UNE ENCRE (27 novembre 2026, essai réel de Havane : le monochrome clair, sauge sur la page crème, était
+  // dit « sans aucune encre » alors que son fichier se voit). Sans encre franche (`estEncre`), l'encre pâle compte : un point
+  // à plus de 24 niveaux du fond de la tuile, sur un canal, dans la tuile comme dans la version (bords de la tuile exclus).
   // La boîte de l'encre de la version, posée sur le fond de la tuile, au même critère que l'aperçu.
   const r = await rgba(hd);
-  let a = r.w, c = r.h, dd = -1, e = -1;
-  for (let y = 0; y < r.h; y++) for (let x = 0; x < r.w; x++) {
-    const i = (y * r.w + x) * 4, al = r.data[i + 3] / 255;
-    const px = [0, 1, 2].map((k) => Math.round(r.data[i + k] * al + fr[k] * (1 - al)));
-    if (estEncre(px[0], px[1], px[2], fr, 60)) { if (x < a) a = x; if (y < c) c = y; if (x > dd) dd = x; if (y > e) e = y; }
-  }
+  const boiteDeLaVersion = (encre: (px: number[]) => boolean) => {
+    let a = r.w, c = r.h, dd = -1, e = -1;
+    for (let y = 0; y < r.h; y++) for (let x = 0; x < r.w; x++) {
+      const i = (y * r.w + x) * 4, al = r.data[i + 3] / 255;
+      const px = [0, 1, 2].map((k) => Math.round(r.data[i + k] * al + fr[k] * (1 - al)));
+      if (encre(px)) { if (x < a) a = x; if (y < c) c = y; if (x > dd) dd = x; if (y > e) e = y; }
+    }
+    return { a, c, dd, e };
+  };
+  let { a, c, dd, e } = boiteDeLaVersion((px) => estEncre(px[0], px[1], px[2], fr, 60));
+  const pale = dd < 0;
+  if (pale) ({ a, c, dd, e } = boiteDeLaVersion((px) => Math.max(Math.abs(px[0] - fr[0]), Math.abs(px[1] - fr[1]), Math.abs(px[2] - fr[2])) > 24));
+  const ink = (pale ? boiteDuDessin(d0, W, [t[0] + 3, t[1] + 3, t[2] - 3, t[3] - 3], f) : boiteDEncreDeLApercu(d0, W, t, f)) ?? t;
   const fondPng = await fondSansEncre(d0, W, t, f);
   const cv = createCanvas(tw * S, th * S), x = cv.getContext("2d");
   x.drawImage(await img(fondPng), 0, 0, tw * S, th * S);
@@ -730,6 +739,19 @@ export async function versionsDuLogo(o: {
     return versionDepuisLApercu(t);
   };
   const horizontalDeLApercu = () => sinonDeLApercu("logo-horizontal", logo);
+  // UN LOGO HORIZONTAL TROP ALLONGÉ EST ILLISIBLE (27 novembre 2026, essai réel de Havane : la marque et sa longue phrase sur
+  // une seule ligne, 18 fois plus large que haute ; le fichier à télécharger était minuscule, « écart 375 % » sur la planche).
+  // Plus de deux fois plus allongé que le dessin de sa tuile de l'aperçu (`TROP_ALLONGE`), montré à la taille des autres
+  // versions, ses lettres font moins de la moitié de celles de l'aperçu : il est repris de sa tuile, comme sur la planche,
+  // fichiers compris. Sans tuile, la version du code reste.
+  const horizontalLisible = async (png: Buffer): Promise<Buffer> => {
+    const t = o.tuiles?.get(tuileDeLaVersion("logo-horizontal"));
+    if (!t) return png;
+    const tuile = await versionDepuisLApercu(t), m = await sharp(png).metadata(), mt = await sharp(tuile).metadata();
+    if ((m.width! / m.height!) <= TROP_ALLONGE * (mt.width! / mt.height!)) return png;
+    depuisLApercu.push("logo-horizontal");
+    return tuile;
+  };
   // LES MONOCHROMES ET L'INVERSÉ D'UN LOGO À APLATS (`logoAAplats`) : un seul ton aux creux, le nom lisible ; mesuré
   // (`contrasteDesLettres`), et repris de la tuile de l'aperçu s'il ne l'est pas. Un logo d'un seul ton garde sa silhouette teinte.
   const aplats = await logoAAplats(logo);
@@ -760,7 +782,7 @@ export async function versionsDuLogo(o: {
   };
   const versions: Record<VersionDuLogo, Buffer> = {
     "logo-principal": logo,
-    "logo-horizontal": sep && nom ? (sep.sens === "gauche" ? logo : await horizontal(symbole, nom)) : phrase ? await marqueEtPhrase(phrase.marque, phrase.phrase) : await horizontalDeLApercu(),
+    "logo-horizontal": sep && nom ? (sep.sens === "gauche" ? logo : await horizontal(symbole, nom)) : phrase ? await horizontalLisible(await marqueEtPhrase(phrase.marque, phrase.phrase)) : await horizontalDeLApercu(),
     icone: await apercu("icone", async () => carre(await teinte(symbole, blanc), o.sombre, 0.18, 0.2)),
     favicon: await apercu("favicon", async () => carre(await teinte(symbole, blanc), o.sombre, 0.22, 0.16)),
     // Le foncé sert sur un fond clair (le clair de la marque), le clair sur un fond foncé (le gris du monochrome foncé :
@@ -775,6 +797,8 @@ export async function versionsDuLogo(o: {
   const iconeDeLApercu = !sep && (depuisLApercu.includes("icone") || enHd.includes("icone"));
   return { versions, symboleComplet: !sep, symbole: iconeDeLApercu ? versions.icone : symbole, depuisLApercu, enHd };
 }
+/** Un logo horizontal plus allongé que ce facteur fois le dessin de sa tuile de l'aperçu est illisible à la taille des autres. */
+export const TROP_ALLONGE = 2;
 /** Le fond de l'inversé quand le sombre de la marque est trop clair pour un logo blanc. */
 export const FOND_SOMBRE_DE_SECOURS = "#1C1C1C";
 
@@ -1490,7 +1514,9 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
   if (tuiles.length && rangee.lignes.length) {
     // La rangée des tuiles est d'abord effacée (fond de la page, un peu au-delà des tuiles) : un logo de la démonstration
     // plus grand que sa tuile n'en dépasse plus ; quand la rangée est refaite, les légendes de l'aperçu aussi (elles sont
-    // reposées sous leur case). Le trait entre le favicon et les monochromes est redessiné.
+    // reposées sous leur case). Le trait entre le favicon et les monochromes est redessiné sur une planche à huit cases, où
+    // il est à sa place ; jamais sur une rangée refaite (27 novembre 2026, essai réel de Havane : sur la rangée des huit cases
+    // gardées d'une planche à dix, ce trait restait entre le favicon et le monochrome foncé, reste d'une case retirée).
     const u: Boite = [Math.max(0, Math.min(...tuiles.map((t) => t[0])) - 8), Math.max(0, Math.min(...tuiles.map((t) => t[1])) - 6), Math.min(TAILLE_DEMO.w, Math.max(...tuiles.map((t) => t[2])) + 8), Math.min(TAILLE_DEMO.h, Math.max(...tuiles.map((t) => t[3])) + 6)];
     const legendes = rangee.refaite ? bandeDesLegendes(o.boites) : null;
     const fondLegendes = legendes ? fond(legendes) : null;
@@ -1498,7 +1524,7 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
     x.fillStyle = fond(u); x.fillRect(ux[0], ux[1], ux[2] - ux[0], ux[3] - ux[1]);
     if (legendes && fondLegendes) { const lx = X(legendes); x.fillStyle = fondLegendes; x.fillRect(lx[0], lx[1], lx[2] - lx[0], lx[3] - lx[1]); }
     const fav = rangee.lignes.find((r) => r.version === "favicon"), mono = rangee.lignes.find((r) => r.version === "monochrome-fonce");
-    if (fav && mono && mono.source[0] - fav.source[2] > 6) { const sx = ((fav.cible[2] + mono.cible[0]) / 2) * S; x.strokeStyle = "#D7D3CB"; x.lineWidth = 2; x.beginPath(); x.moveTo(sx, (fav.cible[1] + 6) * S); x.lineTo(sx, (fav.cible[3] + 14) * S); x.stroke(); }
+    if (!rangee.refaite && fav && mono && mono.source[0] - fav.source[2] > 6) { const sx = ((fav.cible[2] + mono.cible[0]) / 2) * S; x.strokeStyle = "#D7D3CB"; x.lineWidth = 2; x.beginPath(); x.moveTo(sx, (fav.cible[1] + 6) * S); x.lineTo(sx, (fav.cible[3] + 14) * S); x.stroke(); }
     const grandImg = o.tuilesDeLApercu?.length || legendes ? await img(grand) : null;
     for (const { version: v, source: t, cible, voisines } of rangee.lignes) {
       const f = fond(t), b = X(cible), meme = cible.every((c, k) => c === t[k]);
@@ -1612,12 +1638,18 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
     x.strokeStyle = "#D7D3CB"; x.lineWidth = 2; x.beginPath(); x.moveTo(b[0] + W * 0.519, b[1] + 22 * S); x.lineTo(b[0] + W * 0.519, b[3] - 15 * S); x.stroke();
   }
   // Les images refaites : photos en plein cadre ; écrans et publications entiers, à leurs proportions.
+  // LE TITRE D'UN BLOC N'EST JAMAIS EFFACÉ (27 novembre 2026, essai réel de Havane : « 08 SITE WEB – … » et « 09 PACKAGING &
+  // SUPPORTS – … » disparus de la planche réassemblée). Une image n'est jugée que sur les textes de sa seule zone ; le titre
+  // n'y est plus attendu, mais il reste sur la planche : la case d'une image s'arrête sous le titre écrit dans son haut
+  // (`titreEnHautDeLaCase`, à la découpe), le titre de l'aperçu reste au-dessus, et une image refaite qui porte encore ce
+  // titre en haut (refaite d'après un aperçu d'avant) est posée sans lui (`sansTitreEnHaut`), jamais deux fois.
+  const image = async (n: NomElement) => { const im = o.images.get(n); return im ? sansTitreEnHaut(im) : undefined; };
   for (const n of ["produit-1", "produit-2", "produit-3", "emballage", "reference-1", "reference-2", "reference-3", "reference-4", "reference-5", "reference-6"] as const) {
-    const b = B(n), im = o.images.get(n);
+    const b = B(n), im = await image(n);
     if (b && im) await couvrir(x, im, X(b));
   }
   for (const n of ["site-ordinateur", "site-telephone", "publication-1x1", "publication-4x5", "publication-9x16"] as const) {
-    const b = B(n), im = o.images.get(n);
+    const b = B(n), im = await image(n);
     if (!b || !im) continue;
     const bb = X(b);
     // Le fond de la case : celui qui l'entoure sur l'aperçu (la page ou le panneau), jamais une couleur prise dans l'image.
@@ -1731,7 +1763,8 @@ export async function imageDuSite(planche: Buffer, boites: ReadonlyMap<string, B
   const z = b.map((v) => Math.round(v * k)) as Boite;
   const W = m.width ?? 0, H = m.height ?? 0;
   const [a, c, r, d] = [Math.max(0, z[0]), Math.max(0, z[1]), Math.min(W, z[2]), Math.min(H, z[3])];
-  return rognerAuContenu(await sharp(planche).extract({ left: a, top: c, width: r - a, height: d - c }).png().toBuffer());
+  // Un titre de bloc écrit plus bas que sa case fixe, dans le haut du bloc, n'est jamais pris avec le site (`sansTitreEnHaut`).
+  return rognerAuContenu(await sansTitreEnHaut(await sharp(planche).extract({ left: a, top: c, width: r - a, height: d - c }).png().toBuffer()));
 }
 
 /** Une petite planche de test, fabriquée par le code (pour les essais) : un fond, des pastilles aux couleurs données. */

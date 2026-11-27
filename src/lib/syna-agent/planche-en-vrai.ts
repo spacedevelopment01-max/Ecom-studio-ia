@@ -269,6 +269,61 @@ export function bandeDeTitreTouchee(g: { data: Buffer; w: number; h: number }, l
   }
   return null;
 }
+/**
+ * LE TITRE D'UN BLOC POSÉ EN HAUT D'UNE CASE (27 novembre 2026, essai réel de Havane : sur l'aperçu, les titres « 08 SITE
+ * WEB – … » et « 09 PACKAGING & SUPPORTS – … » sont écrits plus bas que leur case fixe, dans le haut des cases du site et de
+ * l'emballage ; les images refaites sans leur titre, gardées depuis que ce titre n'est plus attendu, étaient posées dessus et
+ * l'effaçaient de la planche). Lu sur la case seule : sous quelques lignes unies de la page (la couleur médiane de ses deux
+ * premières lignes), une bande de texte sur la page (chaque ligne garde au moins 30 % de points de la page, 75 % en moyenne ;
+ * de 3 à 14 % de la hauteur de la case), qui commence au bord gauche (à 4 % de la largeur au plus, la pastille du numéro)
+ * et s'étend sur au moins un quart de la largeur, puis une ou quelques lignes unies, puis l'image. Rend le haut de l'image
+ * (absolu), ou null. Une ligne unie : 95 % de ses points à 20 niveaux de gris de la page, au plus 2 % de points d'encre (à
+ * plus de 60 niveaux).
+ */
+export function titreEnHautDeLaCase(g: Gris, b: Boite): number | null {
+  const [x0, y0, x1, y1] = b, w = x1 - x0, h = y1 - y0;
+  if (w < 40 || h < 40 || x0 < 0 || y0 < 0 || x1 > g.w || y1 > g.h) return null;
+  const premiers: number[] = [];
+  for (let y = y0; y < y0 + 2; y++) for (let x = x0; x < x1; x++) premiers.push(g.data[y * g.w + x]);
+  premiers.sort((a, c) => a - c);
+  const page = premiers[premiers.length >> 1];
+  const ligne = (y: number) => {
+    let proches = 0, encre = 0, gauche = -1, droite = -1;
+    for (let x = x0; x < x1; x++) {
+      const d = Math.abs(g.data[y * g.w + x] - page);
+      if (d <= 20) proches++;
+      if (d > 60) { encre++; if (gauche < 0) gauche = x - x0; droite = x - x0; }
+    }
+    return { part: proches / w, encre, gauche, droite };
+  };
+  const unie = (l: ReturnType<typeof ligne>) => l.part >= 0.95 && l.encre <= w * 0.02;
+  let y = y0;
+  const finDuDebut = y0 + Math.round(h * 0.3);
+  while (y < finDuDebut && unie(ligne(y))) y++;
+  if (y === y0 || y >= finDuDebut) return null;
+  const debut = y;
+  let gauche = w, droite = -1, somme = 0, n = 0;
+  for (; y < y1; y++) {
+    const l = ligne(y);
+    if (unie(l)) break;
+    if (l.part < 0.3) return null;
+    somme += l.part; n++;
+    if (l.encre) { gauche = Math.min(gauche, l.gauche); droite = Math.max(droite, l.droite); }
+  }
+  const hauteur = y - debut;
+  if (!n || hauteur < h * 0.03 || hauteur > h * 0.14 || somme / n < 0.75) return null;
+  if (gauche > w * 0.04 || droite - gauche < w * 0.25) return null;
+  let z = y;
+  while (z < y1 && unie(ligne(z))) z++;
+  if (z >= y1 || z - y > Math.max(3, h * 0.04)) return null;
+  return z;
+}
+/** Une image (refaite, ou prise sur la planche) sans le titre de bloc posé en haut (`titreEnHautDeLaCase`) ; sinon telle quelle. */
+export async function sansTitreEnHaut(png: Buffer): Promise<Buffer> {
+  const { data, info } = await sharp(png).removeAlpha().greyscale().raw().toBuffer({ resolveWithObject: true });
+  const g: Gris = { data, w: info.width, h: info.height }, z = titreEnHautDeLaCase(g, [0, 0, g.w, g.h]);
+  return z == null ? png : sharp(png).extract({ left: 0, top: z, width: g.w, height: g.h - z }).png().toBuffer();
+}
 /** La boîte d'une case touche-t-elle la bande d'un titre de bloc (au moins 4 pixels de chaque côté) ? */
 export const entreDansUneBandeDeTitre = (laquelle: Laquelle, b: Boite): boolean =>
   [...bandesDesTitres(laquelle).values()].some((t) => Math.min(b[2], t[2]) - Math.max(b[0], t[0]) >= 4 && Math.min(b[3], t[3]) - Math.max(b[1], t[1]) >= 4);
@@ -306,7 +361,9 @@ export function panneauxDuBloc01(g: Gris, laquelle: Laquelle): Boite[] | null {
  * `debordes` : les cases dont l'aperçu touche encore la bande d'un titre de bloc (un bout du titre ou du sous-titre peut
  * y être lu, sur un côté). Quand la part prise dans la bande est la page, le haut de la case est d'abord ramené sous la bande.
  */
-export type Decoupe = { apercus: Map<string, Buffer>; boites: Map<string, Boite>; refus: { case: string; raison: string }[]; debordes?: string[] };
+export type Decoupe = { apercus: Map<string, Buffer>; boites: Map<string, Boite>; refus: { case: string; raison: string }[]; debordes?: string[];
+  /** Les cases dont le haut portait un titre de bloc, ramené sous lui (`titreEnHautDeLaCase`). */
+  titresEnHaut?: string[] };
 /**
  * LA DÉCOUPE DES APERÇUS (gratuite, sans appel) : chaque case de la disposition, recalée sur la planche choisie, puis
  * contrôlée. Une planche qui n'est pas à la taille des cases est ramenée à cette taille avant la découpe.
@@ -315,7 +372,7 @@ export async function decouperLesApercus(planche: Buffer, laquelle: Laquelle, no
   const m = await sharp(planche).metadata();
   const png = m.width === TAILLE_DEMO.w && m.height === TAILLE_DEMO.h ? planche : await sharp(planche).resize(TAILLE_DEMO.w, TAILLE_DEMO.h, { fit: "fill" }).png().toBuffer();
   const g = await gris(png), c = lesCases(laquelle), page = couleurDeLaPage(g);
-  const apercus = new Map<string, Buffer>(), boites = new Map<string, Boite>(), refus: Decoupe["refus"] = [], debordes: string[] = [];
+  const apercus = new Map<string, Buffer>(), boites = new Map<string, Boite>(), refus: Decoupe["refus"] = [], debordes: string[] = [], titresEnHaut: string[] = [];
   // UNE RANGÉE DE HUIT CASES (27 novembre 2026) : une planche dessinée sans le logo compact ni le logo empilé montre huit
   // cases au bloc 01 ; elles sont lues sur la planche (`panneauxDuBloc01`) et rangées sous les noms des huit cases gardées.
   const huit = panneauxDuBloc01(g, laquelle);
@@ -336,13 +393,17 @@ export async function decouperLesApercus(planche: Buffer, laquelle: Laquelle, no
     if (bande) b = [b[0], bande[3] + 1, b[2], b[3]];
     // Puis la recherche élargie, sur les gouttières de la page, jamais dans la bande d'un titre.
     if (RECALEES.has(nom)) b = ajusterAuxGouttieres(g, b, page, RECALAGE_ELARGI, [...bandesDesTitres(laquelle).values()]);
+    // Un titre de bloc écrit dans le haut de la case (plus bas que sa case fixe) n'est jamais dans l'aperçu d'une image : le
+    // haut de la case est ramené sous lui, et la planche garde le titre de l'aperçu (`titreEnHautDeLaCase`).
+    const sousLeTitre = image ? titreEnHautDeLaCase(g, b) : null;
+    if (sousLeTitre != null) { b = [b[0], sousLeTitre, b[2], b[3]]; titresEnHaut.push(nom); }
     if (image && entreDansUneBandeDeTitre(laquelle, b)) debordes.push(nom);
     const r = await refusDUneCase(g, b, mesuree, { auBord: AU_BORD.has(nom) });
     if (r) { refus.push({ case: nom, raison: r }); continue; }
     boites.set(nom, b);
     apercus.set(nom, await sharp(png).extract({ left: b[0], top: b[1], width: b[2] - b[0], height: b[3] - b[1] }).png().toBuffer());
   }
-  return { apercus, boites, refus, debordes };
+  return { apercus, boites, refus, debordes, ...(titresEnHaut.length ? { titresEnHaut } : {}) };
 }
 
 // ---------------------------------------------------------------- 4. le texte envoyé
@@ -396,10 +457,17 @@ export const ligneDesTextesEnVrai = (produits: readonly string[], faits?: FaitsP
  * traits ou une texture, sans aucun mot lisible ; seuls les mots déjà lisibles sur l'aperçu sont écrits.
  */
 export const MICRO_TEXTES_EN_VRAI = "Les petits textes illisibles de l'aperçu restent de simples traits ou une texture, sans aucun mot lisible ; seuls les mots déjà lisibles sur l'aperçu sont écrits.";
-/** La ligne qui dit ce qu'est l'élément (petits textes illisibles ; marge des formats larges ; textes des étiquettes ; sans accord du client, aucune personne). */
+/**
+ * LA BARRE D'ÉTAT D'UN TÉLÉPHONE (27 novembre 2026, essai réel de Havane : l'aperçu montre « 6.GI » à la place de l'heure, et
+ * l'image refaite en haute définition l'écrivait tel quel, une heure illisible et fausse). Dite en positif, pour tout client,
+ * dans la ligne qui dit l'élément des cases à barre d'état (`CASES_AVEC_BARRE_D_ETAT`) : une heure simple et lisible, ou de
+ * simples traits. L'heure n'y est jamais attendue ni reprochée.
+ */
+export const BARRE_D_ETAT_EN_VRAI = "La barre d'état du téléphone affiche une heure simple et lisible, « 9:41 », ou de simples traits.";
+/** La ligne qui dit ce qu'est l'élément (petits textes illisibles ; barre d'état ; marge des formats larges ; textes des étiquettes ; sans accord du client, aucune personne). */
 export function ligneDeLElement(n: NomElement, personnes: boolean, produits?: readonly string[], faits?: FaitsPermis): string {
   const d = def(n);
-  return [d.quoi, MICRO_TEXTES_EN_VRAI, d.large && !/marges généreuses/.test(d.quoi) ? MARGE_LARGE : "", produits?.length || faits?.noms?.length ? ligneDesTextesEnVrai(produits ?? [], faits) : "", personnes ? "" : SANS_PERSONNE_EN_VRAI].filter(Boolean).join(" ");
+  return [d.quoi, MICRO_TEXTES_EN_VRAI, CASES_AVEC_BARRE_D_ETAT.has(n) ? BARRE_D_ETAT_EN_VRAI : "", d.large && !/marges généreuses/.test(d.quoi) ? MARGE_LARGE : "", produits?.length || faits?.noms?.length ? ligneDesTextesEnVrai(produits ?? [], faits) : "", personnes ? "" : SANS_PERSONNE_EN_VRAI].filter(Boolean).join(" ");
 }
 /**
  * Le texte d'une image envoyé AVANT la ligne des étiquettes et celle des petits textes (une passe d'essai reçue avant ces
@@ -428,6 +496,11 @@ export const texteSansLesNomsDonnes = (texte: string, produits: readonly string[
 };
 /** Le texte d'une image envoyé avant la ligne des petits textes seulement (la ligne des étiquettes y était déjà). */
 export const texteSansLaLigneDesPetitsTextes = (texte: string): string => texte.replace(` ${MICRO_TEXTES_EN_VRAI}`, "");
+/**
+ * Le texte d'une image envoyé AVANT la ligne de la barre d'état (27 novembre 2026) : le même texte, cette ligne retirée. Sert
+ * seulement à reconnaître une image déjà reçue et payée, jamais à envoyer.
+ */
+export const texteSansLaLigneDeLaBarreDEtat = (texte: string): string => texte.replace(` ${BARRE_D_ETAT_EN_VRAI}`, "");
 export const finDeRepriseEnVrai = (raisons: readonly string[]) => `À corriger : ${raisons.join(" ; ")}.`;
 /** LE TEXTE ENVOYÉ : REGLE mot pour mot (sa phrase du logo seulement si le logo est joint), la photo du produit, la ligne. */
 export function texteDeLElement(o: { element: NomElement; nom: string; logo: boolean; photo: boolean; personnes: boolean; raisons?: readonly string[]; /** Le symbole seul est joint (jamais avec le logo complet). */ symbole?: boolean;
@@ -916,7 +989,9 @@ export function raisonsDuRefusEnVrai(v: ImageRelue | undefined, o: { inventaire:
   // Les noms exacts donnés par le client (27 novembre 2026) sont des noms de produits permis, comme ceux de la fiche ; écrit
   // autrement qu'il les a donnés, un nom de produit fait refuser (`nomsDeProduitsNonDonnes`).
   const produits = o.faits?.noms?.length ? [...(o.produits ?? []), ...o.faits.noms] : o.produits;
-  const inventes = faitsInventesEnVrai(v, { attendus: z.attendus, lus: z.lus, produits, logo: logoLa, faits: o.faits });
+  // Dans une case à barre d'état, l'heure (« 9:41 ») et ses fragments ne sont jamais un fait inventé (ni attendus, ni reprochés).
+  const barre = CASES_AVEC_BARRE_D_ETAT.has(o.element ?? o.inventaire?.case ?? "");
+  const inventes = faitsInventesEnVrai(v, { attendus: z.attendus, lus: z.lus, produits, logo: logoLa, faits: o.faits }).filter((t) => !(barre && estUnFragmentDeMicroTexte(t)));
   const malNommes = nomsDeProduitsNonDonnes(v, { attendus: z.attendus, lus: z.lus, produits: o.produits, faits: o.faits, logo: logoLa }).filter((t) => !inventes.some((x) => memeNomExact(x, t)));
   // Les mots des lignes inventées (et des noms mal écrits) sont dits dans leur propre raison, pas deux fois.
   const dansLesInventes = new Set([...inventes, ...malNommes].flatMap(motsDe));

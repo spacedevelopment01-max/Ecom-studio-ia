@@ -27,7 +27,7 @@ import { lignesDuTexte } from "./phrase-sous-le-nom";
 import { blocDeLaFinition, copyright, lignesDeLaPhrase, mentionDuDomaine, nettoyerLesSignesIsoles, porteUnSigneParasite, texteDeLaFinition } from "./planche-de-marque";
 import {
   CASES_DU_CODE, ELEMENTS, GROUPES, INVENTAIRE_SYSTEM, InventaireSchema, NOMS_DES_ELEMENTS, RELECTEUR_EN_VRAI, RelectureDuGroupeSchema, TITRES, TUILES_DU_LOGO,
-  caseLue, decouperLesApercus, policesDeLApercu, demandeDeLInventaire, inventaireIncomplet, lesCases, phraseDeLaPoliceRemplacee, phraseDeLaPublicationIncomprehensible,
+  caseLue, decouperLesApercus, policesDeLApercu, demandeDeLInventaire, sansTitreEnHaut, inventaireIncomplet, lesCases, phraseDeLaPoliceRemplacee, phraseDeLaPublicationIncomprehensible,
   phraseDeLImageGardeeEnApercu, phraseDesLogosDeLApercu, phraseDesLogosEnHdRefuses, phraseDuProduitImagine, phraseDuSymboleComplet, promessesDuBloc, refaireLesElements, refaireLesLogosEnHd,
   ETIQUETTE_AMBIANCE, LOGOS_EN_HD, RELECTEUR_DES_LOGOS_EN_HD, RelectureDesLogosEnHdSchema, TAILLE_DES_LOGOS_EN_HD, VERSIONS_EN_HD,
   type Decoupe, type DemandeDElement, type DemandeDeLogoEnHd, type EtatPlancheEnVrai, type Groupe, type Inventaire, type Laquelle, type NomElement, type RelectureDesLogosEnHd,
@@ -636,8 +636,9 @@ export async function enregistrerLaPlancheReassemblee(o: {
  */
 export async function imageMontree(n: NomElement, png: Buffer): Promise<Buffer> {
   if (n.startsWith("publication-") || n === "ouverture-site") return png;
-  // Une photo de produit posée sur une carte s'arrête à la photo (`sansLeBasDeCarte`, essai réel de Havane, point 11).
-  return rognerAuContenu(n.startsWith("produit-") ? await sansLeBasDeCarte(png) : png);
+  // Une photo de produit posée sur une carte s'arrête à la photo (`sansLeBasDeCarte`, essai réel de Havane, point 11) ; une
+  // image refaite qui porte encore le titre de son bloc en haut est montrée sans lui (`sansTitreEnHaut`).
+  return rognerAuContenu(n.startsWith("produit-") ? await sansLeBasDeCarte(png) : await sansTitreEnHaut(png));
 }
 /** L'image d'une case telle qu'elle est posée sur la planche (avant le rognage au contenu). */
 const surLaPlanche = (e: EtatPlancheEnVrai["elements"][number]) => e.idPlanche ?? e.id;

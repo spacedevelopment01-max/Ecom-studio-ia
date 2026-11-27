@@ -1,0 +1,533 @@
+{
+  "cases": [
+    {
+      "case": "publication-1x1",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "HAVANE",
+        "SACS · PORTEFEUILLES · CEINTURES",
+        "Le beau",
+        "dure plus loin."
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": true,
+      "description": "Gros plan d'un cuir marron avec une couture sellier, le logo en haut et un slogan en bas."
+    },
+    {
+      "case": "publication-4x5",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "HAVANE",
+        "SACS · PORTEFEUILLES · CEINTURES",
+        "Un essentiel,",
+        "tout simplement.",
+        "Cuir de vachette pleine fleur",
+        "Tannage végétal"
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": true,
+      "description": "Un portefeuille en cuir marron posé sur une pierre, avec le logo, un slogan et deux atouts accompagnés d'icônes."
+    },
+    {
+      "case": "publication-9x16",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "HAVANE",
+        "SACS · PORTEFEUILLES · CEINTURES",
+        "Toujours",
+        "plus loin",
+        "avec vous."
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": false,
+      "description": "Une route menant à une ville de briques avec un clocher, sous un ciel bleu, avec le logo et un slogan."
+    },
+    {
+      "case": "ouverture-site",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "HAVANE",
+        "Sacs",
+        "Portefeuilles",
+        "Ceintures",
+        "Des essentiels",
+        "en cuir, pour la vie.",
+        "Découvrir la collection →"
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "La page d'accueil du site sur un écran, avec un sac cabas en cuir, un titre et un bouton."
+    },
+    {
+      "case": "ouverture-planche",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "E",
+        "URES",
+        "Des objets",
+        "de cuir pour",
+        "aujourd'hui",
+        "et demain.",
+        "SACS",
+        "PORTEFEUILLES",
+        "CEINTURES",
+        "L'ARTISANAT",
+        "DANS LE DÉTAIL"
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Bandeau montrant un portefeuille, une ceinture et un sac en cuir sur une pierre, avec la fin du logo coupée à gauche et des textes."
+    },
+    {
+      "case": "site-ordinateur",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "08",
+        "SITE WEB – Une expérience fluide, du premier clic à la prochaine balade",
+        "HAVANE",
+        "Sacs",
+        "Portefeuilles",
+        "Ceintures",
+        "Des essentiels",
+        "en cuir, pour la vie.",
+        "Découvrir la collection →",
+        "Cuir de France",
+        "Fait main à Toulouse",
+        "Tannage végétal"
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un ordinateur portable affichant la page d'accueil du site avec un sac en cuir et trois atouts en bas."
+    },
+    {
+      "case": "site-telephone",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "6.GI",
+        "HAVANE",
+        "Sacs · Portefeuilles · Ceintures",
+        "L'élégance",
+        "au quotidien.",
+        "Découvrir"
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un téléphone affichant la version mobile du site, avec un titre, un bouton et un portefeuille en cuir."
+    },
+    {
+      "case": "produit-1",
+      "logo": false,
+      "logoVu": null,
+      "textes": [],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un sac cabas en cuir marron posé sur une pierre."
+    },
+    {
+      "case": "produit-2",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "Portefeuilles en cuir"
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un portefeuille en cuir marron surpiqué posé sur une pierre, avec une légende dessous."
+    },
+    {
+      "case": "produit-3",
+      "logo": false,
+      "logoVu": null,
+      "textes": [],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Une ceinture en cuir marron enroulée, avec une boucle dorée, posée sur une pierre."
+    },
+    {
+      "case": "emballage",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "09",
+        "PACKAGING & SUPPORTS – Une marque qui vous suit partout",
+        "HAVANE",
+        "SACS · PORTEFEUILLES · CEINTURES",
+        "HAVANE",
+        "SACS · PORTEFEUILLES · CEINTURES",
+        "HAVANE"
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Une boîte en carton kraft, une pochette en coton, une carte verte, une étiquette et un petit article en cuir, tous marqués du logo."
+    },
+    {
+      "case": "reference-1",
+      "logo": false,
+      "logoVu": null,
+      "textes": [],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Des peaux de cuir marron et cognac ondulées, empilées."
+    },
+    {
+      "case": "reference-2",
+      "logo": false,
+      "logoVu": null,
+      "textes": [],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Gros plan d'une aiguille piquant une couture sur du cuir marron."
+    },
+    {
+      "case": "reference-3",
+      "logo": false,
+      "logoVu": null,
+      "textes": [],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Des outils de maroquinier en bois et en métal posés sur un établi."
+    },
+    {
+      "case": "reference-4",
+      "logo": false,
+      "logoVu": null,
+      "textes": [],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un sac cabas en cuir cognac posé sur un muret, en extérieur."
+    },
+    {
+      "case": "reference-5",
+      "logo": false,
+      "logoVu": null,
+      "textes": [],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Des pièces de cuir embossé à motifs floraux, empilées."
+    },
+    {
+      "case": "reference-6",
+      "logo": false,
+      "logoVu": null,
+      "textes": [],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Gros plan de deux coutures claires sur un cuir marron texturé."
+    },
+    {
+      "case": "haut",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "HAVAN",
+        "SACS · PORTEFEUILLES · CEINT"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Le logo HAVANE vert foncé avec sa signature, coupé à droite, sur fond crème."
+    },
+    {
+      "case": "palette",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "Vert Forêt",
+        "#0D3B2E",
+        "Cognac",
+        "#C4672B",
+        "Sable",
+        "#EADCC9",
+        "Sauge",
+        "#9BAE94",
+        "Cuir Foncé",
+        "#4B3A2E"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Cinq pastilles de couleur avec leur nom, leur code et une barre de couleur dessous."
+    },
+    {
+      "case": "typographies",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "Montserrat",
+        "Moderne, élégante, lisible.",
+        "ABCDEFFGIJLLIMMMERTVWXYZ",
+        "abcdefgjiqklninopoqtuvywxyz",
+        "0123456789",
+        "Playfair Display",
+        "Élégante, chaleureuse, intemporelle.",
+        "ABCDEFFGIJLIJMNAMEBTVWXYZ",
+        "abcdefgljiqkmhapaaganüwxyz",
+        "0123456789"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Deux spécimens de polices côte à côte : une linéale grasse et une serif en italique, avec alphabets et chiffres."
+    },
+    {
+      "case": "ton",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "SACS · PORTEFEUILLES · CEINTURES",
+        "Artisanat",
+        "Des pièces faites avec soin, pour durer.",
+        "Élégance",
+        "Des essentiels du quotidien, intemporels.",
+        "Durabilité",
+        "Un cuir qui se patine et se transmet.",
+        "Authenticité",
+        "Une marque indépendante, ancrée à Toulouse."
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Quatre valeurs de la marque avec une icône et une courte phrase chacune."
+    },
+    {
+      "case": "seo",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "Titre SEO",
+        "Havane – Sacs · Portefeuilles · Ceintures en cuir",
+        "Fait main à Toulouse",
+        "Méta-description",
+        "Havane propose des sacs, portefeuilles et ceintures en cuir,",
+        "faits main à Toulouse. Cuir de vachette pleine fleur, tannage végétal,",
+        "cousu main au point sellier. Des essentiels durables, au style intemporel.",
+        "Nom de domaine suggéré",
+        "havanefrance.fr — disponible",
+        "© 2026 Havane",
+        "Tous droits réservés.",
+        "Une marque née à Toulouse, pour celles",
+        "et ceux qui aiment le beau et le durable."
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Quatre blocs de texte : titre SEO, méta-description, nom de domaine et mention de copyright."
+    },
+    {
+      "case": "logos : icône seule",
+      "logo": true,
+      "logoVu": "symbole",
+      "textes": [],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Le symbole seul : un triangle vert foncé sans barre avec un trait cognac dessous, sur fond crème."
+    },
+    {
+      "case": "logos : favicon",
+      "logo": true,
+      "logoVu": "symbole",
+      "textes": [],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Le symbole en blanc et cognac sur un carré arrondi vert forêt."
+    },
+    {
+      "case": "titre-01",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "SYSTÈME DE LOGOS"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un titre de section en capitales."
+    },
+    {
+      "case": "titre-02",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "PALETTE DE COULEURS"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un titre de section en capitales, coupé à droite."
+    },
+    {
+      "case": "titre-03",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "TYPOGRAPHIES"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un titre de section en capitales."
+    },
+    {
+      "case": "titre-04",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "TON, SLOGAN, VALEURS"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un titre de section en capitales."
+    },
+    {
+      "case": "titre-05",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "IMAGES DE REFERENCE"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un titre de section en capitales."
+    },
+    {
+      "case": "titre-06",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "PRODUITS"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un titre de section en capitales, coupé en haut."
+    },
+    {
+      "case": "titre-07",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "RESEAUX SOCIAUX"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un titre de section en capitales, coupé en haut."
+    },
+    {
+      "case": "titre-08",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "cuir de vachette"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un fragment de texte coupé, sur fond clair."
+    },
+    {
+      "case": "titre-09",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "t",
+        "Format 4:5 – Publicat",
+        "Objectif : produit / conv"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un fragment de titre et de sous-titre coupés à droite."
+    },
+    {
+      "case": "titre-10",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "SEO / NOM DE DOMAINE / COPYRIGHT"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un titre de section en capitales."
+    },
+    {
+      "case": "logo",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "HAVANE",
+        "SACS · PORTEFEUILLES · CEINTURES"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Le logo officiel : HAVANE en vert foncé, le A en triangle souligné d'un trait cognac, avec la signature dessous."
+    }
+  ],
+  "polices": {
+    "titres": {
+      "nom": "Playfair Display",
+      "genre": "serif",
+      "procheDuCatalogue": "Playfair Display"
+    },
+    "textes": {
+      "nom": "Montserrat",
+      "genre": "sans",
+      "procheDuCatalogue": "Montserrat"
+    }
+  },
+  "couleurs": [
+    {
+      "nom": "Vert Forêt",
+      "mots": []
+    },
+    {
+      "nom": "Cognac",
+      "mots": []
+    },
+    {
+      "nom": "Sable",
+      "mots": []
+    },
+    {
+      "nom": "Sauge",
+      "mots": []
+    },
+    {
+      "nom": "Cuir Foncé",
+      "mots": []
+    }
+  ],
+  "icone": "Triangle vert foncé sans barre, souligné d'un trait cognac, sur fond crème",
+  "favicon": "Triangle blanc et trait cognac sur un carré arrondi vert forêt",
+  "iconeReprendLeLogo": true
+}
