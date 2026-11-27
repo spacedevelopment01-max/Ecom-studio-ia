@@ -11,7 +11,7 @@ import type { LogosEnHdAi, PlancheEnVraiAi } from "../../src/lib/syna-agent/plan
 import type { EtatPlancheEnVrai, Inventaire, Laquelle, NomElement, RelectureDuGroupe, VersionEnHd } from "../../src/lib/syna-agent/planche-en-vrai";
 import type { StatutDuDomaine } from "../../src/lib/syna-agent/planche-de-marque";
 import type { NameDomains } from "../../src/lib/syna-agent/brand-domains";
-import { clientDeLEssai, euros, ficheDuClient, typeDuProjet, type ClientDeLEssai } from "./client-de-l-essai";
+import { clientDeLEssai, euros, faitsPermisDuClient, ficheDuClient, typeDuProjet, type ClientDeLEssai } from "./client-de-l-essai";
 import { lignesDeLArret, avisDuPlafond } from "./plafond-des-essais";
 import { messageAvecCause } from "../../src/lib/ai/erreur-reseau";
 import type { LigneDeDepense } from "./essai-planches-outil";
@@ -516,6 +516,8 @@ export function lireALOeil(v: string | undefined): Map<NomElement, string> {
 }
 export async function rejugerLEssaiEnVrai(o: { sortie: string; client: ClientDeLEssai; donnees: DonneesDeLaPlanche; personnes?: boolean; logoHd?: boolean; aLOeil?: ReadonlyMap<NomElement, string> }): Promise<Rejugement> {
   const P = await import("../../src/lib/syna-agent/planche-en-vrai");
+  // Ses faits à montrer (27 novembre 2026, `faits-de-l-essai.mts`) : sans eux, rien ne change.
+  const faitsDuClient = await faitsPermisDuClient(o.client), avecFaits = faitsDuClient.mentions.length || faitsDuClient.interdits.length ? { faits: faitsDuClient } : {};
   const T = await import("../../src/lib/syna-agent/planche-en-vrai-tache");
   const { plafondConseilleMicro } = await import("./plafond-des-essais");
   const prec = passePrecedente(o.sortie);
@@ -534,7 +536,7 @@ export async function rejugerLEssaiEnVrai(o: { sortie: string; client: ClientDeL
       const lu = prec.relectures.get(`${g}-${tour}`)?.images.find((x) => x.case === n);
       const v = lu && tour === 1 ? avecLOeil(lu, o.aLOeil?.get(n)) : lu;
       if (!prec.images.has(`${n}-${tour}`) || !v) return null;
-      const raisons = P.raisonsDuRefusEnVrai(v, { inventaire: P.caseLue(prec.inventaire, n), personnes: !!o.personnes, photo: false, element: n, deborde: deborde(n), logo, produits: o.client.produits });
+      const raisons = P.raisonsDuRefusEnVrai(v, { inventaire: P.caseLue(prec.inventaire, n), personnes: !!o.personnes, photo: false, element: n, deborde: deborde(n), logo, produits: o.client.produits, ...avecFaits });
       return raisons;
     };
     const t1 = juge(1), t2 = juge(2);
@@ -642,6 +644,8 @@ export async function essaiDeLaPlancheEnVrai(o: {
   const qui: Qui = { userId: u.id, projectId, jobId };
   const personnes = peopleAllowed(projectId);
   const fiche = await ficheDuClient(client, projectId);
+  // Ses faits à montrer (27 novembre 2026, `faits-de-l-essai.mts`) : sans eux, rien ne change.
+  const faitsDuClient = await faitsPermisDuClient(client), avecFaits = faitsDuClient.mentions.length || faitsDuClient.interdits.length ? { faits: faitsDuClient } : {};
   const demoAsset = await saveAsset({ userId: u.id, projectId, data: demo, name: "planche-choisie.png", mime: "image/png", role: "brand-board", origin: "generated", status: "ready", meta: { plancheDeMarque: { key: "A", tour: 1, nom: client.nom, disposition: donnees.disposition } } });
   const logoAsset = await saveAsset({ userId: u.id, projectId, data: logoFini, name: "logo-fini.png", mime: "image/png", role: "logo", origin: "generated", status: "ready" });
   // Les couleurs de la marque, tirées du logo par le Studio (comme à l'adoption du logo) : elles donnent l'encre de la planche.
@@ -702,7 +706,9 @@ export async function essaiDeLaPlancheEnVrai(o: {
       if (recue) {
         // Une image reçue AVANT la ligne des étiquettes (même texte, cette ligne en moins) est reprise telle quelle : elle a
         // été payée, et son verdict est recompté par le code d'aujourd'hui.
-        const avantLaLigne = recue.texte != null && recue.texte !== d.texte && recue.texte === P.texteSansLaLigneDesTextes(d.texte, client.produits);
+        // Une image reçue avant les mentions vraies (27 novembre 2026) : la ligne des étiquettes d'avant à la place de la sienne.
+        const sansMentions = P.texteSansLesMentionsVraies(d.texte, client.produits, faitsDuClient);
+        const avantLaLigne = recue.texte != null && recue.texte !== d.texte && (recue.texte === P.texteSansLaLigneDesTextes(d.texte, client.produits, faitsDuClient) || recue.texte === P.texteSansLaLigneDesPetitsTextes(d.texte) || recue.texte === sansMentions || recue.texte === P.texteSansLaLigneDesPetitsTextes(sansMentions));
         if (avantLaLigne) res.reprise!.ecarts.push(`${d.element} (essai ${tour}) : image reçue avant la ligne des étiquettes, reprise telle quelle et rejugée par le code`);
         else if (recue.texte != null && recue.texte !== d.texte) throw (erreur ??= new RepriseRefusee(`le texte de ${d.element} (essai ${tour}) n'est plus celui de la passe d'avant : l'image reçue ne correspondrait plus ; rien de plus n'est lancé (REJUGER=1 dit lesquelles refaire)`));
         const differentes = d.jointes.filter((j) => recue.jointes.get(j.role) && recue.jointes.get(j.role) !== sha(j.data)).map((j) => j.role);
@@ -742,7 +748,7 @@ export async function essaiDeLaPlancheEnVrai(o: {
     const raisons: Record<string, string[]> = {};
     for (const n of relues) {
       const photo = images.some((im) => im.label === `${n} produit`);
-      raisons[n] = P.raisonsDuRefusEnVrai(v.images.find((x) => x.case === n), { inventaire: P.caseLue(res.inventaire, n), personnes, photo, element: n, deborde: decoupe.debordes?.includes(n), logo: { nom: client.nom, phrase: lignesDuTexte(donnees.phrase) }, produits: client.produits });
+      raisons[n] = P.raisonsDuRefusEnVrai(v.images.find((x) => x.case === n), { inventaire: P.caseLue(res.inventaire, n), personnes, photo, element: n, deborde: decoupe.debordes?.includes(n), logo: { nom: client.nom, phrase: lignesDuTexte(donnees.phrase) }, produits: client.produits, ...avecFaits });
       const e = essaiDe(n, tour);
       e.raisons = raisons[n]; e.verdict = v.images.find((x) => x.case === n) ?? null;
     }
@@ -854,7 +860,7 @@ export async function essaiDeLaPlancheEnVrai(o: {
   return runWithLang({ ui: "fr", content: "fr" }, () => runForUser(u.id, () => withTrace({ jobId, projectId, costCapMicro: devis.devisDuStudio.maxMicro, studioCapMicro: devis.devisDuStudio.studioMaxMicro + (devisLogos?.maxMicro ?? 0) }, async () => {
     let etat: EtatPlancheEnVrai;
     try {
-      etat = await T.plancheEnVrai({ ctx, ai, who: { userId: u.id, projectId }, route: route as never, logoAssetId: logoAsset.id, personnes, phrase: donnees.phrase, ligneDuLogo, metierCourt, produits: client.produits });
+      etat = await T.plancheEnVrai({ ctx, ai, who: { userId: u.id, projectId }, route: route as never, logoAssetId: logoAsset.id, personnes, phrase: donnees.phrase, ligneDuLogo, metierCourt, produits: client.produits, faits: faitsDuClient });
     } catch (e) { res.arret = raisonDeLArret(erreur ?? e); return ecrire(); }
     // LOGO_HD sur le chemin normal (26 novembre 2026) : après la planche en vrai, les versions reprises de l'aperçu sont
     // refaites en haute définition par la fonction du Studio (`refaireLesLogosEnHdEnVrai`), à la charge du Studio, chaque
@@ -1010,6 +1016,8 @@ export async function reassemblerLEssaiEnVrai(o: {
   const anciennes = JSON.parse(String(lire("apercus/cases.json"))) as { boites: Record<string, [number, number, number, number]> };
   const demo = png(o.planche, "Planche choisie"), logoFini = png(o.logo, "Logo fini");
   const { client, donnees } = essai, laquelle = donnees.disposition, nom = client.nom.trim(), personnes = false;
+  // Ses faits à montrer (27 novembre 2026), gardés avec l'essai : sans eux, rien ne change.
+  const faitsDuClient = await faitsPermisDuClient(client), avecFaits = faitsDuClient.mentions.length || faitsDuClient.interdits.length ? { faits: faitsDuClient } : {};
   fs.mkdirSync(path.join(o.sortie, "cases"), { recursive: true }); fs.mkdirSync(path.join(o.sortie, "logos"), { recursive: true });
   const ecrire = (f: string, c: string | Buffer) => { fs.mkdirSync(path.dirname(path.join(o.sortie, f)), { recursive: true }); fs.writeFileSync(path.join(o.sortie, f), c); return f; };
   const decoupe = await P.decouperLesApercus(demo, laquelle);
@@ -1027,7 +1035,7 @@ export async function reassemblerLEssaiEnVrai(o: {
       const v = r.verdict.images.find((x) => x.case === n);
       if (!v && !r.raisons?.[n]) continue;
       const photo = fs.readdirSync(path.join(o.dossier, "cases")).some((f) => f.startsWith(`${n}-${tour}-jointe-`) && f.endsWith("-produit.png"));
-      const apres = P.raisonsDuRefusEnVrai(v, { inventaire: P.caseLue(inventaire, n), personnes, photo, element: n, deborde, logo: { nom, phrase: lignesDuTexte(donnees.phrase) }, produits: client.produits });
+      const apres = P.raisonsDuRefusEnVrai(v, { inventaire: P.caseLue(inventaire, n), personnes, photo, element: n, deborde, logo: { nom, phrase: lignesDuTexte(donnees.phrase) }, produits: client.produits, ...avecFaits });
       c.essais.push({ tour, note: v?.note ?? null, raisonsAvant: r.raisons?.[n] ?? [], raisonsApres: apres });
       if (!apres.length && c.gardee == null) {
         const p = await formater(n, fs.readFileSync(hd));
@@ -1070,7 +1078,7 @@ export async function reassemblerLEssaiEnVrai(o: {
     process.env.STUDIO_ESSAI_DEBUT = String(Date.now());
   }
   if (aReprendre.length) {
-    const r = await repriseDesCases({ client, inventaire, decoupe, logo, separation, nom, personnes, elements: aReprendre, raisons: new Map(aReprendre.map((n) => [n, cases.find((c) => c.element === n)!.essais.at(-1)!.raisonsApres])), debordes: cases.filter((c) => c.deborde).map((c) => c.element), ai: o.ai, ecrire });
+    const r = await repriseDesCases({ client, inventaire, decoupe, logo, separation, nom, personnes, elements: aReprendre, raisons: new Map(aReprendre.map((n) => [n, cases.find((c) => c.element === n)!.essais.at(-1)!.raisonsApres])), debordes: cases.filter((c) => c.deborde).map((c) => c.element), ai: o.ai, ecrire, phrase: lignesDuTexte(donnees.phrase) });
     reprise = { elements: aReprendre, devis: r.devis, depenseMicro: r.depenseMicro, gardees: [...r.gardees.keys()] };
     arret = r.arret;
     for (const [n, p] of r.gardees) { images.set(n, p); cases.find((c) => c.element === n)!.gardee = "reprise"; ecrire(`cases/${n}-gardee-hd.png`, p); }
@@ -1183,6 +1191,7 @@ async function repriseDesCases(o: {
   client: ClientDeLEssai; inventaire: Inventaire; decoupe: import("../../src/lib/syna-agent/planche-en-vrai").Decoupe; logo: Buffer;
   separation: import("../../src/lib/syna-agent/planche-en-vrai-code").Separation; nom: string; personnes: boolean; elements: NomElement[];
   raisons: Map<NomElement, string[]>; debordes: string[]; ai?: (q: Qui) => PlancheEnVraiAi; ecrire: (f: string, c: string | Buffer) => string;
+  /** La phrase du logo, toutes ses lignes (jamais en trop ; dite au relecteur). */ phrase: readonly string[];
 }): Promise<{ devis: { maxMicro: number; probableMicro: number }; depenseMicro: number; gardees: Map<NomElement, Buffer>; arret?: string }> {
   const T = await import("../../src/lib/syna-agent/planche-en-vrai-tache");
   const { id } = await import("../../src/lib/db");
@@ -1219,7 +1228,10 @@ async function repriseDesCases(o: {
   let arret: string | undefined;
   await runWithLang({ ui: "fr", content: "fr" }, () => runForUser(u.id, () => withTrace({ jobId, projectId, costCapMicro: 0, studioCapMicro: devis.maxMicro }, async () => {
     try {
-      const res = await T.reprendreDesCasesEnVrai({ ai, nom: o.nom, personnes: o.personnes, logo: o.logo, separation: o.separation, inventaire: o.inventaire, decoupe: o.decoupe, elements: o.elements, raisons: o.raisons, debordes: o.debordes });
+      const res = await T.reprendreDesCasesEnVrai({ ai, nom: o.nom, personnes: o.personnes, logo: o.logo, separation: o.separation, inventaire: o.inventaire, decoupe: o.decoupe, elements: o.elements, raisons: o.raisons, debordes: o.debordes,
+        // Les produits de la fiche et la phrase du logo (27 novembre 2026, reprise réelle de Mouture : sans eux, la ligne des
+        // étiquettes manquait au dessinateur et la phrase du logo était comptée en trop).
+        produits: o.client.produits, phrase: o.phrase, ...((f) => (f.mentions.length || f.interdits.length ? { faits: f } : {}))(await faitsPermisDuClient(o.client)) });
       for (const [n, r] of res) { o.ecrire(`reprise/${n}-raisons.json`, `${JSON.stringify(r.essais.map((e) => e.raisons), null, 2)}\n`); if (r.ok && r.png) gardees.set(n, r.png); }
     } catch (e) {
       arret = e instanceof PlafondDeLEssaiAtteint ? `le garde-fou de l'essai a refusé un appel : ${e.message}` : e instanceof CostCapReached ? `la borne du Studio a refusé un appel : ${e.message}` : `un appel a échoué, jamais relancé : ${messageAvecCause(e).slice(0, 700)}`;

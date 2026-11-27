@@ -43,7 +43,7 @@ describe("logo gardé par le client : aucune recherche de logo", async () => {
       { field: "taste", status: "none" }, { field: "photos", value: "Pas de photos pour l'instant." }, { field: "language", value: "Français seulement" },
       { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
     ] });
-    expect((await call("start.confirm", ctx, {})).ok).toBe(true);
+    expect((await (await import("./faits-fixtures")).avecLesFaitsDemandes(ctx, () => call("start.confirm", ctx, {}))).ok).toBe(true);
     J.updateJourney(cid, (x) => { x.keep = keep; x.mode = "refonte"; if (name) x.keptValues = { name }; });
     ctx.projectId = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id;
     return { user, cid, ctx, pid: ctx.projectId as string };

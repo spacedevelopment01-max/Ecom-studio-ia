@@ -7,7 +7,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
-import { EPREUVES, type Epreuve } from "./epreuves/catalogue";
+import { ACCORD_A_COMPLETER, EPREUVES, type Epreuve } from "./epreuves/catalogue";
 import { route } from "./sina-routes-fixtures";
 
 process.env.STUDIO_SYNA_AGENT = "1";
@@ -34,7 +34,7 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
   });
   it("une épreuve remplacée par une décision datée garde son sceau à jamais et ne se rescelle pas", () => {
     const remplacees = EPREUVES.filter((e) => e.remplaceePar);
-    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule", "planches-de-recherche-demande-exacte", "relecteur-du-logo-fini", "finalisation-ecrite-par-le-plus-fort", "relecteur-sans-refus-pour-trop-proche", "logo-refait-une-fois-avec-ses-raisons", "relecteur-juge-l-execution-pas-l-idee", "planche-refusee-deux-fois-jamais-montree", "vrai-produit-du-client-joint", "relecteur-petites-finitions-sans-refus", "planche-phrase-par-lignes-et-reprise-qui-part-toujours", "relecteur-de-planche-texte-lisible-et-promesses-mesurables", "planche-reprend-la-phrase-du-logo", "planche-en-vrai-a-l-identique", "planche-en-vrai-symbole-seul-et-bandeau-sans-marges", "planche-en-vrai-palette-mesuree-et-logos-en-hd", "accord-des-noms-compte-la-verification", "planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu", "planche-en-vrai-identique-a-l-apercu"].sort());
+    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule", "planches-de-recherche-demande-exacte", "relecteur-du-logo-fini", "finalisation-ecrite-par-le-plus-fort", "relecteur-sans-refus-pour-trop-proche", "logo-refait-une-fois-avec-ses-raisons", "relecteur-juge-l-execution-pas-l-idee", "planche-refusee-deux-fois-jamais-montree", "vrai-produit-du-client-joint", "relecteur-petites-finitions-sans-refus", "planche-phrase-par-lignes-et-reprise-qui-part-toujours", "relecteur-de-planche-texte-lisible-et-promesses-mesurables", "planche-reprend-la-phrase-du-logo", "planche-en-vrai-a-l-identique", "planche-en-vrai-symbole-seul-et-bandeau-sans-marges", "planche-en-vrai-palette-mesuree-et-logos-en-hd", "accord-des-noms-compte-la-verification", "planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu", "planche-en-vrai-identique-a-l-apercu", "planche-en-vrai-pas-identique-a-l-apercu-mouture", "planche-produits-de-la-fiche-seulement", "planche-en-vrai-textes-du-logo-et-faits-inventes"].sort());
     for (const e of remplacees) {
       const r = e.remplaceePar!;
       // Le sceau ne change pas : celui du catalogue, celui de sceaux.json et celui figé au jour du remplacement.
@@ -50,7 +50,14 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
       while (par?.remplaceePar) { expect(vus.has(par.id), `boucle : ${par.id}`).toBe(false); vus.add(par.id); par = EPREUVES.find((x) => x.id === par!.remplaceePar!.epreuve); }
       expect(par && SCEAUX[par.id] && par.rejeu === "gratuit", `${e.id} → ${par?.id}`).toBeTruthy();
       expect(["23 novembre 2026", "24 novembre 2026", "25 novembre 2026", "26 novembre 2026", "27 novembre 2026"]).toContain(r.decision);
-      expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin|Oui, marque planches-de-recherche-demande-exacte|Oui, marque finalisation-ecrite-par-le-plus-fort|Oui, marque relecteur-sans-refus-pour-trop-proche|Oui, marque logo-refait-une-fois-avec-ses-raisons|Oui, marque vrai-produit-du-client-joint|Oui, marque relecteur-petites-finitions-sans-refus|Oui, marque relecteur-de-planche-texte-lisible-et-promesses-mesurables|Oui, marque planche-phrase-par-lignes-et-reprise-qui-part-toujours|Oui, marque planche-en-vrai-a-l-identique|Oui, marque planche-en-vrai-palette-mesuree-et-logos-en-hd|Oui, marque planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu)/);
+      // L'accord écrit encore à recevoir (« [À compléter : …] ») ne vaut, depuis le 27 novembre 2026, que pour les deux épreuves contredites par les faits à montrer, remplacées par
+      // faits-a-montrer-demandes-avant-la-marque.
+      const ACCORDS_A_COMPLETER: Record<string, string> = {
+        "planche-produits-de-la-fiche-seulement": "faits-a-montrer-demandes-avant-la-marque",
+        "planche-en-vrai-textes-du-logo-et-faits-inventes": "faits-a-montrer-demandes-avant-la-marque",
+      };
+      if (r.mots === ACCORD_A_COMPLETER) { expect(Object.keys(ACCORDS_A_COMPLETER)).toContain(e.id); expect(r.epreuve).toBe(ACCORDS_A_COMPLETER[e.id]); expect(r.decision).toBe("27 novembre 2026"); continue; }
+      expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin|Oui, marque planches-de-recherche-demande-exacte|Oui, marque finalisation-ecrite-par-le-plus-fort|Oui, marque relecteur-sans-refus-pour-trop-proche|Oui, marque logo-refait-une-fois-avec-ses-raisons|Oui, marque vrai-produit-du-client-joint|Oui, marque relecteur-petites-finitions-sans-refus|Oui, marque relecteur-de-planche-texte-lisible-et-promesses-mesurables|Oui, marque planche-phrase-par-lignes-et-reprise-qui-part-toujours|Oui, marque planche-en-vrai-a-l-identique|Oui, marque planche-en-vrai-palette-mesuree-et-logos-en-hd|Oui, marque planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu|Oui, marque planche-en-vrai-pas-identique-a-l-apercu-mouture)/);
       // Les accords écrits du 24 au 27 novembre 2026 nomment chaque épreuve qu'il remplace, et celle qui la remplace.
       if (r.decision === "24 novembre 2026" || r.decision === "25 novembre 2026" || r.decision === "26 novembre 2026" || r.decision === "27 novembre 2026") { expect(r.mots, e.id).toContain(e.id); expect(r.mots, r.epreuve).toContain(r.epreuve); }
     }
@@ -62,7 +69,7 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
 });
 
 /** Les rejeux d'une épreuve remplacée que l'épreuve qui la remplace rejoue (remplis à la lecture des blocs, avant les tests). */
-const rejeuxPartages: { finitionsEtPolice?: (o: { policeNommeeRemplacee: boolean }) => Promise<void>; identiqueALApercu?: (o: { empileDuCode: boolean }) => Promise<void> } = {};
+const rejeuxPartages: { finitionsEtPolice?: (o: { policeNommeeRemplacee: boolean }) => Promise<void>; identiqueALApercu?: (o: { empileDuCode: boolean }) => Promise<void>; produitsDeLaFiche?: () => Promise<void>; textesDuLogoEtFaitsInventes?: () => Promise<void> } = {};
 
 /** Une épreuve gratuite : son verdict en titre. Une épreuve remplacée reste au catalogue, mais n'est plus rejouée. */
 const epreuve = (id: string, fn: () => Promise<void> | void) => {
@@ -1820,8 +1827,10 @@ describe("les épreuves de la planche en vrai (25 novembre 2026, aucun appel)", 
     for (const n of V.NOMS_DES_ELEMENTS) expect(mp.TAILLES_DE_LA_PLANCHE_EN_VRAI as readonly string[]).toContain(V.ELEMENTS[n].taille);
     // Les cases fixes, empreinte vérifiée.
     expect(crypto.createHash("sha256").update(fs.readFileSync("assets/planche-de-marque/cases.json")).digest("hex")).toBe(V.CASES.sha256);
-    // La règle des preuves mot pour mot, plus la ligne ; le logo seulement s'il y est ; les marges des formats larges.
-    expect(V.texteDeLElement({ element: "reference-1", nom: "Aplomb", logo: true, photo: false, personnes: true })).toBe(`${V.REGLE_APERCU} ${V.regleDuLogo("Aplomb")} C'est une photo d'ambiance de la marque.`);
+    // La règle des preuves mot pour mot, plus la ligne ; le logo seulement s'il y est ; les marges des formats larges. La
+    // ligne de l'élément porte, depuis le 27 novembre 2026, la phrase des petits textes illisibles (épreuve
+    // planche-en-vrai-reprise-hd-petits-textes-logo-et-coupe).
+    expect(V.texteDeLElement({ element: "reference-1", nom: "Aplomb", logo: true, photo: false, personnes: true })).toBe(`${V.REGLE_APERCU} ${V.regleDuLogo("Aplomb")} C'est une photo d'ambiance de la marque. ${V.MICRO_TEXTES_EN_VRAI}`);
     expect(V.jointesDeLElement({ apercu: Buffer.from("a"), logo: Buffer.from("l"), photo: null, inventaire: undefined }).map((j) => j.role)).toEqual(["apercu"]);
     expect(V.ligneDeLElement("ouverture-site", true)).toContain("Garde des marges généreuses : aucun texte ne touche les bords.");
     // Les formats : publications recadrées, ouverture réduite, jamais rognée.
@@ -2518,7 +2527,7 @@ describe("les épreuves de l'essai réel du torréfacteur, étape 4 : les produi
   ];
   const INTERDITS = /brésil|bresil|éthiopie|ethiopie|guatemala|colombie|yirgacheffe|sul de minas|antigua/i;
 
-  epreuve("planche-produits-de-la-fiche-seulement", async () => {
+  const rejeuProduitsDeLaFiche = async () => {
     // 1. Le texte, le contrôle des valeurs, la consigne, la lecture du verdict réel de B-2 (points 1 à 4).
     await rejeuProduits();
     // 2. Le verdict réel de B-2, avec les quatre origines relevées : refusée ; le compte rendu garde les noms exacts.
@@ -2555,7 +2564,10 @@ describe("les épreuves de l'essai réel du torréfacteur, étape 4 : les produi
     expect(demandes[0]).toContain("« cafés en grains », « cafés moulus », « coffrets »");
     expect(textes2[1]).toContain("À corriger : un nom de produit absent de la fiche du client est écrit (Bloc 09, sachet) : remplace-le ;");
     expect(textes2[1]).not.toMatch(INTERDITS);
-  });
+  };
+  // Remplacée le 27 novembre 2026 par faits-a-montrer-demandes-avant-la-marque, qui la rejoue en entier (sans fait donné).
+  rejeuxPartages.produitsDeLaFiche = rejeuProduitsDeLaFiche;
+  epreuve("planche-produits-de-la-fiche-seulement", rejeuProduitsDeLaFiche);
 
   epreuve("planche-signe-isole-declare-par-le-relecteur", () => {
     // 1. Le verdict réel de B-2, tel quel : le signe reste dans fautes (il n'est pas recopié entre deux espaces).
@@ -2695,7 +2707,7 @@ describe("l'épreuve de la planche en vrai de Mouture, étape 5 (verdicts réels
   const verdict = (n: string) => (JSON.parse(fs.readFileSync(`${F}/${P.def(n as never).groupe}-1-verdict.json`, "utf8")).verdict as { images: { case: string }[] }).images.find((x) => x.case === n) as never as import("@/lib/syna-agent/planche-en-vrai").ImageRelue;
   const raisons = (n: string) => P.raisonsDuRefusEnVrai(verdict(n), { inventaire: P.caseLue(inventaire, n), personnes: false, photo: false, element: n, logo: LOGO, produits: PRODUITS });
 
-  epreuve("planche-en-vrai-textes-du-logo-et-faits-inventes", async () => {
+  const rejeuTextesDuLogoEtFaitsInventes = async () => {
     // Les textes du logo, jamais en trop là où est le logo ; un mot du logo mal écrit le reste.
     for (const n of ["publication-1x1", "publication-9x16", "site-ordinateur"]) expect(raisons(n), n).toEqual([]);
     for (const n of ["produit-1", "produit-2", "reference-4"]) expect(raisons(n).join(" "), n).not.toMatch(/« TORRÉFACTION »|« ARTISANALE »|« MOUTURE »/);
@@ -2724,7 +2736,10 @@ describe("l'épreuve de la planche en vrai de Mouture, étape 5 (verdicts réels
       for (const x of ["PÉROU", "BRÉSIL", "100%", "ARABICA", "1928"]) expect(reprise, `${n} : ${x}`).not.toContain(x);
       expect(reprise).toContain("« Cafés en grains », « Cafés moulus », « Coffrets »");
     }
-  });
+  };
+  // Remplacée le 27 novembre 2026 par faits-a-montrer-demandes-avant-la-marque, qui la rejoue en entier (sans fait donné).
+  rejeuxPartages.textesDuLogoEtFaitsInventes = rejeuTextesDuLogoEtFaitsInventes;
+  epreuve("planche-en-vrai-textes-du-logo-et-faits-inventes", rejeuTextesDuLogoEtFaitsInventes);
 });
 
 describe("l'épreuve des erreurs techniques (une tâche au résultat incertain, sans aucun appel à l'IA)", () => {
@@ -2842,7 +2857,7 @@ describe("l'épreuve de la planche en vrai de Mouture identique à l'aperçu A (
   const raisons = (n: NomElement) => P.raisonsDuRefusEnVrai(v2(n), { inventaire: P.caseLue(inventaire, n), personnes: false, photo: false, element: n, logo: LOGO, produits: PRODUITS });
   const routeMouture = { key: "A", name: "Mouture", slogan: "TORRÉFACTION ARTISANALE", palette: { dark: "#2B140E" }, board: { planche: { domaine: "mouturefrance.fr", statut: "disponible", annee: 2026 } } } as unknown as import("@/lib/syna-agent/brand-routes").Route;
   const lum = (r: number, g: number, b: number) => 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  epreuve("planche-en-vrai-pas-identique-a-l-apercu-mouture", async () => {
+  const rejeuMouture = async () => {
     // Tout ce que demandaient les deux épreuves remplacées, sauf la police nommée au catalogue de genre compatible et le
     // logo empilé identique au principal.
     expect(rejeuxPartages.finitionsEtPolice && rejeuxPartages.identiqueALApercu).toBeTruthy();
@@ -2894,5 +2909,129 @@ describe("l'épreuve de la planche en vrai de Mouture identique à l'aperçu A (
     expect(raisons("produit-2").join(" ")).toMatch(/« EXCELLENCE »/);
     expect(raisons("reference-5").join(" ")).toMatch(/« Qualité »/);
     expect(P.RELECTEUR_EN_VRAI).toContain("aussiSurLApercu");
+  };
+  epreuve("planche-en-vrai-pas-identique-a-l-apercu-mouture", rejeuMouture);
+
+  epreuve("planche-en-vrai-reprise-hd-petits-textes-logo-et-coupe", async () => {
+    // Tout ce que demandait l'épreuve remplacée (son rejeu ne juge pas la coupe de reference-4).
+    await rejeuMouture();
+    const R = `${F}/reprise-trois-images`;
+    const reprise = [
+      ...P.RelectureDuGroupeSchema.parse(JSON.parse(fs.readFileSync(`${R}/relecture-produits-reprise-verdict.json`, "utf8"))).images,
+      ...P.RelectureDuGroupeSchema.parse(JSON.parse(fs.readFileSync(`${R}/relecture-references-reprise-verdict.json`, "utf8"))).images,
+    ];
+    const vr = (n: NomElement) => reprise.find((x) => x.case === n)!;
+    const juge = (n: NomElement, v = vr(n)) => P.raisonsDuRefusEnVrai(v, { inventaire: P.caseLue(inventaire, n), personnes: false, photo: false, element: n, logo: LOGO, produits: PRODUITS });
+    // reference-4, essai 2 : sa coupe, « comme dans l'aperçu », n'est plus reprochée ; elle reste à refaire pour ses étiquettes.
+    expect(raisons("reference-4").join(" ")).not.toMatch(/coupé ou collé au bord/);
+    expect(raisons("reference-4").join(" ")).toMatch(/manquent : « CAFÉ »/);
+    // 1. La ligne des petits textes, en positif, dans la ligne de l'élément, pour toute image ; la règle des preuves intacte.
+    expect(P.MICRO_TEXTES_EN_VRAI).toBe("Les petits textes illisibles de l'aperçu restent de simples traits ou une texture, sans aucun mot lisible ; seuls les mots déjà lisibles sur l'aperçu sont écrits.");
+    for (const n of P.NOMS_DES_ELEMENTS) {
+      const t = P.texteDeLElement({ element: n, nom: "Mouture", logo: true, photo: false, personnes: false, produits: PRODUITS });
+      expect(t.startsWith(`${P.REGLE_APERCU} ${P.regleDuLogo("Mouture")} `), n).toBe(true);
+      expect(t, n).toContain(P.MICRO_TEXTES_EN_VRAI);
+    }
+    expect(P.texteSansLaLigneDesTextes(P.texteDeLElement({ element: "produit-1", nom: "Mouture", logo: true, photo: false, personnes: false, produits: PRODUITS }), PRODUITS)).toBe(fs.readFileSync(`${F}/produit-1-1-texte-envoye.txt`, "utf8"));
+    for (const c of [P.MICRO_TEXTES_EN_VRAI, P.RELECTEUR_EN_VRAI]) expect(c).not.toMatch(/Mouture|ARABICA|ÉTIOPIE|Paris|FRANCE|PÉROU|1928|Écume|Racine/);
+    expect(P.RELECTEUR_EN_VRAI).toContain("un mot lisible écrit à sa place est un texte inventé");
+    // 2. Le nom et la phrase du logo, exacts, jamais une faute là où le logo est ; la reprise du réassemblage les reçoit.
+    for (const n of ["produit-2", "reference-4"] as const) expect(juge(n).join(" "), n).not.toMatch(/« TORRÉFACTION »|« ARTISANALE »|« MOUTURE »/);
+    expect(P.RELECTEUR_EN_VRAI).toContain("Le nom de la marque et la phrase de son logo, écrits exactement, ne sont jamais une faute, où que le logo soit posé");
+    const outil = fs.readFileSync("scripts/syna-recette/essai-planche-en-vrai-outil.ts", "utf8");
+    const appel = outil.slice(outil.indexOf("T.reprendreDesCasesEnVrai("), outil.indexOf("T.reprendreDesCasesEnVrai(") + 600);
+    expect(appel).toContain("produits: o.client.produits");
+    expect(appel).toContain("phrase: o.phrase");
+    // 3. La coupe fidèle à l'aperçu : jamais reprochée, ses mots tronqués non plus ; une coupe qui n'est pas dite fidèle, si.
+    expect(juge("reference-4")).toEqual([`${P.DEBUT_FAITS_INVENTES_EN_VRAI}« 100% ARABICA », « TORRÉFIÉ EN FRANCE », « 100% »`]);
+    const sansFait = { ...vr("reference-4"), inventes: [], textesLus: ["MOUTURE", "CAFÉ EN GRAINS"], note: 9 };
+    expect(juge("reference-4", { ...sansFait, pourquoi: "La composition est fidèle à l'aperçu, mais « GRAINS » touche le bord droit." })).toEqual(["un texte est coupé ou collé au bord"]);
+    expect(juge("reference-4", { ...sansFait, pourquoi: "", coupeCommeSurLApercu: true })).toEqual([]);
+    expect(P.RELECTEUR_EN_VRAI).toContain("- coupeCommeSurLApercu : ");
+    // Les trois images, rejugées : aucune gardée, chacune pour un mot lisible écrit à la place d'un petit texte de l'aperçu.
+    expect(juge("produit-2")[0]).toBe(`${P.DEBUT_FAITS_INVENTES_EN_VRAI}« ÉTIOPIENNE »`);
+    expect(juge("reference-5")[0]).toBe(`${P.DEBUT_FAITS_INVENTES_EN_VRAI}« Café de Paris »`);
+    for (const n of ["produit-2", "reference-4", "reference-5"] as const) {
+      const t = P.texteDeLElement({ element: n, nom: "Mouture", logo: n !== "reference-5", photo: false, personnes: false, produits: PRODUITS, raisons: P.raisonsPourLeDessinateurEnVrai(juge(n), { produits: PRODUITS }) });
+      expect(t, n).not.toMatch(/ÉTIOPIENNE|ARABICA|100%|FRANCE|Paris/);
+      expect(t, n).toContain(P.MICRO_TEXTES_EN_VRAI);
+      expect(t, n).toContain(P.ligneDesTextesEnVrai(PRODUITS));
+    }
+    // 4. La palette du bloc 02 : codes et légendes à l'encre pleine de l'aperçu, nets.
+    const demo = await sharp(fs.readFileSync(`${F}/apercu-planche-A-gardee.jpg`)).resize(P.TAILLE_DEMO.w, P.TAILLE_DEMO.h, { fit: "fill" }).png().toBuffer();
+    const cases = P.lesCases("standard"), b0 = cases.cases.palette;
+    const palette = ["#2E1A12", "#A86B3A", "#C89B6B", "#F6E9D7", "#7B8470"].map((hex, i) => ({ hex, nom: inventaire.couleurs[i].nom, mots: inventaire.couleurs[i].mots }));
+    const pol = (cle: string, famille: string, poids: number) => ({ cle, famille, fichier: "", poids, handle: `${cle}_n${String(poids)[0]}`, lue: famille, remplacee: false });
+    const png = await C.assemblerLaPlanche({ demo, boites: new Map([["palette", b0]]), pastilles: cases.pastilles, images: new Map(), versions: {} as never, palette,
+      polices: { titres: pol("montserrat", "Montserrat", 700), textes: pol("playfair_display", "Playfair Display", 400) }, signature: [], titres: new Map(), blocs: new Map(), encre: "#2E1A12", motsLus: T.lignesDesMotsLues(inventaire) });
+    const lumW = (hx: string) => { const c = C.rgbDe(hx).map((v) => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+    const contraste = (a: string, b: string) => (Math.max(lumW(a), lumW(b)) + 0.05) / (Math.min(lumW(a), lumW(b)) + 0.05);
+    const lignes = async (p: Buffer, k: number) => {
+      const { data, info } = await sharp(p).removeAlpha().raw().toBuffer({ resolveWithObject: true }), b = b0.map((v) => v * k) as import("@/lib/syna-agent/planche-en-vrai").Boite, fond = C.fondDe(data, info.width, b);
+      return { fond, l: C.lignesSousLesPastilles(data, info.width, b, cases.pastilles.map(([x, y, r]) => [x * k, y * k, r * k] as [number, number, number]), fond) };
+    };
+    const a = await lignes(demo, 1), z = await lignes(png, 2);
+    for (let i = 0; i < 5; i++) {
+      expect(z.l[i]?.length, `pastille ${i + 1}`).toBe(a.l[i]?.length);
+      for (let k = 1; k < a.l[i]!.length; k++) {
+        expect(contraste(z.l[i]![k].couleur, z.fond), `${i}:${k}`).toBeGreaterThanOrEqual(contraste(a.l[i]![k].plein!, a.fond) * 0.97);
+        expect(contraste(z.l[i]![k].couleur, z.fond), `${i}:${k}`).toBeGreaterThan(contraste(a.l[i]![k].couleur, a.fond));
+      }
+    }
+  });
+});
+
+describe("l'épreuve des faits à montrer, demandés avant la marque (27 novembre 2026, aucun appel)", async () => {
+  const F = await import("@/lib/syna-agent/faits-a-montrer");
+  const J = await import("@/lib/syna-agent/journey");
+  const P = await import("@/lib/syna-agent/planche-de-marque");
+  const V = await import("@/lib/syna-agent/planche-en-vrai");
+  const { lintClaims } = await import("@/lib/ai/tasks");
+
+  epreuve("faits-a-montrer-demandes-avant-la-marque", async () => {
+    // Tout ce que demandaient les deux épreuves remplacées, rejoué sans fait donné.
+    expect(rejeuxPartages.produitsDeLaFiche && rejeuxPartages.textesDuLogoEtFaitsInventes).toBeTruthy();
+    await rejeuxPartages.produitsDeLaFiche!();
+    await rejeuxPartages.textesDuLogoEtFaitsInventes!();
+    // 1. Le cahier, lu par le code ; ses parties choisies d'après l'activité et l'offre ; aucune question sur le logo.
+    const j = { start: { business: { value: "products", status: "answered", source: "client", at: 1 }, offer: { value: "Je torréfie et je vends en ligne des cafés en grains et moulus.", status: "answered", source: "client", at: 1 } } } as never;
+    expect(F.sujetsDuParcours(j).map((s) => s.sujet)).toEqual(["noms", "formats", "origine", "mentions", "fabrication", "torrefaction", "notes_de_gout", "annee", "ville"]);
+    expect(F.cahierDesFaits().flatMap((p) => p.sujets.map((s) => s.question)).join(" ")).not.toMatch(/logo|Mouture|Écume|Racine|Tenon/i);
+    // 2. Le résumé attend : les noms, l'année et la ville restent à demander ; la consigne dit les deux réponses permises.
+    expect(F.faitsAAborder(j, []).map((x) => x.sujet)).toEqual(["noms", "annee", "ville"]);
+    const jj = J.emptyJourney(); jj.start = (j as { start: typeof jj.start }).start;
+    expect(J.guideDeLEtape(jj)).toMatch(/« je ne sais pas » ou « je préfère ne pas le montrer »/);
+    expect(fs.readFileSync("src/lib/syna-agent/tools/start.ts", "utf8")).toContain("Faits à montrer pas encore demandés");
+    // 3. Un fait déjà répondu ne se redemande jamais ; les deux boutons sous la question d'un fait.
+    const connus: import("@/lib/syna-agent/faits-a-montrer").FaitAMontrer[] = [{ sujet: "annee", etat: "ne_sait_pas", at: 1 }];
+    expect(F.faitsRedemandes({ message: "", question: { text: "Depuis quand existe ton entreprise ?" } }, j, connus)).toEqual(["annee"]);
+    expect(F.avecLesChoixDesFaits({ question: { text: "Ta ville ?" }, askField: "fait:ville" }).question!.choices).toEqual(["Je ne sais pas", "Je préfère ne pas le montrer"]);
+    // 5 et 6. Les mentions vraies : écrites, jamais inventées ; tout le reste refusé ; ce qu'il ne veut pas montrer, jamais.
+    const faits = F.faitsPermis([
+      { sujet: "noms", etat: "donne", noms: ["Café des collines"], at: 1 }, { sujet: "formats", etat: "donne", valeur: "250 g", at: 1 },
+      { sujet: "origine", etat: "donne", valeur: "Éthiopie", at: 1 }, { sujet: "annee", etat: "donne", valeur: "2019", at: 1 }, { sujet: "ville", etat: "ne_montre_pas", valeur: "Nantes", at: 1 },
+    ]);
+    const o = { nom: "Brûlerie", annee: 2026, domaine: { domaine: "brulerie.fr", statut: "disponible" as const }, personnes: false, animaux: false, produits: ["cafés en grains"], faits };
+    const v = { nomLu: "Brûlerie", logoFidele: true, copyrightLu: "© 2026 Brûlerie", domaineLu: "brulerie.fr — disponible", fautes: [], microTextes: [], promesses: [] as string[], personnes: false, personnesVues: [], logoFonceSurFondSombre: false, motMaquette: false, copies: [], signesIsoles: [], produitsInventes: [] as { ou: string; texte: string }[], note: 9, pourquoi: "" } as never as import("@/lib/syna-agent/planche-de-marque").RelectureDeLaPlanche;
+    expect(P.lectureDeLaPlanche({ ...v, promesses: ["250 g", "Depuis 2019"], produitsInventes: [{ ou: "sachet", texte: "Origine Éthiopie" }] }, o).raisons).toEqual([]);
+    expect(P.lectureDeLaPlanche({ ...v, promesses: ["1 kg"], produitsInventes: [{ ou: "sachet", texte: "Origine Brésil" }] }, o).raisons.join(" ")).toMatch(/« 1 kg ».*« Origine Brésil »/);
+    expect(P.lectureDeLaPlanche({ ...v, produitsInventes: [{ ou: "site", texte: "Nantes" }] }, o).raisons).toContain(F.RAISON_FAIT_NON_MONTRE);
+    expect(P.demandeAuRelecteurDeLaPlanche({ ...o, texte: "t" })).not.toContain("Nantes");
+    const inv = { case: "produit-1", textes: ["Brûlerie"], logo: true } as never;
+    const lue = { case: "produit-1", identique: true, textesLus: ["Brûlerie", "250 g", "Origine Éthiopie", "Depuis 2019"], logoPresent: true, personne: false, logoFonceSurFondSombre: false, produitFidele: null, texteCoupe: false, note: 9, pourquoi: "" } as never as import("@/lib/syna-agent/planche-en-vrai").ImageRelue;
+    const ov = { inventaire: inv, personnes: false, photo: false, element: "produit-1", logo: { nom: "Brûlerie" }, produits: ["cafés en grains"], faits };
+    expect(V.raisonsDuRefusEnVrai(lue, ov)).toEqual([]);
+    expect(V.raisonsDuRefusEnVrai({ ...lue, textesLus: [...lue.textesLus, "1 kg"] }, ov).join(" ")).toMatch(/« 1 kg »/);
+    expect(V.raisonsDuRefusEnVrai({ ...lue, textesLus: [...lue.textesLus, "Nantes"] }, ov)).toContain(F.RAISON_FAIT_NON_MONTRE);
+    const t = V.texteDeLElement({ element: "produit-1", nom: "Brûlerie", logo: true, photo: false, personnes: false, produits: ["cafés en grains"], faits });
+    expect(t).toContain(V.MICRO_TEXTES_EN_VRAI);
+    expect(t).toContain("et ces mentions vraies, données par le client, écrites exactement");
+    expect(t).not.toContain("Nantes");
+    // 7. Une image déjà reçue n'est jamais payée deux fois : le texte d'avant les mentions est reconnu.
+    expect(V.texteSansLesMentionsVraies(t, ["cafés en grains"], faits)).toBe(V.texteDeLElement({ element: "produit-1", nom: "Brûlerie", logo: true, photo: false, personnes: false, produits: ["cafés en grains"] }));
+    // Les publications : ses mentions sont confirmées ; ce qu'il ne veut pas montrer, signalé.
+    const p = { business: "products", product: { facts: [], questions: [] }, settings: {} } as never;
+    expect(lintClaims("Torréfié depuis 2019.", p, { facts: F.faitsPourLeControle(faits), interdits: faits.interdits })).toEqual([]);
+    expect(lintClaims("À Nantes.", p, { facts: F.faitsPourLeControle(faits), interdits: faits.interdits }).map((c) => c.term)).toEqual(["Nantes"]);
   });
 });

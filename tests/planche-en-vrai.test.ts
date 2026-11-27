@@ -101,18 +101,18 @@ describe("le texte envoyé et les images jointes", async () => {
   it("REGLE mot pour mot (le nom du client à la place de celui de l'essai), plus une ligne qui dit ce qu'est l'élément", () => {
     expect(P.regle("Racine")).toBe(REGLE_DE_LANCER_PY);
     const t = P.texteDeLElement({ element: "publication-1x1", nom: "Aplomb", logo: true, photo: false, personnes: true });
-    expect(t).toBe(`${REGLE_DE_LANCER_PY.replace("Racine", "Aplomb")} C'est une publication carrée pour les réseaux sociaux, 1080 × 1080.`);
+    expect(t).toBe(`${REGLE_DE_LANCER_PY.replace("Racine", "Aplomb")} C'est une publication carrée pour les réseaux sociaux, 1080 × 1080. ${P.MICRO_TEXTES_EN_VRAI}`);
     // Sans accord du client pour des personnes, la ligne ajoute « Aucune personne n'apparaît. ».
-    expect(P.texteDeLElement({ element: "reference-2", nom: "Aplomb", logo: true, photo: false, personnes: false })).toBe(`${P.regle("Aplomb")} C'est une photo d'ambiance de la marque. Aucune personne n'apparaît.`);
+    expect(P.texteDeLElement({ element: "reference-2", nom: "Aplomb", logo: true, photo: false, personnes: false })).toBe(`${P.regle("Aplomb")} C'est une photo d'ambiance de la marque. ${P.MICRO_TEXTES_EN_VRAI} Aucune personne n'apparaît.`);
     // Les formats larges demandent une marge généreuse.
-    expect(P.ligneDeLElement("ouverture-site", true)).toMatch(/Garde des marges généreuses : aucun texte ne touche les bords\.$/);
-    expect(P.ligneDeLElement("ouverture-planche", true)).toMatch(/garde des marges généreuses en haut et en bas, rien ne touche les bords\.$/);
+    expect(P.ligneDeLElement("ouverture-site", true)).toMatch(/Garde des marges généreuses : aucun texte ne touche les bords\./);
+    expect(P.ligneDeLElement("ouverture-planche", true)).toMatch(/garde des marges généreuses en haut et en bas, rien ne touche les bords\./);
   });
   it("le logo n'est joint (et dit) que si l'inventaire le voit dans la case", () => {
     expect(P.jointesDeLElement({ apercu: a, logo: l, photo: null, inventaire: inv() }).map((j) => j.role)).toEqual(["apercu"]);
     expect(P.jointesDeLElement({ apercu: a, logo: l, photo: null, inventaire: inv({ logo: true }) }).map((j) => j.role)).toEqual(["apercu", "logo"]);
     const sans = P.texteDeLElement({ element: "reference-1", nom: "Aplomb", logo: false, photo: false, personnes: true });
-    expect(sans).toBe(`${P.REGLE_APERCU} C'est une photo d'ambiance de la marque.`);
+    expect(sans).toBe(`${P.REGLE_APERCU} C'est une photo d'ambiance de la marque. ${P.MICRO_TEXTES_EN_VRAI}`);
     expect(sans).not.toMatch(/logo officiel/);
   });
   it("la photo du produit est jointe quand le client en a une et que l'inventaire voit le produit, en dernier, avec sa phrase", () => {

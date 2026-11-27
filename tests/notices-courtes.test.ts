@@ -70,7 +70,8 @@ describe("banc gratuit des notices d'outils", () => {
     const tools = allTools();
     const total = tools.reduce((a, t) => a + toolEntry(t).length, 0), descriptions = tools.reduce((a, t) => a + t.description.length, 0);
     expect(descriptions).toBeLessThanOrEqual(61_750);
-    expect(total).toBeLessThanOrEqual(92_500);
+    // + 800 signes le 27 novembre 2026 : l'outil start.fait (les faits à montrer, demandés avant la marque), notice réduite au plus court.
+    expect(total).toBeLessThanOrEqual(93_300);
   });
 
   it("l'écriture courte se lit : facultatif marqué, bornes et valeur par défaut dites en mots", () => {

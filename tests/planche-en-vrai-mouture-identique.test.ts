@@ -190,10 +190,13 @@ describe("5. les faux refus : noms des produits de la fiche et textes de l'aper�
     expect(juge({ ...base, textesLus: ["DEPUIS 1928"], aussiSurLApercu: ["DEPUIS 1928"] }).join(" ")).toMatch(/faits ou produits inventés.*DEPUIS 1928/);
     expect(P.RELECTEUR_EN_VRAI).toContain("aussiSurLApercu : chaque texte de textesLus que tu lis aussi");
   });
-  it("ce qui reste vraiment à refaire : « EXCELLENCE » (produit-2), « Café de Qualité » (reference-5), le téléphone sans sa phrase manuscrite, et l'étagère de reference-4", () => {
+  it("ce qui reste vraiment à refaire : « EXCELLENCE » (produit-2), « Café de Qualité » (reference-5), le téléphone sans sa phrase manuscrite, et l'étagère de reference-4 (ses étiquettes ; sa coupe est celle de l'aperçu)", () => {
     expect(raisons2("produit-2").join(" ")).toMatch(/inventés.*« EXCELLENCE »/);
     expect(raisons2("reference-5").join(" ")).toMatch(/« Café », « de », « Qualité »/);
     expect(raisons2("site-telephone").join(" ")).toMatch(/manquent : « Une », « boutiq »/);
-    expect(raisons2("reference-4").join(" ")).toMatch(/coupé ou collé au bord/);
+    // Le relecteur écrit « coupées par le bord, comme dans l'aperçu » : depuis le 27 novembre 2026, une coupe fidèle à
+    // l'aperçu ne fait plus refuser ; l'étagère reste à refaire pour ses étiquettes (« CAFÉ » de « CAFÉ EN GRAINS » manque).
+    expect(raisons2("reference-4").join(" ")).not.toMatch(/coupé ou collé au bord/);
+    expect(raisons2("reference-4").join(" ")).toMatch(/manquent : « CAFÉ »/);
   });
 });

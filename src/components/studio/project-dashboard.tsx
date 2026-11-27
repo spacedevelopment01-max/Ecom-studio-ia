@@ -90,7 +90,8 @@ function Fiche({ data, open }: { data: DashboardData; open: boolean }) {
   const t = useT();
   const v = data.savoir;
   const notes = v?.notes ?? [];
-  const n = data.fiche.length + (v ? notes.length + v.choix.length + v.mots.length : data.notes.length);
+  const faits = v?.faits ?? [];
+  const n = data.fiche.length + (v ? notes.length + v.choix.length + v.mots.length + faits.length : data.notes.length);
   if (!n) return null;
   const answers = new Map((v?.reponses ?? []).map((r) => [r.label, r]));
   const groups = [
@@ -122,6 +123,17 @@ function Fiche({ data, open }: { data: DashboardData; open: boolean }) {
         )) : data.notes.map((x, i) => (
           <div key={`n${i}`} className="py-2.5" data-dashboard-note><dt className="text-xs text-muted first-letter:uppercase">{x.sujet}</dt><dd className="mt-0.5 whitespace-pre-wrap text-sm [overflow-wrap:anywhere]">{x.value}</dd></div>
         ))}
+        {faits.length > 0 && (
+          <div className="py-2.5" data-dashboard-faits>
+            <p className="text-xs font-medium text-ink-2">{t("Ce que tes images et ton site peuvent écrire", "What your images and site may show")}</p>
+            <dl className="mt-1 divide-y divide-line">
+              {faits.map((x) => (
+                <Line key={`${x.sujet}:${x.produit ?? ""}`} projectId={data.projectId} label={x.produit ? `${x.label} · ${x.produit}` : x.label} tag={x.etatLabel} value={x.etat === "donne" ? x.value : x.etat === "ne_sait_pas" ? t("Tu ne sais pas : rien ne s'écrit à cet endroit.", "You don't know: nothing is written there.") : t("Jamais montré.", "Never shown.")} muted={x.etat !== "donne"} corrected={!!x.corrigeLe} edit={{ type: "fait", sujet: x.sujet, ...(x.produit ? { produit: x.produit } : {}), value: x.etat === "donne" ? x.value : "" }} />
+              ))}
+            </dl>
+            <p className="mt-1 text-xs text-muted">{t("Seul ce qui est écrit ici peut apparaître sur tes étiquettes, tes images et ton site, mot pour mot.", "Only what is written here can appear on your labels, images and site, word for word.")}</p>
+          </div>
+        )}
         {!!v?.choix.length && (
           <div className="py-2.5" data-dashboard-choix>
             <p className="text-xs font-medium text-ink-2">{t("Tes choix", "Your choices")}</p>
@@ -143,7 +155,7 @@ function Fiche({ data, open }: { data: DashboardData; open: boolean }) {
   );
 }
 
-type Edit = { type: "reponse"; champ: string; value: string } | { type: "note"; sujet: string; value: string };
+type Edit = { type: "reponse"; champ: string; value: string } | { type: "note"; sujet: string; value: string } | { type: "fait"; sujet: string; produit?: string; value: string };
 /** Une ligne de la fiche : le client la corrige (ou l'efface, pour une note) ; la page se relit ensuite. */
 function Line({ projectId, label, value, tag, muted, corrected, edit, note }: { projectId: string; label: string; value: string; tag?: string; muted?: boolean; corrected?: boolean; edit: Edit | null; note?: boolean }) {
   const t = useT(), router = useRouter();
@@ -156,7 +168,7 @@ function Line({ projectId, label, value, tag, muted, corrected, edit, note }: { 
       setEditing(false); router.refresh();
     } catch (e) { setErr((e as Error).message || t("La correction n'a pas pu être enregistrée.", "The correction could not be saved.")); } finally { setBusy(false); }
   };
-  const save = () => edit && text.trim() && send(edit.type === "note" ? { type: "note", sujet: edit.sujet, value: text.trim() } : { type: "reponse", champ: edit.champ, value: text.trim() });
+  const save = () => edit && text.trim() && send(edit.type === "note" ? { type: "note", sujet: edit.sujet, value: text.trim() } : edit.type === "fait" ? { type: "fait", sujet: edit.sujet, ...(edit.produit ? { produit: edit.produit } : {}), value: text.trim() } : { type: "reponse", champ: edit.champ, value: text.trim() });
   return (
     <div className="py-2.5" data-dashboard-note={note ? "" : undefined}>
       <dt className="flex flex-wrap items-baseline gap-x-2 text-xs text-muted"><span className="first-letter:uppercase">{label}</span>{tag && <span className="rounded-full bg-paper px-2 py-px text-[11px]">{tag}</span>}{corrected && <span className="text-[11px]">{t("corrigé par toi", "corrected by you")}</span>}</dt>
@@ -175,6 +187,7 @@ function Line({ projectId, label, value, tag, muted, corrected, edit, note }: { 
           {edit && (
             <span className="flex shrink-0 gap-2 text-xs">
               <button type="button" onClick={() => setEditing(true)} className="text-ink-2 underline underline-offset-2">{t("Corriger", "Fix")}</button>
+              {edit.type === "fait" && <button type="button" disabled={busy} onClick={() => void send({ type: "fait", sujet: edit.sujet, ...(edit.produit ? { produit: edit.produit } : {}), value: null })} className="text-muted underline underline-offset-2">{t("Ne pas le montrer", "Don't show it")}</button>}
               {edit.type === "note" && <button type="button" disabled={busy} onClick={() => { if (window.confirm(t("Effacer cette ligne de ta fiche ?", "Delete this line from your file?"))) void send({ type: "note", sujet: edit.sujet, value: null }); }} className="text-muted underline underline-offset-2">{t("Effacer", "Delete")}</button>}
             </span>
           )}

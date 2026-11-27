@@ -1037,7 +1037,7 @@ export function epaisseurDuTrait(part: (x: number, y: number) => number, x0: num
  * chaque ligne : sa place (haut, bas, gauche, droite), son encre (la médiane des 10 % de points les plus foncés) et son
  * épaisseur de trait.
  */
-export function lignesDUneColonne(data: Buffer, W: number, fond: string, a: number, z: number, y0: number, y1: number): (LigneDuSpecimen & { droite: number })[] {
+export function lignesDUneColonne(data: Buffer, W: number, fond: string, a: number, z: number, y0: number, y1: number): (LigneDuSpecimen & { droite: number; plein: string })[] {
   const f = rgbDe(fond), ecart = (x: number, y: number) => { const i = (y * W + x) * 3; return Math.max(Math.abs(data[i] - f[0]), Math.abs(data[i + 1] - f[1]), Math.abs(data[i + 2] - f[2])); };
   const encre = (x: number, y: number) => ecart(x, y) > SEUIL_D_ENCRE_DU_SPECIMEN;
   const bandes: [number, number][] = [];
@@ -1055,8 +1055,12 @@ export function lignesDUneColonne(data: Buffer, W: number, fond: string, a: numb
     pts.sort((p, q) => p[3] - q[3]);
     const fonce = pts.slice(0, Math.max(1, Math.round(pts.length * 0.1)));
     const couleur = hexDe([0, 1, 2].map((k) => mediane(fonce.map((p) => p[k])))), c = rgbDe(couleur);
+    // L'encre pleine (27 novembre 2026) : la médiane des 2 % de points les plus foncés, le cœur des traits, jamais leur bord
+    // adouci ; un petit texte de l'aperçu n'atteint presque jamais son encre ailleurs.
+    const coeurDesTraits = pts.slice(0, Math.max(1, Math.round(pts.length * PART_DE_L_ENCRE_PLEINE)));
+    const pleinHex = hexDe([0, 1, 2].map((k) => mediane(coeurDesTraits.map((p) => p[k]))));
     const plein = Math.max(1, Math.abs(c[0] - f[0]), Math.abs(c[1] - f[1]), Math.abs(c[2] - f[2]));
-    return { haut, bas, gauche, droite, couleur, epaisseur: epaisseurDuTrait((u, v) => ecart(u, v) / plein, a, haut, z, bas) };
+    return { haut, bas, gauche, droite, couleur, plein: pleinHex, epaisseur: epaisseurDuTrait((u, v) => ecart(u, v) / plein, a, haut, z, bas) };
   });
 }
 export function lignesDuSpecimen(data: Buffer, W: number, b: Boite, fond: string): [LigneDuSpecimen[] | null, LigneDuSpecimen[] | null] | null {
@@ -1077,14 +1081,18 @@ export function lignesDuSpecimen(data: Buffer, W: number, b: Boite, fond: string
  * couleur, puis une à trois lignes de mots. Pour chacune : sa place (haut, bas, gauche, droite), son encre et sa hauteur.
  * Moins de trois lignes, ou plus de cinq : la colonne n'est pas lue (null) et garde la mise en page d'avant.
  */
-export type LigneDeLaPalette = { haut: number; bas: number; gauche: number; droite: number; couleur: string };
+export type LigneDeLaPalette = { haut: number; bas: number; gauche: number; droite: number; couleur: string;
+  /** L'encre pleine de la ligne (le cœur de ses traits) et l'épaisseur de son trait, en pixels de l'aperçu. */
+  plein?: string; epaisseur?: number };
+/** La part des points d'encre les plus foncés qui donne l'encre pleine d'une ligne (le cœur des traits). */
+export const PART_DE_L_ENCRE_PLEINE = 0.02;
 export function lignesSousLesPastilles(data: Buffer, W: number, b: Boite, pastilles: readonly [number, number, number][], fond: string): (LigneDeLaPalette[] | null)[] {
   return pastilles.map(([cx, cy, r], i) => {
     const prec = pastilles[i - 1], suiv = pastilles[i + 1];
     const a = Math.max(b[0] + 2, Math.round(prec ? (prec[0] + cx) / 2 : cx - (suiv ? (suiv[0] - cx) / 2 : r * 1.3)));
     const z = Math.min(b[2] - 2, Math.round(suiv ? (suiv[0] + cx) / 2 : cx + (prec ? (cx - prec[0]) / 2 : r * 1.3)));
     const l = lignesDUneColonne(data, W, fond, a + 1, z - 1, Math.round(cy + r + 6), b[3] - 2);
-    return l.length >= 3 && l.length <= 5 ? l.map(({ haut, bas, gauche, droite, couleur }) => ({ haut, bas, gauche, droite, couleur })) : null;
+    return l.length >= 3 && l.length <= 5 ? l.map(({ haut, bas, gauche, droite, couleur, plein, epaisseur }) => ({ haut, bas, gauche, droite, couleur, plein, epaisseur })) : null;
   });
 }
 /** La taille (en pixels de la planche en vrai) qui donne au texte `t` la hauteur d'encre de sa ligne mesurée. */
@@ -1096,16 +1104,29 @@ function tailleDeLaLigne(x: SKRSContext2D, t: string, f100: string, l: LigneDeLa
 /**
  * Une ligne sous une pastille redessinée sur sa ligne mesurée, à la taille donnée (la même pour toutes les lignes du même
  * rôle, comme sur l'aperçu : la médiane des tailles mesurées) : centrée sur le milieu mesuré, le bas de ses lettres sur le
- * bas mesuré, dans l'encre mesurée. Trop large pour sa colonne, elle est resserrée.
+ * bas mesuré. Trop large pour sa colonne, elle est resserrée.
+ *
+ * NETTE ET À L'ENCRE PLEINE (27 novembre 2026, essai réel de Mouture ; constat du chef d'orchestre sur le bloc 02 : les
+ * codes et les légendes « un peu flous et pâles ») : l'encre des petites lignes (le code et les mots, `petit`) est l'encre
+ * pleine de la ligne (le cœur de ses traits, `PART_DE_L_ENCRE_PLEINE`), jamais la moyenne de ses bords adoucis ; le nom,
+ * en gras, atteint son encre sur l'aperçu et la garde ; la ligne est posée sur des pixels entiers (une
+ * position à demi-pixel étale chaque trait sur deux pixels, plus pâles) ; jamais d'opacité réduite. Le trait garde la
+ * graisse de la mise en page (l'épaisseur mesurée sur un petit texte de l'aperçu compte son flou : l'épaissir d'autant
+ * le mettrait en gras, ce que l'aperçu ne montre pas).
  */
-function ligneDeLaPalette(x: SKRSContext2D, t: string, f100: string, l: LigneDeLaPalette, largeur: number, taille: number) {
-  x.textAlign = "left"; x.textBaseline = "alphabetic";
-  x.font = f100.replace(/\b100px\b/, `${(Math.round(taille * 10) / 10).toString()}px`);
+function ligneDeLaPalette(x: SKRSContext2D, t: string, f100: string, l: LigneDeLaPalette, largeur: number, taille: number, petit: boolean) {
+  x.textAlign = "left"; x.textBaseline = "alphabetic"; x.globalAlpha = 1;
+  const font = f100.replace(/\b100px\b/, `${(Math.round(taille * 10) / 10).toString()}px`);
+  x.font = font;
   const mm = x.measureText(t), w = mm.actualBoundingBoxLeft + mm.actualBoundingBoxRight, k = w > largeur ? largeur / w : 1;
-  const milieu = ((l.gauche + l.droite) / 2) * S;
-  x.fillStyle = l.couleur;
-  const px = milieu - (w * k) / 2 + mm.actualBoundingBoxLeft * k, py = l.bas * S - mm.actualBoundingBoxDescent;
-  if (k < 1) x.fillText(t, px, py, mm.width * k); else x.fillText(t, px, py);
+  const milieu = ((l.gauche + l.droite) / 2) * S, encre = petit ? l.plein ?? l.couleur : l.couleur;
+  const px = Math.round(milieu - (w * k) / 2 + mm.actualBoundingBoxLeft * k), py = Math.round(l.bas * S - mm.actualBoundingBoxDescent);
+  ecrireLaLigne(x, t, font, px, py, encre, k < 1 ? mm.width * k : undefined);
+}
+/** Une ligne écrite d'une seule encre, opaque. */
+function ecrireLaLigne(x: SKRSContext2D, t: string, font: string, px: number, py: number, encre: string, maxW: number | undefined) {
+  x.font = font; x.fillStyle = encre; x.textAlign = "left"; x.textBaseline = "alphabetic"; x.globalAlpha = 1;
+  if (maxW) x.fillText(t, px, py, maxW); else x.fillText(t, px, py);
 }
 /**
  * Les mots d'une couleur répartis sur `n` lignes, comme sur l'aperçu : les lignes lues à l'inventaire quand elles sont
@@ -1297,7 +1318,7 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
         // Le nom, le code et les lignes de mots, chacun à sa place, à la hauteur des lettres et dans l'encre de l'aperçu.
         // La taille du rôle, sans s'écarter de plus de 5 % de celle que la ligne mesurée demande (la mesure d'une petite
         // ligne de l'aperçu varie d'un pixel).
-        t.forEach(([s0, f], k) => { const m = tailles[Math.min(k, 2)]; ligneDeLaPalette(x, s0, f, l[k], (r * 2.4 - 2) * S, Math.min(m * 1.05, Math.max(m * 0.95, tailleDeLaLigne(x, s0, f, l[k])))); });
+        t.forEach(([s0, f], k) => { const m = tailles[Math.min(k, 2)]; ligneDeLaPalette(x, s0, f, l[k], (r * 2.4 - 2) * S, Math.min(m * 1.05, Math.max(m * 0.95, tailleDeLaLigne(x, s0, f, l[k]))), k >= 1); });
         return;
       }
       if (p.nom) texte(x, p.nom, cx * S, (cy + 68) * S, mp(26, G.nom), o.encre, "center", r * 2.4 * S);

@@ -129,7 +129,7 @@ export const clesDeLaPlanche = {
 };
 
 /** Les valeurs du métier, UNE fois par client (point de reprise : jamais repayées). */
-export async function valeursDuClient(ctx: Etape, ai: PlancheAi, o: { nom: string; metier: string; fiche: string; personnes: boolean; kind: "produits" | "services" }) {
+export async function valeursDuClient(ctx: Etape, ai: PlancheAi, o: { nom: string; metier: string; fiche: string; personnes: boolean; kind: "produits" | "services"; /** Les faits à montrer de sa fiche (27 novembre 2026). */ faits?: import("./faits-a-montrer").FaitsPermis }) {
   return ctx.step(clesDeLaPlanche.valeurs(o.nom), () => ecrireLesValeurs({ ecrire: (d, tour) => ai.valeurs(d, tour), aLaChargeDuStudio: (fn) => aLaChargeDuStudio(fn) }, o));
 }
 
@@ -144,6 +144,8 @@ export async function plancheDeLaRoute(o: {
   ctx: Etape; ai: PlancheAi; who: { userId: string; projectId: string }; route: Route; round: number;
   valeurs: { ok: true; valeurs: ValeursDuMetier } | { ok: false; raison: string }; logoAssetId: string; personnes: boolean; pass?: string;
   phrase?: readonly string[] | null;
+  /** Les faits à montrer de sa fiche (27 novembre 2026) : les mentions vraies permises, ce qu'il ne veut pas montrer. */
+  faits?: import("./faits-a-montrer").FaitsPermis;
 }): Promise<{ route: Route; issues: string[]; notes: string[] }> {
   const { ctx, ai, route: x } = o, key = x.key, notes: string[] = [], issues: string[] = [], pass = o.pass ?? "";
   const annee = anneeEnCours();
@@ -181,7 +183,7 @@ export async function plancheDeLaRoute(o: {
       },
       relire: (bandes, lg, disp, demande, tour, avecPhrase) => ctx.step(clesDeLaPlanche.relecture(o.round, key, tour, pass), () => (avecPhrase ? ai.relire(bandes, lg, disp, demande, `${key}-${o.round}-${tour}${pass}-relecture`, true) : ai.relire(bandes, lg, disp, demande, `${key}-${o.round}-${tour}${pass}-relecture`))),
       aLaChargeDuStudio: (fn) => aLaChargeDuStudio(fn),
-    }, { nom: x.name, annee, domaine: dom, personnes: o.personnes, animaux: disposition.animaux && disposition.laquelle === "standard", valeurs, logo, disposition: disposition.png, ...(phrase ? { phrase } : {}) });
+    }, { nom: x.name, annee, domaine: dom, personnes: o.personnes, animaux: disposition.animaux && disposition.laquelle === "standard", valeurs, logo, disposition: disposition.png, ...(phrase ? { phrase } : {}), ...(o.faits?.mentions.length || o.faits?.interdits.length ? { faits: o.faits } : {}) });
     const dernier = r.essais.at(-1)!;
     for (const e of r.essais) if (e.raisons.length) notes.push(`planche ${key}, essai ${e.tour} refusé : ${e.raisons.join(" ; ")}`);
     // Les petites finitions (un signe parasite isolé hors des mots) : notées au compte rendu, jamais une raison de refus.

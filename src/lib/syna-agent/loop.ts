@@ -65,6 +65,7 @@ import { logoAFinir } from "./tools/logo";
 import { ligneDesPlanchesAFinir, noterRefus, propositionOuverte } from "./devants";
 import { createdPosts } from "./tools/posts";
 import { assetUrl } from "../library";
+import { avecLesChoixDesFaits, defautDesFaitsRedemandes, faitsDuFil, faitsRedemandes, lignesDesFaits } from "./faits-a-montrer";
 
 export const MAX_STEPS = 12;
 const MAX_ACTIONS = 8;
@@ -323,7 +324,9 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
       {
         const lance = all<{ content_json: string }>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND run_id=? AND role='tool'", r.conversation_id, r.id).some((m) => (json<any>(m.content_json, {}).jobs ?? []).length > 0);
         const motsCorriges = r.project_id ? (() => { try { return loadWordingRules(r.project_id!); } catch { return []; } })() : [];
-        const regle = { etape: currentStep(journeyOf(r.conversation_id)), payant: (tool: string) => !!getTool(tool)?.estimate, lance, motsCorriges, aPresenter: planchesAPresenter(r.conversation_id, r.id) };
+        const regle = { etape: currentStep(journeyOf(r.conversation_id)), payant: (tool: string) => !!getTool(tool)?.estimate, lance, motsCorriges, aPresenter: planchesAPresenter(r.conversation_id, r.id),
+          // Un fait à montrer déjà répondu ne se redemande jamais (27 novembre 2026).
+          faitsRedemandes: (m: Parameters<typeof faitsRedemandes>[0]) => { try { return faitsRedemandes(m, journeyOf(ce.conversation_id), faitsDuFil(ce.conversation_id)); } catch { return []; } }, defautDesFaits: defautDesFaitsRedemandes };
         const defauts = defautsDuMessage(out, regle);
         if (defauts.length) {
           // Réécriture après le contrôle : une reprise du Studio, jamais débitée au client (règle du propriétaire).
@@ -337,6 +340,8 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
       const brouillon = out;
       ({ out, relu } = await selonLePas(() => reviewedReply(user, ce, jobId, step, deps, brouillon)));
       if (out.question?.choices?.length && currentStep(journeyOf(r.conversation_id)) === 5) out = { ...out, question: withoutLaterForRequired(out.question) };
+      // Sous la question d'un fait à montrer, les deux réponses toujours permises (27 novembre 2026).
+      if (currentStep(journeyOf(r.conversation_id)) === 0) out = avecLesChoixDesFaits(out);
       // Un bouton est une réponse complète, cliquable telle quelle : jamais un gabarit à trous (essai réel du 7 novembre :
       // « Oui, sous [À compléter : délai] et à [À compléter : conditions] »).
       if (out.question?.choices?.length) out = { ...out, question: { ...out.question, choices: out.question.choices.filter((c) => !/\[[^\]]*\]|…\s*$|\.\.\.\s*$/.test(c)) } };
@@ -765,7 +770,7 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
     // rien payer tant qu'il n'existe pas.
     reference: scope.routed ? `# Outils du Studio (ceux de l'étape en entier, les autres en liste)\n\n${routedCatalog(true, scope, currentStep(journeyOf(r.conversation_id)), momentDeLEtape(journeyOf(r.conversation_id)))}${guide ? `\n\n# Consigne de l'étape en cours (la même à chaque pas de l'étape)\n${guide}` : ""}` : `# Outils disponibles (registre commun)\n\n${toolCatalog(!!r.project_id, scope)}`,
     // Planches incomplètes : la ligne prioritaire, en tête (SINA prend les devants, 23 novembre 2026).
-    context: `${ligneDesPlanchesAFinir(r.conversation_id, r.project_id)}${backgroundCreation(r) ? BACKGROUND_NOTE : ""}# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id), { identityCount: identityCountOf(r.project_id), notes: r.project_id ? notesDuProjet(r.project_id) : ficheOf(r.conversation_id).notes, fiche: ficheDuFil(r.conversation_id, r.project_id), guideAPart: scope.routed })}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget de tes réponses\nAutorisé pour tes réponses : ${b.authorizedPct ?? 0} % du budget IA ; engagé au total dans ce fil : ${b.spentPct ?? 0} %. Chaque création payante passe en plus par la carte d'accord du client.${await stepQuote(user, r)}\n\n# Pièces jointes du fil\n${piecesJointes(r.conversation_id, history)}${resultatsDeLaDemande(history)}${note}`,
+    context: `${ligneDesPlanchesAFinir(r.conversation_id, r.project_id)}${backgroundCreation(r) ? BACKGROUND_NOTE : ""}# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id), { identityCount: identityCountOf(r.project_id), notes: r.project_id ? notesDuProjet(r.project_id) : ficheOf(r.conversation_id).notes, fiche: ficheDuFil(r.conversation_id, r.project_id), guideAPart: scope.routed, faits: (() => { try { const j0 = journeyOf(r.conversation_id); return currentStep(j0) === 0 ? lignesDesFaits(j0, faitsDuFil(r.conversation_id)) : undefined; } catch { return undefined; } })() })}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget de tes réponses\nAutorisé pour tes réponses : ${b.authorizedPct ?? 0} % du budget IA ; engagé au total dans ce fil : ${b.spentPct ?? 0} %. Chaque création payante passe en plus par la carte d'accord du client.${await stepQuote(user, r)}\n\n# Pièces jointes du fil\n${piecesJointes(r.conversation_id, history)}${resultatsDeLaDemande(history)}${note}`,
     // Le fil, un bloc par message, mis en mémoire chez le fournisseur (promptHead) : au pas suivant, il est repris.
     history: filEnBlocs(history, history[0] ? messagesDuClientAvant(r.conversation_id, history[0].seq) : []),
     prompt: `Étape ${step + 1} de cette demande. Réponds avec l'objet JSON {message, actions, question, done}.`,

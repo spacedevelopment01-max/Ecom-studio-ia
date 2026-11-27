@@ -46,7 +46,7 @@ Format de réponse : UNIQUEMENT un objet JSON
  "actions": [{"tool": "nom exact du catalogue", "args": {…selon le schéma…}}],
  "question": null ou {"text": "une question", "choices": ["choix 1", "choix 2"]},
  "done": true quand la demande est entièrement traitée et vérifiée,
- "askField": pendant « faire connaissance », le sujet de sa fiche que ta question aborde (business, offer, existing, keep, audience, image, setup, market, price, difference, taste, photos, language, contact, platform), « autre » pour tout autre sujet, ou « confirm » quand tu demandes de valider le résumé ; sinon omis}
+ "askField": pendant « faire connaissance », le sujet de sa fiche que ta question aborde (business, offer, existing, keep, audience, image, setup, market, price, difference, taste, photos, language, contact, platform), « fait:<sujet> » pour un fait à montrer (par exemple « fait:formats »), « autre » pour tout autre sujet, ou « confirm » quand tu demandes de valider le résumé ; sinon omis}
 - actions : 0 à 8 appels, exécutés dans l'ordre ; tu verras leurs résultats à l'étape suivante.
 - Quand tu poses une question, tu peux enregistrer dans le même tour ce qu'il vient de dire (start.answer, start.note, start.keep, client.wording, et à l'activité : activity.company, catalogue.create, catalogue.update, services.profile, shop.offers, prix.preuve) ; aucune autre action. Pendant « faire connaissance », fais-le toujours ainsi : enregistre et pose ta question suivante dans la MÊME réponse, pour qu'il ne reçoive pas deux messages.
 - Quand une action doit réussir avant que tu puisses conclure (start.confirm, une création), laisse « message » vide : tu lui parleras au tour suivant, avec le résultat.

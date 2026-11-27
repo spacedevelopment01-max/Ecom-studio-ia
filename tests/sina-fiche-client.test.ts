@@ -69,7 +69,7 @@ describe("SINA — la fiche du client", async () => {
     expect(F.refusPour(F.ficheOf(cid).notes, "logo")).toEqual(["le style plombier avec une goutte d'eau"]);
     // La chaîne de la marque reçoit la fiche entière, et chaque planche reçoit ses goûts.
     const chain = fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8");
-    expect(chain).toContain("const briefBlock = (j: Journey, projectId: string, guidance?: string) => [ficheTexte({ j, notes: notesDuProjet(projectId), projectId })");
+    expect(chain).toContain("const briefBlock = (j: Journey, projectId: string, guidance?: string) => [ficheTexte({ j, notes: notesDuProjet(projectId), projectId, faits: faitsDuProjet(projectId) })");
     expect(chain).toContain("clientLogo, gouts: goutsDuClient(j, p.id) });");
     expect(chain).not.toContain("refusLogo");
   });

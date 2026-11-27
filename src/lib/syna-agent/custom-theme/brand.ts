@@ -26,6 +26,7 @@ import { listProducts } from "../../products/catalog";
 import { peopleAllowed } from "../../people-policy";
 import { loadFamilyChoice, siteArtUniverse, type FamilyUniverse } from "../section-families";
 import { activityPlan } from "../activity";
+import { faitsPermisDuProjet, faitsPourLeControle, ligneDesFaitsPourLesTextes } from "../faits-a-montrer";
 import { asShown, clientNotes, clientNotesBrief, factFlags, fillKnownGaps, shownFacts, siteFacts } from "./site-facts";
 import { hoursLine, zoneCities } from "./tenue-data";
 import { journeyOf, setStep, updateJourney, type Journey } from "../journey";
@@ -327,6 +328,8 @@ export function brandBrief(p: Project, j: Journey | null): string {
     plan?.objections.length ? `Objections du client idéal (recherche) et réponses vraies : ${plan.objections.map((o) => `« ${o.objection} » → ${o.answer}`).join(" ; ")}.` : "",
     products.length ? `Produits du catalogue (noms, prix et options exacts : des faits confirmés, à écrire tels quels, jamais « [À compléter] » ni « à confirmer ») : ${products.join(" ; ")}.` : "",
     plan?.offer.facts.length ? `Faits confirmés par le client : ${plan.offer.facts.join(" ; ")}.` : "",
+    // Ses faits à montrer (27 novembre 2026) : les mentions vraies qu'il a données ; sans elles, rien ne change.
+    ligneDesFaitsPourLesTextes(faitsPermisDuProjet(p.id)),
     d.toConfirm?.length ? `NON confirmés, à ne JAMAIS affirmer : ${d.toConfirm.join(" ; ")}.` : "",
     plan?.company.shipping ? `Livraison : ${plan.company.shipping}.` : "",
     plan?.company.returns ? `Retours : ${plan.company.returns}.` : "",
@@ -612,7 +615,7 @@ export function unconfirmedClaims(p: Project, html: string, known: KnownFacts = 
  * descriptions, options, prix de chaque produit et de chaque version, en euros) et les notes du client prises par SINA.
  * Un prix du catalogue ou un fait dit par le client n'est jamais « à confirmer ».
  */
-export type KnownFacts = { facts: string[]; prices: number[] };
+export type KnownFacts = { facts: string[]; prices: number[]; /** Ce qu'il ne veut pas montrer (ses faits à montrer) : jamais écrit. */ interdits?: string[] };
 export function knownFacts(p: Pick<Project, "id">): KnownFacts {
   const facts: string[] = [], prices: number[] = [];
   try {
@@ -622,7 +625,10 @@ export function knownFacts(p: Pick<Project, "id">): KnownFacts {
     }
   } catch { /* catalogue indisponible : seuls les faits de la fiche comptent */ }
   try { for (const n of clientNotes(p.id)) facts.push(`${n.title} ${n.value}`); } catch { /* notes indisponibles */ }
-  return { facts: facts.map((x) => x.replace(/\s+/g, " ").trim()).filter(Boolean), prices: [...new Set(prices)] };
+  // Ses faits à montrer (27 novembre 2026) : ses mentions vraies sont confirmées ; ce qu'il ne veut pas montrer, jamais écrit.
+  const f = faitsPermisDuProjet(p.id);
+  facts.push(...faitsPourLeControle(f));
+  return { facts: facts.map((x) => x.replace(/\s+/g, " ").trim()).filter(Boolean), prices: [...new Set(prices)], ...(f.interdits.length ? { interdits: f.interdits } : {}) };
 }
 
 /** Textes visibles d'une section (titres, boutons, liens), pour montrer sa forme au plan sans tout son HTML. */
