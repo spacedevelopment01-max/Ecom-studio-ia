@@ -1,0 +1,225 @@
+{
+  "nom": "Havane",
+  "metier": {
+    "metier": "un atelier de maroquinerie qui fabrique et vend en ligne des articles en cuir faits main : sacs, portefeuilles et ceintures",
+    "court": "la maroquinerie",
+    "piste": "savoir-faire"
+  },
+  "compte": {
+    "voulues": 12,
+    "correctesDesLesPlanches": 11,
+    "remplacees": 1,
+    "lesquelles": [
+      {
+        "modele": "gpt-image-2.6-flare",
+        "case": 3,
+        "raison": "nom mal écrit : « HAANE »"
+      }
+    ],
+    "toursDeRemplacement": 1,
+    "complete": true
+  },
+  "gardees": [
+    {
+      "numero": 1,
+      "fichier": "esquisse-01.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 1,
+      "piste": "un H barré par une lanière de cuir surpiquée",
+      "pourquoi": "Le monogramme est net et élégant, et la lanière cousue relie clairement le H au métier du cuir.",
+      "phrase": {
+        "texte": "MAROQUINERIE ARTISANALE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 2,
+      "fichier": "esquisse-02.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 2,
+      "piste": "un A sans barre posé sur un trait couleur cuir",
+      "pourquoi": "Le logotype est sobre et lisible, et le détail cuivré sous le A sans barre lui donne une signature discrète.",
+      "phrase": {
+        "texte": "SACS · PORTEFEUILLES · CEINTURES",
+        "ok": true
+      }
+    },
+    {
+      "numero": 3,
+      "fichier": "esquisse-03.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 3,
+      "piste": "un H en lanières cousues dont la barre s'enroule",
+      "pourquoi": "Le H formé de bandes de cuir surpiquées est clair, chaleureux et facile à mémoriser.",
+      "phrase": {
+        "texte": "ATELIER DE MAROQUINERIE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 4,
+      "fichier": "esquisse-04.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 4,
+      "piste": "un sceau rond avec un H dans une peau de cuir",
+      "pourquoi": "Ce cachet rond est lisible et classique, et la peau tannée encadrant le H évoque immédiatement le cuir.",
+      "phrase": {
+        "texte": "CUIR FAIT MAIN",
+        "ok": true
+      }
+    },
+    {
+      "numero": 5,
+      "fichier": "esquisse-05.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 5,
+      "piste": "un V à la courbe déliée qui lie les lettres",
+      "pourquoi": "Le logotype raffiné tire sa force de la ligature fluide du V, qui reste parfaitement lisible.",
+      "phrase": {
+        "texte": "MAROQUINERIE ARTISANALE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 6,
+      "fichier": "esquisse-06.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 6,
+      "piste": "un H dont la barre se plie comme un cuir souple",
+      "pourquoi": "Le H bicolore à barre en S est moderne, net et facile à décliner.",
+      "phrase": {
+        "texte": "OBJETS DURABLES / EN CUIR",
+        "lignes": [
+          "OBJETS DURABLES",
+          "EN CUIR"
+        ],
+        "ok": true
+      }
+    },
+    {
+      "numero": 7,
+      "fichier": "esquisse-07.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 1,
+      "piste": "un H traversé par une lanière ondulée surpiquée",
+      "pourquoi": "Le H est fort et lisible, mais la barre ondulée en pointillés rappelle autant une route qu'une couture.",
+      "phrase": {
+        "texte": "MAROQUINERIE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 8,
+      "fichier": "esquisse-08.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 2,
+      "piste": "le nom encadré par le contour d'une peau tannée",
+      "pourquoi": "Le nom est très lisible dans un contour de peau de cuir ouvert, une idée simple et bien liée au métier.",
+      "phrase": {
+        "texte": "ATELIER DE MAROQUINERIE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 9,
+      "fichier": "esquisse-09.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 4,
+      "piste": "un nom manuscrit souligné par une ceinture bouclée",
+      "pourquoi": "L'écriture manuscrite est lisible et le soulignement en forme de ceinture à boucle est une idée claire.",
+      "phrase": {
+        "texte": "MAROQUINERIE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 10,
+      "fichier": "esquisse-10.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 5,
+      "piste": "un H blanc découpé dans une peau de cuir",
+      "pourquoi": "La peau de cuir pleine avec un H en réserve est forte et lisible, même en petit.",
+      "phrase": {
+        "texte": "ATELIER",
+        "ok": true
+      }
+    },
+    {
+      "numero": 11,
+      "fichier": "esquisse-11.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 6,
+      "piste": "un H dont la barre est une ceinture bouclée",
+      "pourquoi": "Le H barré d'une ceinture à boucle est net et évocateur, et il garde un monogramme élégant.",
+      "phrase": {
+        "texte": "MAROQUINERIE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 12,
+      "fichier": "esquisse-12.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 2,
+      "case": 2,
+      "piste": "Un H vert dont la barre devient un ruban ondulé",
+      "pourquoi": "Le H élégant traversé d'un ruban souple est net, lisible et raffiné."
+    }
+  ],
+  "ecartees": [
+    {
+      "fichier": "ecartee-gpt-image-2.6-flare-case-3.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 3,
+      "raison": "nom mal écrit : « HAANE »"
+    },
+    {
+      "fichier": "ecartee-remplacement-1-gpt-image-2.6-flare-case-1.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 2,
+      "case": 1,
+      "raison": "Le monogramme en cuir se lit comme un M et non comme un H, ce qui brouille le lien avec le nom Havane."
+    },
+    {
+      "fichier": "ecartee-remplacement-1-gpt-image-2.6-flare-case-3.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 2,
+      "case": 3,
+      "raison": "correcte, mais pas nécessaire : les 6 de ce modèle étaient déjà là"
+    },
+    {
+      "fichier": "ecartee-remplacement-1-gpt-image-2.6-flare-case-4.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 2,
+      "case": 4,
+      "raison": "correcte, mais pas nécessaire : les 6 de ce modèle étaient déjà là"
+    },
+    {
+      "fichier": "ecartee-remplacement-1-gpt-image-2.6-flare-case-5.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 2,
+      "case": 5,
+      "raison": "correcte, mais pas nécessaire : les 6 de ce modèle étaient déjà là"
+    },
+    {
+      "fichier": "ecartee-remplacement-1-gpt-image-2.6-flare-case-6.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 2,
+      "case": 6,
+      "raison": "correcte, mais pas nécessaire : les 6 de ce modèle étaient déjà là"
+    }
+  ],
+  "reprise": true
+}

@@ -1,0 +1,161 @@
+{
+  "esquisses": [
+    {
+      "numero": 1,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "Le monogramme est net et élégant, et la lanière cousue relie clairement le H au métier du cuir.",
+      "piste": "un H barré par une lanière de cuir surpiquée",
+      "phraseSousLeNom": [
+        "MAROQUINERIE ARTISANALE"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 2,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "Le logotype est sobre et lisible, et le détail cuivré sous le A sans barre lui donne une signature discrète.",
+      "piste": "un A sans barre posé sur un trait couleur cuir",
+      "phraseSousLeNom": [
+        "SACS · PORTEFEUILLES · CEINTURES"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 3,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "Le H formé de bandes de cuir surpiquées est clair, chaleureux et facile à mémoriser.",
+      "piste": "un H en lanières cousues dont la barre s'enroule",
+      "phraseSousLeNom": [
+        "ATELIER DE MAROQUINERIE"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 4,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "Ce cachet rond est lisible et classique, et la peau tannée encadrant le H évoque immédiatement le cuir.",
+      "piste": "un sceau rond avec un H dans une peau de cuir",
+      "phraseSousLeNom": [
+        "CUIR FAIT MAIN"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 5,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "Le logotype raffiné tire sa force de la ligature fluide du V, qui reste parfaitement lisible.",
+      "piste": "un V à la courbe déliée qui lie les lettres",
+      "phraseSousLeNom": [
+        "MAROQUINERIE ARTISANALE"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 6,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "Le H bicolore à barre en S est moderne, net et facile à décliner.",
+      "piste": "un H dont la barre se plie comme un cuir souple",
+      "phraseSousLeNom": [
+        "OBJETS DURABLES",
+        "EN CUIR"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 7,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "Le H est fort et lisible, mais la barre ondulée en pointillés rappelle autant une route qu'une couture.",
+      "piste": "un H traversé par une lanière ondulée surpiquée",
+      "phraseSousLeNom": [
+        "MAROQUINERIE"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 8,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "Le nom est très lisible dans un contour de peau de cuir ouvert, une idée simple et bien liée au métier.",
+      "piste": "le nom encadré par le contour d'une peau tannée",
+      "phraseSousLeNom": [
+        "ATELIER DE MAROQUINERIE"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 9,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAANE",
+      "ok": false,
+      "pourquoi": "Le V est remplacé par une forme confuse et bavée, si bien que le nom ne se lit plus et que le dessin est incompréhensible.",
+      "piste": "une lettre centrale transformée en personnage",
+      "phraseSousLeNom": [
+        "MAROQUINERIE"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 10,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "Havane",
+      "ok": true,
+      "pourquoi": "L'écriture manuscrite est lisible et le soulignement en forme de ceinture à boucle est une idée claire.",
+      "piste": "un nom manuscrit souligné par une ceinture bouclée",
+      "phraseSousLeNom": [
+        "MAROQUINERIE"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 11,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "La peau de cuir pleine avec un H en réserve est forte et lisible, même en petit.",
+      "piste": "un H blanc découpé dans une peau de cuir",
+      "phraseSousLeNom": [
+        "ATELIER"
+      ],
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 12,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "Le H barré d'une ceinture à boucle est net et évocateur, et il garde un monogramme élégant.",
+      "piste": "un H dont la barre est une ceinture bouclée",
+      "phraseSousLeNom": [
+        "MAROQUINERIE"
+      ],
+      "phraseBienEcrite": true
+    }
+  ]
+}

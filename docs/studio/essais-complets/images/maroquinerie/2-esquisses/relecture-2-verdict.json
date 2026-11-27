@@ -1,0 +1,70 @@
+{
+  "esquisses": [
+    {
+      "numero": 1,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": false,
+      "pourquoi": "Le monogramme en cuir se lit comme un M et non comme un H, ce qui brouille le lien avec le nom Havane.",
+      "piste": "Une lettre massive en texture cuir aux flancs galbés",
+      "phraseSousLeNom": [],
+      "phraseBienEcrite": false
+    },
+    {
+      "numero": 2,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "Le H élégant traversé d'un ruban souple est net, lisible et raffiné.",
+      "piste": "Un H vert dont la barre devient un ruban ondulé",
+      "phraseSousLeNom": [],
+      "phraseBienEcrite": false
+    },
+    {
+      "numero": 3,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "La peau de cuir surpiquée qui encadre le H évoque clairement la maroquinerie et reste très lisible.",
+      "piste": "Un H à empattements dans un écusson en forme de peau de cuir surpiquée",
+      "phraseSousLeNom": [],
+      "phraseBienEcrite": false
+    },
+    {
+      "numero": 4,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "Le H aux formes arrondies est simple, moderne et facile à reproduire.",
+      "piste": "Un H noir dont la barre devient une arche souple",
+      "phraseSousLeNom": [],
+      "phraseBienEcrite": false
+    },
+    {
+      "numero": 5,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "Le nom classique à empattements, surmonté d'une petite peau de cuir, est sobre et lisible.",
+      "piste": "Un logotype à empattements coiffé d'une petite peau de cuir entre deux filets",
+      "phraseSousLeNom": [],
+      "phraseBienEcrite": false
+    },
+    {
+      "numero": 6,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "HAVANE",
+      "ok": true,
+      "pourquoi": "La lanière de cuir surpiquée qui forme la barre du H est une idée claire et parlante.",
+      "piste": "Un H dont la barre est une lanière de cuir surpiquée",
+      "phraseSousLeNom": [],
+      "phraseBienEcrite": false
+    }
+  ]
+}
