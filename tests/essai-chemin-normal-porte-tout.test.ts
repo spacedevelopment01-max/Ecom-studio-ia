@@ -100,7 +100,8 @@ describe("le premier passage de la planche en vrai reçoit ce que reçoit la rep
     const attendusAuRelecteur = (d: string) => {
       expect(d).toContain("« MAROQUINERIE » puis « FAITE MAIN »");
       expect(d).toContain("tannage végétal");
-      for (const p of client.produits) expect(d).toContain(`« ${p} »`);
+      // Le client a donné ses noms exacts : le relecteur les reçoit à la place des produits de la fiche.
+      for (const p of faits.noms ?? client.produits) expect(d).toContain(`« ${p} »`);
     };
     for (const g of P.GROUPES) attendusAuRelecteur(demandes.get(`relecture-${g}`)!);
     // Ses faits rangés dans la fiche du projet de l'essai, comme dans le Studio (l'assemblage les relit là).
