@@ -62,7 +62,7 @@ function TrashGrid({ assets, onRestored }: { assets: AssetView[]; onRestored: ()
       toast("bad", (e as Error).message);
     }
   };
-  if (!assets.length) return <Empty title={t("Aucune image supprimée", "No deleted images")} icon={<ImagePlus className="size-5" />}>{t("Les images que vous supprimez arrivent ici : vous pouvez les restaurer à tout moment.", "Images you delete land here: you can restore them at any time.")}</Empty>;
+  if (!assets.length) return <Empty title={t("Aucune image supprimée", "No deleted images")} icon={<ImagePlus className="size-5" />}>{t("Les images que tu supprimes arrivent ici : tu peux les restaurer à tout moment.", "Images you delete land here: you can restore them at any time.")}</Empty>;
   return (
     <div className="columns-2 gap-4 sm:columns-3 xl:columns-4">
       {assets.map((a) => (
@@ -169,7 +169,7 @@ function PeopleConsent() {
   return (
     <Card className="p-4">
       <Toggle checked={on} onChange={change} disabled={busy} label={t("Autoriser des personnes dans les visuels créés (images, vidéos, publicités)", "Allow people in created visuals (images, videos, ads)")} />
-      <p className="mt-2 text-xs text-muted">{on ? t("Le studio peut montrer des personnes quand la scène s'y prête.", "The studio may show people when the scene calls for it.") : t("Par défaut, aucune personne n'est ajoutée : un visuel qui en montre une est refusé. Vos propres photos avec des personnes restent utilisables.", "By default no person is added: a visual showing one is rejected. Your own photos with people remain usable.")}</p>
+      <p className="mt-2 text-xs text-muted">{on ? t("Le studio peut montrer des personnes quand la scène s'y prête.", "The studio may show people when the scene calls for it.") : t("Par défaut, aucune personne n'est ajoutée : un visuel qui en montre une est refusé. Tes propres photos avec des personnes restent utilisables.", "By default no person is added: a visual showing one is rejected. Your own photos with people remain usable.")}</p>
     </Card>
   );
 }
@@ -184,12 +184,12 @@ export function sourceOf(a: Pick<AssetView, "origin" | "role" | "meta">): Source
 }
 const SOURCES: [Source | "", string, string][] = [
   ["", "Toutes", "All"],
-  ["mine", "Vos photos", "Your photos"],
+  ["mine", "Tes photos", "Your photos"],
   ["stock", "Photos libres", "Royalty-free"],
   ["ai", "Créées par l'IA", "Created by AI"],
   ["studio", "Studio (détourages, mises en scène)", "Studio (cutouts, staged)"],
 ];
-const SOURCE_BADGE: Record<Source, [string, string]> = { mine: ["Vous", "Yours"], stock: ["Libre", "Free"], ai: ["IA", "AI"], studio: ["Studio", "Studio"] };
+const SOURCE_BADGE: Record<Source, [string, string]> = { mine: ["À toi", "Yours"], stock: ["Libre", "Free"], ai: ["IA", "AI"], studio: ["Studio", "Studio"] };
 
 const PRODUCT_AI_KINDS: [string, string, string][] = [
   ["usage_scene", "Produit en situation", "Product in a real setting"],
@@ -219,8 +219,8 @@ export function ImageAiNotice({ reason }: { reason?: string | null }) {
   return (
     <div className="rounded-2xl border border-warn/30 bg-warn-soft px-4 py-3 text-sm text-warn" data-image-ai-notice>
       <strong>{t("Création d'images par l'IA indisponible pour l'instant.", "AI image creation is unavailable for now.")}</strong>{" "}
-      {reason ? t(`Raison : ${reason}.`, `Reason: ${reason}.`) : t("Budget IA épuisé ou fournisseur désactivé.", "AI budget used up or provider disabled.")}{" "}
-      {t("Aucune image n'est fabriquée à la place : vous pouvez importer vos photos ou chercher des photos libres.", "No image is made instead: you can upload your photos or search royalty-free photos.")}
+      {reason ? t(`Raison : ${reason}.`, `Reason: ${reason}.`) : t("Budget IA du mois utilisé, ou IA momentanément indisponible.", "This month's AI budget is used up, or AI is temporarily unavailable.")}{" "}
+      {t("Aucune image n'est fabriquée à la place : tu peux ajouter tes photos ou chercher des photos libres.", "No image is made instead: you can upload your photos or search royalty-free photos.")}
     </div>
   );
 }
@@ -255,7 +255,7 @@ export default function TabImages() {
       fd.append("role", services ? "lifestyle" : "original");
       const r = await fetch(`/api/projects/${id}/files`, { method: "POST", body: fd });
       if (!r.ok) throw new Error((await r.json().catch(() => ({})))?.error ?? t("Import impossible.", "Upload failed."));
-      toast("ok", t("Photos ajoutées à votre banque.", "Photos added to your bank."));
+      toast("ok", t("Photos ajoutées à ta banque.", "Photos added to your bank."));
       await reload();
     } catch (e) {
       toast("bad", (e as Error).message);
@@ -297,7 +297,7 @@ export default function TabImages() {
           <TrashGrid assets={all} onRestored={reload} />
         ) : list && shown.length === 0 ? (
           <Empty title={t("Aucune image ici pour l'instant", "No images here yet")} icon={<ImagePlus className="size-5" />} action={!locked && <Button icon={<Search className="size-4" />} onClick={() => setDialog("search")}>{t("Chercher des photos libres", "Find royalty-free photos")}</Button>}>
-            {t("Importez vos photos, cherchez des photos libres de droits ou créez une image : elle arrive ici, sans texte.", "Upload your photos, search royalty-free photos or create an image: it lands here, with no text.")}
+            {t("Ajoute tes photos, cherche des photos libres de droits ou crée une image : elle arrive ici, sans texte.", "Upload your photos, search royalty-free photos or create an image: it lands here, with no text.")}
           </Empty>
         ) : (
           <div className="columns-2 gap-4 sm:columns-3 xl:columns-4">
@@ -323,10 +323,10 @@ export default function TabImages() {
       {/* Fenêtres remontées quand l'activité du projet est connue : ouvertes avant son chargement, elles proposaient le
           « Type » d'une boutique à une entreprise de services (valeur fixée au premier affichage). */}
       <Modal open={dialog === "search"} onClose={() => setDialog(null)} title={t("Chercher des photos libres", "Find royalty-free photos")} wide>
-        <SearchPhotos key={services ? "services" : "products"} services={services} peopleAllowed={(data?.settings as { peopleAllowed?: boolean } | undefined)?.peopleAllowed === true} onStarted={(jobId) => (setDialog(null), follow(jobId, t("Photos trouvées : elles sont dans votre banque.", "Photos found: they're in your bank."), t("Aucune photo libre ne convient à ce sujet : rien n'a été ajouté. Essayez un autre sujet ou importez vos photos.", "No royalty-free photo fits this subject: nothing was added. Try another subject or upload your photos.")))} />
+        <SearchPhotos key={services ? "services" : "products"} services={services} peopleAllowed={(data?.settings as { peopleAllowed?: boolean } | undefined)?.peopleAllowed === true} onStarted={(jobId) => (setDialog(null), follow(jobId, t("Photos trouvées : elles sont dans ta banque.", "Photos found: they're in your bank."), t("Aucune photo libre ne convient à ce sujet : rien n'a été ajouté. Essaie un autre sujet ou ajoute tes photos.", "No royalty-free photo fits this subject: nothing was added. Try another subject or upload your photos.")))} />
       </Modal>
       <Modal open={dialog === "create"} onClose={() => setDialog(null)} title={t("Créer une image", "Create an image")} wide>
-        <CreateImage key={themePreparation?.themePlacement.slotKey??(services ? "services" : "products")} preparation={themePreparation} services={services} q={q} onStarted={(jobId) => (setDialog(null), follow(jobId, t("Image prête : elle est dans votre banque.", "Image ready: it's in your bank."), t("Aucune image n'a été retenue (contrôle de qualité ou IA indisponible) : rien n'a été mis à la place. Le détail est dans les tâches du projet.", "No image was kept (quality check or AI unavailable): nothing was put in its place. Details are in the project's tasks.")))} />
+        <CreateImage key={themePreparation?.themePlacement.slotKey??(services ? "services" : "products")} preparation={themePreparation} services={services} q={q} onStarted={(jobId) => (setDialog(null), follow(jobId, t("Image prête : elle est dans ta banque.", "Image ready: it's in your bank."), t("Aucune image n'a été retenue (contrôle de qualité ou IA indisponible) : rien n'a été mis à la place. Le détail est dans les tâches du projet.", "No image was kept (quality check or AI unavailable): nothing was put in its place. Details are in the project's tasks.")))} />
       </Modal>
       <AssetViewer asset={viewer} onClose={() => setViewer(null)} onChanged={reload} />
     </div>
@@ -353,7 +353,7 @@ function SearchPhotos({ services, peopleAllowed, onStarted }: { services: boolea
   };
   return (
     <div className="grid gap-4" data-bank-search-dialog>
-      <p className="text-sm text-muted">{t("Le studio cherche des photos libres de droits sur votre sujet (ou, sans sujet, sur votre activité) : licence vérifiée, sujet contrôlé. Gratuit, aucune IA d'images.", "The studio searches royalty-free photos on your subject (or, without one, on your business): license verified, subject checked. Free, no AI images.")}</p>
+      <p className="text-sm text-muted">{t("Le Studio cherche des photos libres de droits sur ton sujet (ou, sans sujet, sur ton activité) : licence vérifiée, sujet contrôlé. Gratuit, aucune IA d'images.", "The studio searches royalty-free photos on your subject (or, without one, on your business): license verified, subject checked. Free, no AI images.")}</p>
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label={t("Sujet (facultatif)", "Subject (optional)")} htmlFor="bs-topic"><Input id="bs-topic" value={f.topic} maxLength={200} onChange={(e) => setF({ ...f, topic: e.target.value })} placeholder={services ? t("Ex. chantier terminé, outils", "E.g. finished job, tools") : t("Ex. salle de bain lumineuse", "E.g. bright bathroom")} /></Field>
         <Field label={t("Type", "Type")} htmlFor="bs-kind">
@@ -376,7 +376,7 @@ function SearchPhotos({ services, peopleAllowed, onStarted }: { services: boolea
           <span>{t("Accepter les silhouettes (personne de dos ou dans l'ombre, visage non visible)", "Allow silhouettes (seen from behind or in shadow, face not visible)")}</span>
         </label>
       )}
-      <p className="text-xs text-muted">{t("Votre texte est cherché tel quel sur Pixabay. Les photos libres de droits illustrent votre activité : ce ne sont pas des photos de vos réalisations. Une photo créée par l'IA et publiée sur Pixabay est signalée « créée par l'IA ».", "Your text is searched as-is on Pixabay. Royalty-free photos illustrate your business: they aren't photos of your own work. A photo made by AI and published on Pixabay is marked \"AI-made\".")}</p>
+      <p className="text-xs text-muted">{t("Ton texte est cherché tel quel sur Pixabay. Les photos libres de droits illustrent ton activité : ce ne sont pas des photos de tes réalisations. Une photo créée par l'IA et publiée sur Pixabay est signalée « créée par l'IA ».", "Your text is searched as-is on Pixabay. Royalty-free photos illustrate your business: they aren't photos of your own work. A photo made by AI and published on Pixabay is marked \"AI-made\".")}</p>
       <div className="flex items-center justify-between gap-3 border-t border-line pt-4">
         <span className="text-sm font-medium text-ok">{t("Gratuit", "Free")}</span>
         <Button icon={<Search className="size-4" />} loading={busy} onClick={go} data-bank-search-go>{t("Chercher", "Search")}</Button>
@@ -429,10 +429,10 @@ function CreateImage({ services, q, onStarted,preparation }: { preparation?:Them
       {cost.dialog}
       <div className="rounded-2xl border border-ink bg-paper-2 p-3 text-sm" data-bank-create-option="ai">
         <span className="block font-medium">{t("Image créée par l'IA", "Image created by AI")}</span>
-        <span className="block text-xs text-muted">{services ? t("Une image de votre métier ou de votre activité, contrôlée avant d'arriver dans la banque.", "An image of your trade or business, checked before it reaches the bank.") : t("Une scène autour de votre vrai produit, contrôlée avant d'arriver dans la banque.", "A scene around your real product, checked before it reaches the bank.")}</span>
+        <span className="block text-xs text-muted">{services ? t("Une image de ton métier ou de ton activité, contrôlée avant d'arriver dans la banque.", "An image of your trade or business, checked before it reaches the bank.") : t("Une scène autour de ton vrai produit, contrôlée avant d'arriver dans la banque.", "A scene around your real product, checked before it reaches the bank.")}</span>
         <span className="mt-1 inline-block rounded-full bg-signal-soft px-2 py-0.5 text-[11px] font-semibold text-signal">{badge}</span>
       </div>
-      {q && !ai && <p className="text-xs text-warn" data-bank-create-unavailable>{q.reason ? t(`Création par l'IA indisponible pour l'instant : ${q.reason}.`, `AI creation unavailable for now: ${q.reason}.`) : t("Création par l'IA indisponible pour ce projet : budget IA épuisé ou fournisseur désactivé.", "AI creation unavailable for this project: AI budget used up or provider disabled.")} {t("Aucune image n'est créée à la place (ni gabarit, ni photo libre).", "No image is made instead (no template, no stock photo).")}</p>}
+      {q && !ai && <p className="text-xs text-warn" data-bank-create-unavailable>{q.reason ? t(`Création par l'IA indisponible pour l'instant : ${q.reason}.`, `AI creation unavailable for now: ${q.reason}.`) : t("Création par l'IA indisponible pour ce projet : budget IA du mois utilisé, ou IA momentanément indisponible.", "AI creation unavailable for this project: this month's AI budget is used up, or AI is temporarily unavailable.")} {t("Aucune image n'est créée à la place (ni gabarit, ni photo libre).", "No image is made instead (no template, no stock photo).")}</p>}
       {(
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label={t("Sujet (facultatif)", "Subject (optional)")} htmlFor="bc-topic"><Input id="bc-topic" value={f.topic} maxLength={200} onChange={(e) => setF({ ...f, topic: e.target.value })} placeholder={services ? t("Ex. atelier lumineux, matériaux posés", "E.g. bright workshop, materials laid out") : t("Ex. sur une table en bois, lumière du matin", "E.g. on a wooden table, morning light")} /></Field>
@@ -443,7 +443,7 @@ function CreateImage({ services, q, onStarted,preparation }: { preparation?:Them
         </div>
       )}
       <div className="flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm">{price ? t(<>Coût probable : <strong>{price}</strong>. Si le contrôle demande une 2e image, elle est décomptée et vous êtes prévenu. Rien n'est lancé sans votre clic.</>, <>Likely cost: <strong>{price}</strong>. If the check needs a 2nd image, it is counted and you are told. Nothing starts without your click.</>) : t("Calcul du prix…", "Calculating the price…")}</p>
+        <p className="text-sm">{price ? t(<>Coût probable : <strong>{price}</strong>. Si le contrôle demande une 2e image, elle est décomptée et tu es prévenu. Rien n'est lancé sans ton clic.</>, <>Likely cost: <strong>{price}</strong>. If the check needs a 2nd image, it is counted and you are told. Nothing starts without your click.</>) : t("Calcul du prix…", "Calculating the price…")}</p>
         <Button icon={<Wand2 className="size-4" />} loading={busy} disabled={busy || !ai || !price} onClick={go} data-bank-create-go>
           {t(`Créer · ${price ?? "…"}`, `Create · ${price ?? "…"}`)}
         </Button>

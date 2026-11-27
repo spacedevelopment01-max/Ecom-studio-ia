@@ -140,8 +140,8 @@ async function completeIncompleteProduct(ctx: JobContext | null, project: Projec
         project.id,
         L("Produit incomplet sur la photo", "Product incomplete in the photo"),
         tries >= MAX_COMPLETION_TRIES
-          ? L(`La reconstruction du produit entier n'a pas donné un résultat fidèle${what}. Ajoutez une photo où le produit est entier, dans l'onglet Produit.`, `Rebuilding the whole product did not give a faithful result${what}. Add a photo where the product is whole, in the Product tab.`)
-          : L(`Une partie du produit manque sur la photo${what} : il ne sera jamais montré incomplet. Ajoutez une photo où il est entier, ou activez l'IA pour le reconstruire (image payante, prix annoncé).`, `Part of the product is missing in the photo${what}: it will never be shown incomplete. Add a photo where it is whole, or turn on AI to rebuild it (paid image, price shown).`),
+          ? L(`La reconstruction du produit entier n'a pas donné un résultat fidèle${what}. Ajoute une photo où le produit est entier, dans l'onglet Produit.`, `Rebuilding the whole product did not give a faithful result${what}. Add a photo where the product is whole, in the Product tab.`)
+          : L(`Une partie du produit manque sur la photo${what} : il ne sera jamais montré incomplet. Ajoute une photo où il est entier, ou demande-moi de le reconstruire avec l'IA (je te dis avant ce que ça prend sur ton budget IA).`, `Part of the product is missing in the photo${what}: it will never be shown incomplete. Add a photo where it is whole, or turn on AI to rebuild it (paid image, price shown).`),
         "warning",
       );
       setMeta(reload(src.id), { completion: { ...done, warned: true } });
@@ -184,7 +184,7 @@ async function completeIncompleteProduct(ctx: JobContext | null, project: Projec
   await makeCutout(project, base, rebuilt, { force: false, fallback: false });
   // Sans contrôle visuel disponible, la reconstruction n'a pas pu être comparée à la photo : le client la vérifie.
   if (r.faithful === null && validCutouts(project.id).length)
-    notify(project.userId, project.id, L("Produit reconstruit en entier : à vérifier", "Product rebuilt in full: please check"), L(`Une partie du produit manquait sur la photo${what} : l'IA l'a reconstruit en entier. Vérifiez dans l'onglet Produit qu'il correspond exactement au vôtre.`, `Part of the product was missing in the photo${what}: AI rebuilt it in full. Check in the Product tab that it matches yours exactly.`), "warning");
+    notify(project.userId, project.id, L("Produit reconstruit en entier : à vérifier", "Product rebuilt in full: please check"), L(`Une partie du produit manquait sur la photo${what} : l'IA l'a reconstruit en entier. Vérifie dans l'onglet Produit qu'il correspond exactement au tien.`, `Part of the product was missing in the photo${what}: AI rebuilt it in full. Check in the Product tab that it matches yours exactly.`), "warning");
   // Détourage de la reconstruction refusé (encore incomplet, autre objet…) : nouvel essai dans la limite, sinon le client est prévenu.
   if (!validCutouts(project.id).length) return completeIncompleteProduct(ctx, project, base);
 }

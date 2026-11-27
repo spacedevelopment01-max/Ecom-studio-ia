@@ -702,7 +702,7 @@ export async function createContentPlan(ctx: JobContext, projectId: string, para
       aiFailed = (e as Error).message;
     }
     const local = localPlan(p, params);
-    run("UPDATE content_plans SET strategy = ? WHERE id = ?", `${localStrategy(p, params, local)}${aiFailed ? `\n\n${L(`Calendrier rédigé par le studio : la proposition de l'IA n'a pas pu être utilisée (${aiFailed.slice(0, 160)}).`, `Calendar written by the studio: the AI proposal could not be used (${aiFailed.slice(0, 160)}).`)}` : ""}`, planId);
+    run("UPDATE content_plans SET strategy = ? WHERE id = ?", `${localStrategy(p, params, local)}${aiFailed ? `\n\n${L("Calendrier rédigé par le Studio : la proposition de l'IA n'a pas pu servir cette fois.", "Calendar written by the Studio: the AI proposal couldn't be used this time.")}` : ""}`, planId);
     return local;
   });
 

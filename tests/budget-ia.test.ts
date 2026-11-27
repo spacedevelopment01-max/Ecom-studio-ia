@@ -310,7 +310,7 @@ describe("budget IA : règle des 40 % / 50 % et réservations", async () => {
     llm.mode = "slow";
     const first = text(u.id, "same-action-in-flight");
     await vi.waitFor(() => expect(llm.calls).toBe(1));
-    await expect(text(u.id, "same-action-in-flight")).rejects.toThrow(/déjà été envoyée/);
+    await expect(text(u.id, "same-action-in-flight")).rejects.toThrow(/déjà été lancée/);
     expect(llm.calls).toBe(1);
     llm.waiting.splice(0).forEach(resolve => resolve());
     expect(await first).toBe("ok");
@@ -326,7 +326,7 @@ describe("budget IA : règle des 40 % / 50 % et réservations", async () => {
     const before = wallet(u.id).monthly_used;
     expect(before).toBeGreaterThan(0);
     expect(reservations(u.id)[0].status).toBe("uncertain");
-    await expect(text(u.id, "unpriced-reply")).rejects.toThrow(/déjà été envoyée/);
+    await expect(text(u.id, "unpriced-reply")).rejects.toThrow(/déjà été lancée/);
     expect(llm.calls).toBe(1);
     expect(wallet(u.id).monthly_used).toBe(before);
   });

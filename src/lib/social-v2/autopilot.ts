@@ -13,7 +13,7 @@
  * médias payants d'un coup). Payant seulement si le client a fixé un plafond par semaine, que l'IA est active et
  * que l'estimation tient dans ce plafond — via la tâche de production existante (réservation et contrôle du budget).
  * Budget épuisé : ce qui est prêt reste, les médias déjà présents sont réutilisés, la production payante s'arrête
- * proprement et le client est prévenu (recharge de 10 €). Chaque action est tracée (`social_autopilot_log`).
+ * proprement et le client est prévenu (recharge proposée, sans montant). Chaque action est tracée (`social_autopilot_log`).
  */
 import { all, id, json, now, one, run } from "../db";
 import { HttpError } from "../auth";
@@ -280,8 +280,9 @@ export async function runAutopilot(p: Project, deps: SocialDeps, at = now()): Pr
     if (paidWanted && !deps.aiActive) {
       // Budget IA épuisé ou IA indisponible : on continue gratuitement et on prévient une fois par semaine.
       if (!one("SELECT 1 FROM social_autopilot_log WHERE project_id = ? AND action = 'budget_low' AND at > ?", p.id, at - 7 * 24 * HOUR)) {
-        notify(p.userId, p.id, L("Budget IA épuisé pour vos publications", "AI budget used up for your posts"), L("Les publications prêtes restent programmées. Les nouvelles images sont toutes créées par l'IA : elles attendent (aucun gabarit à la place). Pour les créer, ajoutez une recharge de 10 € dans « Mon compte ».", "Ready posts stay scheduled. New images are all created by AI: they are waiting (no template instead). To create them, add a €10 top-up in \"My account\"."), "warning");
-        logAutopilot(p.id, "budget_low", "images en attente de l'IA ; recharge de 10 € proposée");
+        // Jamais d'euros pour l'IA chez le client (règle du propriétaire) : ni montant, ni prix de recharge ici.
+        notify(p.userId, p.id, L("Ton budget IA du mois est utilisé pour tes publications", "Your AI budget for the month is used up for your posts"), L("Tes publications prêtes restent programmées. Les nouvelles images, je les crée avec l'IA : elles attendent ton budget IA du mois prochain, ou une recharge dans « Mon compte » si tu veux les avoir tout de suite.", "Your ready posts stay scheduled. I create the new images with AI: they're waiting for next month's AI budget, or for a top-up in \"My account\" if you want them right away."), "warning");
+        logAutopilot(p.id, "budget_low", "images en attente de l'IA ; recharge proposée");
       }
       out.notes.push("budget IA indisponible : images en attente de l'IA (aucun gabarit à la place)");
     }
@@ -307,7 +308,7 @@ export async function runAutopilot(p: Project, deps: SocialDeps, at = now()): Pr
   if (!(s.autopilot && c.approval === "auto")) {
     out.waiting = ready.length;
     if (ready.length && !one("SELECT 1 FROM social_autopilot_log WHERE project_id = ? AND action = 'to_review' AND at > ?", p.id, at - 24 * HOUR)) {
-      notify(p.userId, p.id, L("Publications à valider", "Posts to approve"), L(`${ready.length} publication(s) des 7 prochains jours sont prêtes : relisez-les et validez-les (rien ne part sans votre accord).`, `${ready.length} post(s) for the next 7 days are ready: review and approve them (nothing is posted without your approval).`));
+      notify(p.userId, p.id, L("Publications à valider", "Posts to approve"), L(`${ready.length} publication(s) des 7 prochains jours sont prêtes : relis-les et valide-les (rien ne part sans ton accord).`, `${ready.length} post(s) for the next 7 days are ready: review and approve them (nothing is posted without your approval).`));
       logAutopilot(p.id, "to_review", { posts: ready.length });
     }
   } else {

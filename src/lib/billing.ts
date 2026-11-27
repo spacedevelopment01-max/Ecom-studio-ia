@@ -24,7 +24,7 @@
  */
 import { addMonths } from "date-fns";
 import { all, id, logError, now, one, run, tx } from "./db";
-import { UserFacingError } from "./jobs";
+import { CODE_DEJA_LANCEE, UserFacingError } from "./jobs";
 import { getJsonSetting } from "./settings";
 import { pick } from "./i18n";
 import { L, userLang } from "./i18n-server";
@@ -436,8 +436,16 @@ export function cleDeRelance(previous: Pick<Operation, "status" | "result" | "pr
   return `${usageKey}~relance${n}`;
 }
 
+/**
+ * Une étape déjà lancée (même clé d'appel, résultat encore en route ou incertain) : rien n'est renvoyé. Le client lit une
+ * phrase de SINA, tutoyée, sans mot technique ; la reprise d'une création coupée la reconnaît par son code
+ * (`CODE_DEJA_LANCEE`), jamais par ce texte.
+ */
 export function operationPending(): never {
-  throw new UserFacingError(L("Cette action a déjà été envoyée. Les résultats acquis sont conservés ; aucune nouvelle génération n'a été lancée. Reprenez son suivi ou faites vérifier le résultat incertain avant de recommencer.", "This action has already been sent. Acquired results are kept; no new generation was started. Resume tracking it or have its uncertain outcome checked before starting again."));
+  throw new UserFacingError(L(
+    "Cette étape a déjà été lancée une fois. J'ai gardé tout ce qui est fait et je ne la relance pas d'office, pour ne rien compter deux fois sur ton budget IA. Dis-moi quand tu veux que je la reprenne.",
+    "This step has already been started once. I kept everything that's done and I won't restart it on my own, so nothing is counted twice on your AI budget. Tell me whenever you want me to pick it up again.",
+  ), CODE_DEJA_LANCEE);
 }
 
 export function saveOperationResult(reservationId: string, result: unknown) {

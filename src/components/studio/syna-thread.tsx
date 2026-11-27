@@ -746,7 +746,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
         </div>}
         {background && <p className="text-xs text-muted" data-syna-background>{t("Ta création avance en arrière-plan. Tu peux continuer à me parler : je te montre le résultat dès qu'il est prêt.", "Your creation is running in the background. You can keep talking to me: I will show you the result as soon as it is ready.")}</p>}
         {working && <p className="text-xs text-muted" data-syna-working>{v.run?.status === "waiting_jobs" ? t("SINA attend la fin d'une création (images, vidéo ou site) puis reprend seule…", "SINA is waiting for a creation to finish…") : t("SINA travaille…", "SINA is working…")}</p>}
-        {v.run?.status === "failed" && <p className="text-xs text-red-600">{t("L'exécution s'est arrêtée : ", "The run stopped: ")}{v.run.error}</p>}
+        {v.run?.status === "failed" && <p className="text-xs text-red-600">{t("Je n'ai pas pu aller au bout : ", "I couldn't finish: ")}{v.run.error}</p>}
         <div ref={end} />
       </div></div>
 
@@ -844,7 +844,7 @@ function ToolResult({ m, projectId, onChoose, busy }: { m: Msg; projectId: strin
 
 function EventLine({ m }: { m: Msg }) {
   const t = useT(), c = m.content;
-  if (c.kind === "error") return <p className="text-xs text-red-600">{t("Erreur : ", "Error: ")}{c.message}</p>;
+  if (c.kind === "error") return <p className="text-xs text-red-600">{t("Je me suis arrêtée : ", "I had to stop: ")}{c.message}</p>;
   if (c.kind === "stopped") return <p className="text-xs text-muted">{t("Arrêté à ta demande.", "Stopped.")}{c.running ? ` ${t("Une création déjà commencée se termine (son coût est engagé) ; SINA ne reprendra pas seule.", "A creation already started will finish (its cost is committed); SINA won't resume on her own.")}` : ""}</p>;
   if (c.kind === "waiting_jobs") return <p className="text-xs text-muted">⏳ {t("Tâche lancée en arrière-plan ; je reprends dès qu'elle est finie.", "Task running in the background; I'll resume when it's done.")}</p>;
   return null;

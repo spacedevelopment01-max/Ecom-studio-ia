@@ -205,7 +205,7 @@ function AiClip({ onStarted,preparation }: { onStarted: (jobId?: string) => void
       setBusy(false);
     }
   };
-  if (q && !q.ai) return <p className="text-sm text-muted" data-bank-ai-off>{t("La création de plans par l'IA n'est pas disponible pour ce projet (forfait Découverte, budget IA épuisé ou fournisseur désactivé). Cherchez plutôt des plans libres de droits (gratuit) ou importez vos vidéos.", "AI clip creation isn't available for this project (Discovery plan, AI budget used up or provider disabled). Search royalty-free clips instead (free) or upload your videos.")}</p>;
+  if (q && !q.ai) return <p className="text-sm text-muted" data-bank-ai-off>{t("La création de plans par l'IA n'est pas disponible pour ce projet (compte sans abonnement, budget IA du mois utilisé ou IA momentanément indisponible). Cherche plutôt des plans libres de droits (gratuit) ou ajoute tes vidéos.", "AI clip creation isn't available for this project (account without a subscription, this month's AI budget used up or AI temporarily unavailable). Search royalty-free clips instead (free) or upload your videos.")}</p>;
   return (
     <div className="grid gap-4" data-bank-ai-dialog>
       {preparation&&<p className="rounded-xl border border-line p-3 text-sm" data-theme-video-preparation>{preparation.request.request}</p>}

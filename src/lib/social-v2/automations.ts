@@ -53,7 +53,7 @@ export async function runAutomation(a: Automation, at = now()): Promise<string> 
       const base = json<PlanRequest>(last.params, null as never);
       const startDate = nextMonday(at);
       const r = createPlanV2(p, { ...base, startDate, endDate: null, days: 7, perDay: Math.min(PLANS[forfait].postsPerDay, Number(cfg.perDay) || base.perDay || 1) }, { planId: `auto-${a.id}-${startDate}` });
-      if (r.created) notify(p.userId, p.id, L("Semaine suivante préparée", "Next week prepared"), L(`${r.created} brouillons à relire et approuver (aucune publication sans votre accord).`, `${r.created} drafts to review and approve (nothing is posted without your approval).`));
+      if (r.created) notify(p.userId, p.id, L("Semaine suivante préparée", "Next week prepared"), L(`${r.created} brouillons à relire et approuver (aucune publication sans ton accord).`, `${r.created} drafts to review and approve (nothing is posted without your approval).`));
       return `${r.created} brouillon(s) créés (${r.existing} déjà présents)`;
     }
     case "schedule_approved": {
@@ -69,7 +69,7 @@ export async function runAutomation(a: Automation, at = now()): Promise<string> 
     }
     case "require_validation": {
       const n = one<{ n: number }>("SELECT COUNT(*) n FROM posts WHERE project_id = ? AND engine = 'v2' AND status IN ('planned','review') AND scheduled_at BETWEEN ? AND ?", p.id, at, at + 3 * DAY)?.n ?? 0;
-      if (n) notify(p.userId, p.id, L("Publications à valider", "Posts to approve"), L(`${n} publication(s) prévues dans les 3 prochains jours attendent votre validation.`, `${n} post(s) due in the next 3 days await your approval.`));
+      if (n) notify(p.userId, p.id, L("Publications à valider", "Posts to approve"), L(`${n} publication(s) prévues dans les 3 prochains jours attendent ton accord.`, `${n} post(s) due in the next 3 days await your approval.`));
       return `${n} à valider`;
     }
   }

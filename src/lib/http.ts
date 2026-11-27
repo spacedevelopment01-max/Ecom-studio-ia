@@ -44,7 +44,7 @@ export function handle<A extends unknown[]>(fn: (...args: A) => Promise<Response
       logError("api", e);
       // Journal du serveur : jamais de clé d'API ni de jeton (message et pile passés au caviardage).
       console.error(redact(e instanceof Error ? (e.stack ?? e.message) : String(e)));
-      return fail(500, L("Une erreur inattendue est survenue. Elle a été enregistrée ; réessayez dans un instant.", "An unexpected error occurred. It has been logged; please try again in a moment."));
+      return fail(500, L("Quelque chose n'a pas marché de mon côté. C'est noté ; réessaie dans un instant.", "Something didn't work on my side. It's been noted; try again in a moment."));
     }
   }
 }

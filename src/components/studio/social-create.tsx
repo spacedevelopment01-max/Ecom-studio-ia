@@ -35,8 +35,8 @@ const VIDEO_FORMATS = new Set(["video", "reel", "short"]);
 export function VideoChoice({ value, onChange, ai, price }: { value: VideoMode; onChange: (m: VideoMode) => void; ai: boolean; price?: string }) {
   const t = useT();
   const options: [VideoMode, string, string, string][] = [
-    ["free", t("Montage gratuit du studio", "Free studio edit"), t("Vos images et vos plans de la banque, montés en vidéo verticale à vos couleurs, avec titres animés et sous-titres.", "Your bank images and clips, edited into a vertical video in your colours, with animated titles and captions."), t("Gratuit", "Free")],
-    ["ai_video", t("Plans filmés par l'IA", "AI-filmed shots"), t("L'IA filme des plans de votre activité ou de votre produit (sans personne inventée), puis le studio monte la vidéo.", "AI films shots of your business or product (no made-up people), then the studio edits the video."), price ?? t("Payant · prix affiché avant", "Paid · price shown first")],
+    ["free", t("Montage gratuit du studio", "Free studio edit"), t("Tes images et tes plans de la banque, montés en vidéo verticale à tes couleurs, avec titres animés et sous-titres.", "Your bank images and clips, edited into a vertical video in your colours, with animated titles and captions."), t("Gratuit", "Free")],
+    ["ai_video", t("Plans filmés par l'IA", "AI-filmed shots"), t("L'IA filme des plans de ton activité ou de ton produit (sans personne inventée), puis le Studio monte la vidéo.", "AI films shots of your business or product (no made-up people), then the studio edits the video."), price ?? t("Payant · prix affiché avant", "Paid · price shown first")],
   ];
   return (
     <fieldset className="grid gap-2" data-video-mode>
@@ -56,7 +56,7 @@ export function VideoChoice({ value, onChange, ai, price }: { value: VideoMode; 
           );
         })}
       </div>
-      {!ai && <p className="text-xs text-muted">{t("Les plans filmés par l'IA ne sont pas disponibles pour ce projet (forfait Découverte, budget IA épuisé ou fournisseur désactivé).", "AI-filmed shots aren't available for this project (Discovery plan, AI budget used up or provider disabled).")}</p>}
+      {!ai && <p className="text-xs text-muted">{t("Les plans filmés par l'IA ne sont pas disponibles pour ce projet (compte sans abonnement, budget IA du mois utilisé ou IA momentanément indisponible).", "AI-filmed shots aren't available for this project (account without a subscription, this month's AI budget used up or AI temporarily unavailable).")}</p>}
     </fieldset>
   );
 }
@@ -111,14 +111,14 @@ export function CreateOnePanel({ data, kind, reload, onCreated }: { data: Data; 
   }, [id, kind, mode, nets.length, pages,requestKind]);
   const create = async () => {
     if(carousel&&(pages<2||pages>10))return toast("bad",t("Un carrousel demande 2 à 10 blocs utiles, séparés par une ligne vide.","A carousel needs 2 to 10 useful blocks separated by a blank line."));
-    if(contentKind==="quote"&&(!reviewAllowed||!content.trim()||!reviewSource.trim()))return toast("bad",t("Fournissez la citation exacte, sa source et votre autorisation.","Supply the exact quote, its source and your authorization."));
-    if (!nets.length) return toast("bad", t("Choisissez au moins un réseau.", "Choose at least one network."));
+    if(contentKind==="quote"&&(!reviewAllowed||!content.trim()||!reviewSource.trim()))return toast("bad",t("Donne la citation exacte, sa source et ton autorisation.","Supply the exact quote, its source and your authorization."));
+    if (!nets.length) return toast("bad", t("Choisis au moins un réseau.", "Choose at least one network."));
     setBusy(true);
     try {
       const r = await api<{ ids: string[]; jobId?: string; produced?: number; notes?: string[]; warnings: string[] }>(`/api/projects/${id}/social/v2`, {
         body: { action: "create_one", angleId, kind:requestKind, mode,caption:content||undefined,editorial:kind==="image"?{structure:contentKind||undefined,blocks:contentKind==="quote"?[]:paragraphs.map(text=>({kind:contentKind==="checklist"?"check":contentKind==="tutorial"?"step":"paragraph",text})),...(contentKind==="quote"?{testimonial:{quote:content,author:reviewAuthor||undefined,source:reviewSource,verified:reviewAllowed,authorized:reviewAllowed}}:{})}:undefined, date, time, timezone: data.timezone || "Europe/Paris", platforms: nets.map((platform) => ({ platform, connectionId: data.accounts.find((a) => a.provider === platform && a.status === "active")?.id ?? null })), pillar: pillar || undefined, headline: headline.trim() || undefined, subject:subjectChoice(subjects.find((x) => x.key === subjectKey) ?? subjects[0]),request:request.trim()||undefined, approvedEstimateMicro: mode === "free" ? undefined : quote },
       });
-      toast("ok", r.jobId ? t("Publication créée : son visuel se prépare avec l'IA, puis elle attend votre validation.", "Post created: its visual is being made with AI, then it waits for your approval.") : t(`Publication créée (${r.ids.length} réseau${r.ids.length > 1 ? "x" : ""}) : relisez-la puis validez-la.`, `Post created (${r.ids.length} network${r.ids.length > 1 ? "s" : ""}): review it, then approve it.`));
+      toast("ok", r.jobId ? t("Publication créée : son visuel se prépare avec l'IA, puis elle attend ton accord.", "Post created: its visual is being made with AI, then it waits for your approval.") : t(`Publication créée (${r.ids.length} réseau${r.ids.length > 1 ? "x" : ""}) : relis-la puis valide-la.`, `Post created (${r.ids.length} network${r.ids.length > 1 ? "s" : ""}): review it, then approve it.`));
       for (const w of [...(r.warnings ?? []), ...(r.notes ?? [])].slice(0, 3)) toast("info", w);
       reload();
       onCreated();
@@ -137,7 +137,7 @@ export function CreateOnePanel({ data, kind, reload, onCreated }: { data: Data; 
         <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-paper-2">{kind === "image" ? <ImageIcon className="size-5" /> : <Clapperboard className="size-5" />}</span>
         <div>
           <h3 className="font-display text-xl font-semibold">{kind === "image" ? t("Créer une publication image", "Create an image post") : t("Créer une publication vidéo", "Create a video post")}</h3>
-          <p className="mt-1 text-sm text-muted">{kind === "image" ? t("Une publication prête à relire : texte adapté à chaque réseau et visuel à votre marque.", "A post ready to review: copy adapted to each network and a branded visual.") : t("Une vidéo courte (reel, TikTok, short) avec son texte, prête à relire.", "A short video (reel, TikTok, short) with its copy, ready to review.")}</p>
+          <p className="mt-1 text-sm text-muted">{kind === "image" ? t("Une publication prête à relire : texte adapté à chaque réseau et visuel à ta marque.", "A post ready to review: copy adapted to each network and a branded visual.") : t("Une vidéo courte (reel, TikTok, short) avec son texte, prête à relire.", "A short video (reel, TikTok, short) with its copy, ready to review.")}</p>
         </div>
       </div>
       <section className="grid min-w-0 gap-2">
@@ -150,7 +150,7 @@ export function CreateOnePanel({ data, kind, reload, onCreated }: { data: Data; 
       </section>
       {paid && (
         <section className="grid gap-2" data-guided>
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t("Votre idée pour l'IA", "Your idea for the AI")}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t("Ton idée pour l'IA", "Your idea for the AI")}</p>
           <SubjectPicker subjects={subjects} value={subjectKey} onChange={setSubjectKey} request={request} onRequest={setRequest} idPrefix={`one-${kind}`} video={kind === "video"} />
         </section>
       )}
@@ -179,14 +179,14 @@ export function CreateOnePanel({ data, kind, reload, onCreated }: { data: Data; 
       </section>
       <section className="grid min-w-0 gap-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t("3 · Le message (facultatif)", "3 · The message (optional)")}</p>
-        <Field label={t("Titre de la publication", "Post headline")} htmlFor={`one-head-${kind}`}><Input id={`one-head-${kind}`} value={headline} maxLength={70} onChange={(e) => setHeadline(e.target.value)} placeholder={t("Laissé vide : le studio le propose d'après votre activité", "Left empty: the studio suggests it from your business")} /></Field>
+        <Field label={t("Titre de la publication", "Post headline")} htmlFor={`one-head-${kind}`}><Input id={`one-head-${kind}`} value={headline} maxLength={70} onChange={(e) => setHeadline(e.target.value)} placeholder={t("Laissé vide : le Studio le propose d'après ton activité", "Left empty: the studio suggests it from your business")} /></Field>
       </section>
       {kind === "image" && <section className="grid gap-3" data-editorial-content>
         <Field label={t("Rôle du contenu", "Content role")} htmlFor="editorial-role"><Select id="editorial-role" value={contentKind} onChange={e=>setContentKind(e.target.value)}>
-          <option value="">{t("Selon la stratégie et votre demande", "According to strategy and your request")}</option>
+          <option value="">{t("Selon la stratégie et ta demande", "According to strategy and your request")}</option>
           {[["advice","Conseil / erreur à éviter","Advice / mistake to avoid"],["faq","FAQ","FAQ"],["checklist","Checklist","Checklist"],["tutorial","Tutoriel / étapes","Tutorial / steps"],["infographic","Schéma / décryptage","Diagram / explanation"],["quote","Avis réel autorisé","Authorized real review"],["editorial_photo","Photo éditoriale","Editorial photo"],["community","Communauté","Community"],["offer","Présentation d'une offre","Offer presentation"]].map(([v,fr,en])=><option key={v} value={v}>{t(fr,en)}</option>)}
         </Select></Field>
-        <Field label={contentKind==="quote"?t("Citation exacte du client", "Exact customer quote"):t("Contenu utile et légende", "Useful content and caption")} htmlFor="editorial-content" hint={t("Conservez les conseils, questions/réponses et étapes. Un bloc par paragraphe ; pour un carrousel, un paragraphe par page.","Keep advice, questions/answers and steps. One block per paragraph; for a carousel, one paragraph per page.")}><Textarea id="editorial-content" rows={6} maxLength={12000} value={content} onChange={e=>setContent(e.target.value)} /></Field>
+        <Field label={contentKind==="quote"?t("Citation exacte du client", "Exact customer quote"):t("Contenu utile et légende", "Useful content and caption")} htmlFor="editorial-content" hint={t("Garde les conseils, questions/réponses et étapes. Un bloc par paragraphe ; pour un carrousel, un paragraphe par page.","Keep advice, questions/answers and steps. One block per paragraph; for a carousel, one paragraph per page.")}><Textarea id="editorial-content" rows={6} maxLength={12000} value={content} onChange={e=>setContent(e.target.value)} /></Field>
         {contentKind==="quote"&&<>
           <Field label={t("Auteur (facultatif)", "Author (optional)")} htmlFor="review-author"><Input id="review-author" value={reviewAuthor} onChange={e=>setReviewAuthor(e.target.value)} /></Field>
           <Field label={t("Source vérifiable de l'avis", "Verifiable review source")} htmlFor="review-source"><Input id="review-source" value={reviewSource} onChange={e=>setReviewSource(e.target.value)} /></Field>
@@ -197,7 +197,7 @@ export function CreateOnePanel({ data, kind, reload, onCreated }: { data: Data; 
       </section>}
       <div className="flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between" data-one-price>
         <p className="text-sm">
-          {!paid ? <span className="font-medium text-ok">{t("Gratuit : aucun budget IA utilisé.", "Free: no AI budget used.")}</span> : quote == null ? t("Calcul du prix…", "Calculating the price…") : t(<>Coût probable : <strong>{budget.label(quote)}</strong> pour {nets.length} réseau{nets.length > 1 ? "x" : ""}. Si le contrôle demande une 2e image, elle est décomptée et vous êtes prévenu. Rien n'est lancé sans votre clic.</>, <>Likely cost: <strong>{budget.label(quote)}</strong> for {nets.length} network{nets.length > 1 ? "s" : ""}. If the check needs a 2nd image, it is counted and you are told. Nothing starts without your click.</>)}
+          {!paid ? <span className="font-medium text-ok">{t("Gratuit : aucun budget IA utilisé.", "Free: no AI budget used.")}</span> : quote == null ? t("Calcul du prix…", "Calculating the price…") : t(<>Coût probable : <strong>{budget.label(quote)}</strong> pour {nets.length} réseau{nets.length > 1 ? "x" : ""}. Si le contrôle demande une 2e image, elle est décomptée et tu es prévenu. Rien n'est lancé sans ton clic.</>, <>Likely cost: <strong>{budget.label(quote)}</strong> for {nets.length} network{nets.length > 1 ? "s" : ""}. If the check needs a 2nd image, it is counted and you are told. Nothing starts without your click.</>)}
         </p>
         <Button className="h-auto min-h-11 w-full py-3 sm:w-auto" onClick={create} loading={busy} disabled={busy || !nets.length || (paid && quote == null)} icon={<Wand2 className="size-4" />} data-create-one-submit>
           <span className="min-w-0 whitespace-normal text-center">{kind === "image" ? t("Créer la publication", "Create the post") : t("Créer la vidéo", "Create the video")}
@@ -276,7 +276,7 @@ export function BatchVisuals({ data, kind, reload }: { data: Data; kind: Kind; r
         <Badge tone={todo.length ? "warn" : "ok"}>{todo.length}</Badge>
       </div>
       {!todo.length ? (
-        <p className="text-sm text-muted">{kind === "image" ? t("Toutes vos publications planifiées ont leur visuel.", "All your planned posts have their visual.") : t("Toutes vos publications vidéo planifiées ont leur vidéo.", "All your planned video posts have their video.")}</p>
+        <p className="text-sm text-muted">{kind === "image" ? t("Toutes tes publications planifiées ont leur visuel.", "All your planned posts have their visual.") : t("Toutes tes publications vidéo planifiées ont leur vidéo.", "All your planned video posts have their video.")}</p>
       ) : (
         <>
           {kind === "image" ? <VisualChoice value={imageMode} onChange={(m) => (setImageMode(m), setEst(null))} ai={!!data.ai} name="batch-image" /> : <VideoChoice value={videoMode} onChange={(m) => (setVideoMode(m), setEst(null))} ai={!!data.ai} />}

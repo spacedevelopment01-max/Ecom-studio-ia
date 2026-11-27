@@ -142,7 +142,7 @@ describe("Autopilot V2 — pilote", async () => {
     expect(res.resumed).toEqual([a]);
   });
 
-  it("budget : sans IA disponible, visuels gratuits et recharge de 10 € proposée ; avec IA, tâche payante seulement dans le plafond de la semaine", async () => {
+  it("budget : sans IA disponible, visuels gratuits et recharge proposée, sans aucun montant en euros ; avec IA, tâche payante seulement dans le plafond de la semaine", async () => {
     const p = await project("vendre");
     ap.saveSettings(p, { active: true, perDay: 1, horizonDays: 7, platforms: ["instagram"], paidCapEurWeek: 2, visual: "ai_image" });
     const free = mockSocialDeps({ aiActive: false });
@@ -151,7 +151,10 @@ describe("Autopilot V2 — pilote", async () => {
     // Sans IA : aucune image (jamais un gabarit à la place), recharge proposée.
     expect(r.produced).toBe(0);
     expect(free.log.local).toBe(0);
-    expect(one<{ body: string }>("SELECT body FROM notifications WHERE project_id = ? AND title LIKE 'Budget IA%'", p.id)!.body).toMatch(/recharge de 10 €/);
+    // Règle du propriétaire : le client ne voit jamais d'euros pour l'IA ; il est tutoyé.
+    const avis = one<{ title: string; body: string }>("SELECT title, body FROM notifications WHERE project_id = ? AND title LIKE 'Ton budget IA%'", p.id)!;
+    expect(avis.body).toMatch(/recharge dans « Mon compte »/);
+    expect(`${avis.title} ${avis.body}`).not.toMatch(/€|\b(vous|votre|vos)\b/);
 
     // Plafond de 1 € : il couvre les 3 prochaines publications quel que soit le jour de la semaine où le test tourne
     // (selon le jour, ce sont des images ou des carrousels de 2 images : 0,30 € à 0,70 € au coût fictif de 0,10 €).
