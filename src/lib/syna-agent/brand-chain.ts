@@ -47,6 +47,7 @@ import { annonceLesChiffres, corrigeCeQuiSeMesure } from "./brand-corrections";
 import { loadWordingRules } from "../client-wording";
 import { peopleAllowed } from "../people-policy";
 import { FORMAT_DES_PLACES, PHOTOS_MAX, estUnePlaceDePublication, methodeActive } from "./publications-methode";
+import { paysDuProjet } from "./pays-du-projet";
 
 export const SINA_BRAND_JOB = "syna.brand";
 
@@ -474,7 +475,7 @@ export function coupeLeResume(commun: string, kind: CallId, prompt: string): { c
   return commun && REPETES.has(kind) && prompt.startsWith(`${commun}\n\n`) ? { context: commun, prompt: prompt.slice(commun.length + 2) } : { prompt };
 }
 
-function realAi(ctx: JobContext, who: { userId: string; projectId: string }, s: ChainSettings, capMicro: number, direct = false): ChainAi {
+function realAi(ctx: JobContext, who: { userId: string; projectId: string; /** Pays du client pour l'outil de recherche web (France par défaut). */ pays?: string }, s: ChainSettings, capMicro: number, direct = false): ChainAi {
   const scope = (step: string) => ({ jobId: ctx.job.id, projectId: who.projectId, step, costCapMicro: capMicro });
   // Une retouche ou la fin de la marque part en direct : le client attend devant, et le différé n'y fait gagner que
   // quelques centimes pour un quart d'heure d'attente (essai réel : vingt minutes pour quatre logos).
@@ -486,7 +487,7 @@ function realAi(ctx: JobContext, who: { userId: string; projectId: string }, s: 
   const coupe = (kind: CallId, prompt: string) => coupeLeResume(commun, kind, prompt);
   return {
     partage: (brief) => { commun = brief.length >= 400 ? brief : ""; },
-    research: async (id, query, famille) => (await withTrace(scope(`brand-${id}`), () => webResearch({ userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand:web:${id}`, prefer: s.craft, maxSearches: BRAND_SEARCHES, ...(famille ? { consigne: consigneUneFamille(famille) } : {}) }, query))).findings,
+    research: async (id, query, famille) => (await withTrace(scope(`brand-${id}`), () => webResearch({ userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand:web:${id}`, prefer: s.craft, maxSearches: BRAND_SEARCHES, ...(famille ? { consigne: consigneUneFamille(famille) } : {}), ...(who.pays ? { pays: who.pays } : {}) }, query))).findings,
     ask: (id, c) => withTrace(scope(`brand-${id}`), () => llmJson({
       task: "strategy", userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, system: c.system, ...coupe(c.kind, c.prompt), ...(UNIQUES.has(c.kind) ? { teteUnique: true } : {}), ...(c.images?.length ? { images: c.images } : {}), promptKey: `syna-brand-${c.kind}-1`,
       prepare: c.prepare, maxTokens: CALLS[c.kind].max, usageKey: `${ctx.job.id}:brand:${id}`, deferred,
@@ -1050,7 +1051,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
   const ready = brandKnowledgeReady();
   if (!ready.ok) throw new UserFacingError(L("La création de la marque ne peut pas commencer : un cahier de métier de SINA manque. Rien n'a été décompté.", "Brand creation cannot start: a knowledge file is missing. Nothing was charged."));
   const settings = chainSettings();
-  const ai = brandChainDeps.ai ? brandChainDeps.ai(ctx) : realAi(ctx, { userId: p.userId, projectId: p.id }, settings, a.capMicro, !!a.imagesOnly || !!a.finish);
+  const ai = brandChainDeps.ai ? brandChainDeps.ai(ctx) : realAi(ctx, { userId: p.userId, projectId: p.id, pays: paysDuProjet(j) }, settings, a.capMicro, !!a.imagesOnly || !!a.finish);
   const kind = nameKindsFor(j), keys = routeKeys(a.count), notes: string[] = [];
   // Méthode des publications allumée (et seulement alors) : chaque publication de la planche reçoit son objectif, écrit
   // dans l'appel qui écrit déjà leurs textes (aucun appel de plus). Éteinte : la consigne ne change pas.

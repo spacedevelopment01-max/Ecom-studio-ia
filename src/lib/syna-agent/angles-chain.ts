@@ -39,6 +39,7 @@ import { anglesKnowledgeReady, withAnglesLesson } from "./angles-knowledge";
 import { ANGLE_ROLES, type AngleRole } from "./angles-prompts";
 import { angleFacts, brandStudyOf, type SinaAngle, type SinaAngles } from "./angles";
 import { causePourLeClient } from "../ai/phrase-pour-le-client";
+import { paysDuProjet } from "./pays-du-projet";
 
 export const SINA_ANGLES_JOB = "syna.angles";
 
@@ -143,10 +144,10 @@ export type AnglesAi = {
 };
 export const anglesChainDeps: { ai?: (ctx: JobContext) => AnglesAi } = {};
 
-function realAi(ctx: JobContext, who: { userId: string; projectId: string }, s: ChainSettings, capMicro: number): AnglesAi {
+function realAi(ctx: JobContext, who: { userId: string; projectId: string; /** Pays du client pour l'outil de recherche web (France par défaut). */ pays?: string }, s: ChainSettings, capMicro: number): AnglesAi {
   const scope = (step: string) => ({ jobId: ctx.job.id, projectId: who.projectId, step, costCapMicro: capMicro });
   return {
-    research: async (id, query) => (await withTrace(scope(`angles-${id}`), () => webResearch({ userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:angles:web:${id}`, prefer: s.craft }, query))).findings,
+    research: async (id, query) => (await withTrace(scope(`angles-${id}`), () => webResearch({ userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:angles:web:${id}`, prefer: s.craft, ...(who.pays ? { pays: who.pays } : {}) }, query))).findings,
     // En direct : le client attend ses angles devant l'écran, et le différé n'y ferait gagner que quelques centimes.
     ask: (id, c) => withTrace(scope(`angles-${id}`), () => llmJson({
       task: "strategy", userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, system: c.system, prompt: c.prompt, promptKey: `syna-angles-${c.kind}-1`,
@@ -299,7 +300,7 @@ export async function runSinaAnglesJob(ctx: JobContext) {
   const ready = anglesKnowledgeReady();
   if (!ready.ok) throw new UserFacingError(L("La création de tes angles ne peut pas commencer : un cahier de métier de SINA manque. Rien n'a été décompté.", "Angle creation cannot start: a knowledge file is missing. Nothing was charged."));
   const settings = chainSettings();
-  const ai = anglesChainDeps.ai ? anglesChainDeps.ai(ctx) : realAi(ctx, { userId: p.userId, projectId: p.id }, settings, a.capMicro);
+  const ai = anglesChainDeps.ai ? anglesChainDeps.ai(ctx) : realAi(ctx, { userId: p.userId, projectId: p.id, pays: paysDuProjet(j) }, settings, a.capMicro);
   const notes: string[] = [], issues: string[] = [];
   const facts = angleFacts(j, p.id), brand = brandBlock(j, p.id);
   const round = (j.angles?.round ?? 0) + 1, before = j.angles?.shown?.length ? j.angles.list.filter((x) => j.angles!.shown!.some((s) => s.id === x.id)) : [];
