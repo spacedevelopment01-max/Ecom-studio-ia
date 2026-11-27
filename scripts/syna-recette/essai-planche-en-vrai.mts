@@ -130,7 +130,7 @@ import path from "node:path";
       setSetting("provider.anthropic.apiKey", process.env.STUDIO_ANTHROPIC_KEY.trim(), true);
     }
     try {
-      const r = await reassemblerLEssaiEnVrai({ dossier: path.resolve(process.env.REASSEMBLER), sortie: path.resolve(sortie0), planche: path.resolve(planche0), logo: path.resolve(logo0), reprendre, plafondEuros: process.env.PLAFOND_ESSAI_EUR, logoHd });
+      const r = await reassemblerLEssaiEnVrai({ dossier: path.resolve(process.env.REASSEMBLER), sortie: path.resolve(sortie0), planche: path.resolve(planche0), logo: path.resolve(logo0), reprendre, plafondEuros: process.env.PLAFOND_ESSAI_EUR, logoHd, ...(process.env.CLIENT_JSON ? { clientJson: path.resolve(process.env.CLIENT_JSON) } : {}) });
       console.log(`${r.gardees} image(s) gardée(s) sur 17 ; planche réassemblée : ${path.join(path.resolve(sortie0), r.planche)} ; comparaison : ${path.join(path.resolve(sortie0), r.comparaison)}${r.reprise ? ` ; reprise : dépense comptée ${euros(r.reprise.depenseMicro)}` : ""}`);
       if (r.logosEnHd) console.log(`Logos en haute définition : gardés ${r.logosEnHd.gardees.join(", ") || "aucun"} ; refusés deux fois ${r.logosEnHd.refusees.join(", ") || "aucun"} ; posés sur la planche ${r.logosEnHd.surLaPlanche.join(", ") || "aucun"} ; dépense comptée ${euros(r.logosEnHd.depenseMicro)}`);
       console.log(`État et projet mis à jour : ${path.join(path.resolve(sortie0), r.etat)} (projet ${r.projectId}${r.projetCree ? ", créé dans cette base" : ""}) ; pour l'écran : DATA_DIR=… node_modules/.bin/tsx scripts/syna-recette/ecran-planche-en-vrai.mts ${path.join(sortie0, r.etat)}`);

@@ -543,6 +543,41 @@ CLIENT_JSON=scripts/syna-recette/clients/torrefacteur.json REPONSE='{"sujet":"vi
 - Le fichier du client est dans le dépôt : ses réponses s'y enregistrent comme ses autres réponses de départ (prix,
   clientèle, goûts). Rien n'est payé tant que le propriétaire n'a pas dit oui au prix d'une étape.
 
+### Les noms de produits comparés aux noms exacts du client (27 novembre 2026)
+
+Constat du chef d'orchestre sur la reprise des trois images avec les vrais faits (fichiers :
+`docs/studio/essais-complets/images/torrefacteur/5d-reprise-vrais-faits/`, branche `claude/essais-complets`, commit
+d8b3c1b) : « Sur reference-4, on lit sur des étiquettes « CAFÉ MOULUS » alors que le client a donné « Café moulu », et
+« COFFRETS » alors qu'il a donné « Coffret découverte ». Rien ne l'a relevé. » Sa décision : « un nom de produit lisible sur
+une étiquette doit être comparé aux noms exacts donnés par le client ».
+
+**Pourquoi rien ne l'a relevé.** Deux raisons. Le code excusait tout mot des produits de la fiche (« cafés en grains »,
+« cafés moulus », « coffrets »), au singulier comme au pluriel. Et la reprise est partie sans les faits du client : le
+réassemblage relit le client dans `essai.json`, écrit avant ses réponses ; le texte envoyé listait encore les produits de la
+fiche, sans ses noms exacts ni ses mentions (`reference-4-texte-envoye.txt`).
+
+**Ce qui change, pour tout client qui a donné ses noms exacts** (`planche-en-vrai.ts`, `nomsDeProduitsNonDonnes`) :
+- un nom de produit lisible est comparé à ses noms donnés : la casse ne compte pas, les espaces, apostrophes et tirets sont
+  unifiés, chaque lettre et chaque accent comptent (« CAFE MOULU » sans accent est refusé, par prudence) ; il est permis
+  s'il est l'un de ses noms mot pour mot, ou un texte déjà lisible sur l'aperçu de la case (une suite de mots d'une ligne de
+  l'inventaire, un mot coupé au bord compris, ou un texte que le relecteur voit aussi sur l'aperçu) ; sinon l'image est
+  refusée ; l'exception du logo, la coupe fidèle et la règle des petits textes ne changent pas ;
+- les noms lus : ceux que le relecteur recopie à part (`nomsDeProduits`, demandé seulement quand le client a donné ses noms)
+  et, lu par le code, chaque ligne lue faite seulement de mots de produits (aussi pour les anciens verdicts) ;
+- le texte envoyé donne ses noms exacts, tels quels, à la place des produits de la fiche ; la reprise ne recopie jamais un
+  nom mal écrit et rappelle ses noms ; les textes envoyés plus anciens restent reconnus (`texteSansLesMentionsVraies`,
+  `texteSansLesNomsDonnes`) : une image payée n'est jamais repayée ;
+- le réassemblage prend les faits du fichier du client (`CLIENT_JSON`) quand `essai.json` n'en a pas ;
+- sans noms donnés, rien ne change, à la lettre près. Épreuve scellée : `planche-en-vrai-noms-de-produits-exacts`.
+
+**Le rejugement gratuit, sur les verdicts réels** (`tests/planche-en-vrai-noms-exacts.test.ts`). Sans les faits (comme
+l'essai les a jugées), les 15 images restent gardées. Avec les faits réels du client, 11 restent gardées ; 4 sont refusées
+parce qu'elles écrivent les noms de la fiche, pas les siens : reference-4 (« CAFÉ MOULUS », « COFFRETS »), produit-3
+(« CAFÉS EN GRAINS », « CAFÉS MOULUS »), emballage (« Cafés moulus »), reference-6 (« Cafés en grains », « Cafés moulus »).
+Ces trois dernières avaient été dessinées avec la consigne d'alors, qui demandait les noms de la fiche. Devis du code,
+aucun appel : reference-4 seule, probable 0,17 € (0,1651 €), au plus 0,39 € (0,3935 €) ; les quatre, probable 0,44 €
+(0,4354 €), au plus 1,03 € (1,0299 €). Rien n'a été lancé.
+
 ## Les prix
 
 | Étape | Son choix | Probable | Si tout est refait une fois | Plafond minimal exact |

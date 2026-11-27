@@ -192,8 +192,23 @@ export type MentionVraie = { sujet: string; libelle: string; produit?: string; v
  * Ce que les images et les textes peuvent écrire : les mentions vraies (faits donnés), et les valeurs qu'il ne veut pas
  * montrer (jamais envoyées à un modèle, seulement comparées par le code). Vide pour un ancien projet : rien ne change.
  */
-export type FaitsPermis = { mentions: MentionVraie[]; interdits: string[] };
+export type FaitsPermis = { mentions: MentionVraie[]; interdits: string[];
+  /**
+   * LES NOMS EXACTS DE SES PRODUITS (27 novembre 2026), tels qu'il les a donnés (sujet « noms », état « donne ») : un nom de
+   * produit lisible sur une étiquette, une boîte ou un emballage leur est comparé (`nomsDeProduitsNonDonnes`, planche en
+   * vrai). Absent quand il n'en a pas donné : rien ne change.
+   */
+  noms?: string[] };
 export const AUCUN_FAIT: FaitsPermis = { mentions: [], interdits: [] };
+/** Le client a-t-il donné quelque chose qui compte (une mention, ce qu'il ne veut pas montrer, ses noms exacts) ? */
+export const aDesFaits = (f: FaitsPermis | null | undefined): f is FaitsPermis => !!f && (f.mentions.length > 0 || f.interdits.length > 0 || (f.noms?.length ?? 0) > 0);
+/**
+ * UN NOM DE PRODUIT ÉCRIT EXACTEMENT ? La casse ne compte pas (les étiquettes sont souvent en capitales) ; les espaces
+ * (plusieurs espaces, un retour à la ligne), les apostrophes et les tirets sont unifiés ; chaque lettre et chaque accent
+ * comptent (« CAFÉ MOULUS » n'est pas « Café moulu », « CAFE MOULU » non plus).
+ */
+export const nomEnCapitales = (t: string) => t.normalize("NFC").replace(/[’ʼ‘`´]/g, "'").replace(/[‐‑‒–—]/g, "-").replace(/\s+/g, " ").trim().toLocaleUpperCase("fr");
+export const memeNomExact = (a: string, b: string) => !!nomEnCapitales(a) && nomEnCapitales(a) === nomEnCapitales(b);
 
 export function faitsPermis(faits: readonly FaitAMontrer[]): FaitsPermis {
   const mentions: MentionVraie[] = [], interdits: string[] = [];
@@ -205,7 +220,7 @@ export function faitsPermis(faits: readonly FaitAMontrer[]): FaitsPermis {
     if (f.etat === "donne" && f.valeur?.trim()) mentions.push({ sujet: f.sujet, libelle: libelleDuSujet(f.sujet), ...(f.produit ? { produit: f.produit } : {}), valeur: f.valeur.trim() });
     if (f.etat === "ne_montre_pas" && f.valeur?.trim()) interdits.push(f.valeur.trim());
   }
-  return { mentions, interdits: [...new Set(interdits.map((x) => x.trim()).filter((x) => x.length >= 2))] };
+  return { mentions, interdits: [...new Set(interdits.map((x) => x.trim()).filter((x) => x.length >= 2))], ...(noms.length ? { noms } : {}) };
 }
 
 /** Les fils d'un projet, du plus récent au plus ancien. */

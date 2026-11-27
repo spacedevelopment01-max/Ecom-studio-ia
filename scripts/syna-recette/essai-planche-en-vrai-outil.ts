@@ -11,7 +11,8 @@ import type { LogosEnHdAi, PlancheEnVraiAi } from "../../src/lib/syna-agent/plan
 import type { EtatPlancheEnVrai, Inventaire, Laquelle, NomElement, RelectureDuGroupe, VersionEnHd } from "../../src/lib/syna-agent/planche-en-vrai";
 import type { StatutDuDomaine } from "../../src/lib/syna-agent/planche-de-marque";
 import type { NameDomains } from "../../src/lib/syna-agent/brand-domains";
-import { clientDeLEssai, euros, faitsPermisDuClient, ficheDuClient, typeDuProjet, type ClientDeLEssai } from "./client-de-l-essai";
+import { clientDeLEssai, euros, faitsDuFichier, faitsPermisDuClient, ficheDuClient, typeDuProjet, type ClientDeLEssai } from "./client-de-l-essai";
+import { aDesFaits } from "../../src/lib/syna-agent/faits-a-montrer";
 import { lignesDeLArret, avisDuPlafond } from "./plafond-des-essais";
 import { messageAvecCause } from "../../src/lib/ai/erreur-reseau";
 import type { LigneDeDepense } from "./essai-planches-outil";
@@ -517,7 +518,7 @@ export function lireALOeil(v: string | undefined): Map<NomElement, string> {
 export async function rejugerLEssaiEnVrai(o: { sortie: string; client: ClientDeLEssai; donnees: DonneesDeLaPlanche; personnes?: boolean; logoHd?: boolean; aLOeil?: ReadonlyMap<NomElement, string> }): Promise<Rejugement> {
   const P = await import("../../src/lib/syna-agent/planche-en-vrai");
   // Ses faits à montrer (27 novembre 2026, `faits-de-l-essai.mts`) : sans eux, rien ne change.
-  const faitsDuClient = await faitsPermisDuClient(o.client), avecFaits = faitsDuClient.mentions.length || faitsDuClient.interdits.length ? { faits: faitsDuClient } : {};
+  const faitsDuClient = await faitsPermisDuClient(o.client), avecFaits = aDesFaits(faitsDuClient) ? { faits: faitsDuClient } : {};
   const T = await import("../../src/lib/syna-agent/planche-en-vrai-tache");
   const { plafondConseilleMicro } = await import("./plafond-des-essais");
   const prec = passePrecedente(o.sortie);
@@ -645,7 +646,7 @@ export async function essaiDeLaPlancheEnVrai(o: {
   const personnes = peopleAllowed(projectId);
   const fiche = await ficheDuClient(client, projectId);
   // Ses faits à montrer (27 novembre 2026, `faits-de-l-essai.mts`) : sans eux, rien ne change.
-  const faitsDuClient = await faitsPermisDuClient(client), avecFaits = faitsDuClient.mentions.length || faitsDuClient.interdits.length ? { faits: faitsDuClient } : {};
+  const faitsDuClient = await faitsPermisDuClient(client), avecFaits = aDesFaits(faitsDuClient) ? { faits: faitsDuClient } : {};
   const demoAsset = await saveAsset({ userId: u.id, projectId, data: demo, name: "planche-choisie.png", mime: "image/png", role: "brand-board", origin: "generated", status: "ready", meta: { plancheDeMarque: { key: "A", tour: 1, nom: client.nom, disposition: donnees.disposition } } });
   const logoAsset = await saveAsset({ userId: u.id, projectId, data: logoFini, name: "logo-fini.png", mime: "image/png", role: "logo", origin: "generated", status: "ready" });
   // Les couleurs de la marque, tirées du logo par le Studio (comme à l'adoption du logo) : elles donnent l'encre de la planche.
@@ -708,7 +709,9 @@ export async function essaiDeLaPlancheEnVrai(o: {
         // été payée, et son verdict est recompté par le code d'aujourd'hui.
         // Une image reçue avant les mentions vraies (27 novembre 2026) : la ligne des étiquettes d'avant à la place de la sienne.
         const sansMentions = P.texteSansLesMentionsVraies(d.texte, client.produits, faitsDuClient);
-        const avantLaLigne = recue.texte != null && recue.texte !== d.texte && (recue.texte === P.texteSansLaLigneDesTextes(d.texte, client.produits, faitsDuClient) || recue.texte === P.texteSansLaLigneDesPetitsTextes(d.texte) || recue.texte === sansMentions || recue.texte === P.texteSansLaLigneDesPetitsTextes(sansMentions));
+        // Une image reçue avant les noms exacts donnés par le client (27 novembre 2026) : la ligne d'alors, aux produits de la fiche.
+        const sansNoms = P.texteSansLesNomsDonnes(d.texte, client.produits, faitsDuClient);
+        const avantLaLigne = recue.texte != null && recue.texte !== d.texte && [P.texteSansLaLigneDesTextes(d.texte, client.produits, faitsDuClient), P.texteSansLaLigneDesPetitsTextes(d.texte), sansMentions, P.texteSansLaLigneDesPetitsTextes(sansMentions), sansNoms, P.texteSansLaLigneDesPetitsTextes(sansNoms)].includes(recue.texte);
         if (avantLaLigne) res.reprise!.ecarts.push(`${d.element} (essai ${tour}) : image reçue avant la ligne des étiquettes, reprise telle quelle et rejugée par le code`);
         else if (recue.texte != null && recue.texte !== d.texte) throw (erreur ??= new RepriseRefusee(`le texte de ${d.element} (essai ${tour}) n'est plus celui de la passe d'avant : l'image reçue ne correspondrait plus ; rien de plus n'est lancé (REJUGER=1 dit lesquelles refaire)`));
         const differentes = d.jointes.filter((j) => recue.jointes.get(j.role) && recue.jointes.get(j.role) !== sha(j.data)).map((j) => j.role);
@@ -1004,6 +1007,12 @@ export async function reassemblerLEssaiEnVrai(o: {
   dossier: string; sortie: string; planche: string; logo: string; reprendre?: NomElement[]; plafondEuros?: string; ai?: (q: Qui) => PlancheEnVraiAi;
   /** d) Les quatre petites versions du logo en haute définition, à la charge du Studio (LOGO_HD=1). */
   logoHd?: boolean; aiLogos?: (q: Qui) => LogosEnHdAi;
+  /**
+   * Le fichier du client (CLIENT_JSON) : ses faits à montrer, quand le client de l'essai (essai.json, écrit avant ses
+   * réponses) n'en a pas (27 novembre 2026 : la reprise réelle de Mouture « avec les vrais faits » est partie sans eux, ni
+   * ses noms exacts ni ses mentions, le client étant relu dans essai.json).
+   */
+  clientJson?: string;
 }): Promise<ResultatDuReassemblage> {
   const sharp = (await import("sharp")).default;
   const P = await import("../../src/lib/syna-agent/planche-en-vrai");
@@ -1015,9 +1024,10 @@ export async function reassemblerLEssaiEnVrai(o: {
   const inventaire = P.InventaireSchema.parse(JSON.parse(String(lire("inventaire-reponse.json"))));
   const anciennes = JSON.parse(String(lire("apercus/cases.json"))) as { boites: Record<string, [number, number, number, number]> };
   const demo = png(o.planche, "Planche choisie"), logoFini = png(o.logo, "Logo fini");
-  const { client, donnees } = essai, laquelle = donnees.disposition, nom = client.nom.trim(), personnes = false;
+  const { donnees } = essai, laquelle = donnees.disposition, nom = essai.client.nom.trim(), personnes = false;
+  const client: ClientDeLEssai = { ...essai.client, ...(!essai.client.faits?.length && o.clientJson ? ((b) => (Array.isArray(b.faits) && b.faits.length ? { faits: faitsDuFichier(b.faits) } : {}))(JSON.parse(fs.readFileSync(o.clientJson, "utf8")) as { faits?: unknown[] }) : {}) };
   // Ses faits à montrer (27 novembre 2026), gardés avec l'essai : sans eux, rien ne change.
-  const faitsDuClient = await faitsPermisDuClient(client), avecFaits = faitsDuClient.mentions.length || faitsDuClient.interdits.length ? { faits: faitsDuClient } : {};
+  const faitsDuClient = await faitsPermisDuClient(client), avecFaits = aDesFaits(faitsDuClient) ? { faits: faitsDuClient } : {};
   fs.mkdirSync(path.join(o.sortie, "cases"), { recursive: true }); fs.mkdirSync(path.join(o.sortie, "logos"), { recursive: true });
   const ecrire = (f: string, c: string | Buffer) => { fs.mkdirSync(path.dirname(path.join(o.sortie, f)), { recursive: true }); fs.writeFileSync(path.join(o.sortie, f), c); return f; };
   const decoupe = await P.decouperLesApercus(demo, laquelle);
@@ -1231,7 +1241,7 @@ async function repriseDesCases(o: {
       const res = await T.reprendreDesCasesEnVrai({ ai, nom: o.nom, personnes: o.personnes, logo: o.logo, separation: o.separation, inventaire: o.inventaire, decoupe: o.decoupe, elements: o.elements, raisons: o.raisons, debordes: o.debordes,
         // Les produits de la fiche et la phrase du logo (27 novembre 2026, reprise réelle de Mouture : sans eux, la ligne des
         // étiquettes manquait au dessinateur et la phrase du logo était comptée en trop).
-        produits: o.client.produits, phrase: o.phrase, ...((f) => (f.mentions.length || f.interdits.length ? { faits: f } : {}))(await faitsPermisDuClient(o.client)) });
+        produits: o.client.produits, phrase: o.phrase, ...((f) => (aDesFaits(f) ? { faits: f } : {}))(await faitsPermisDuClient(o.client)) });
       for (const [n, r] of res) { o.ecrire(`reprise/${n}-raisons.json`, `${JSON.stringify(r.essais.map((e) => e.raisons), null, 2)}\n`); if (r.ok && r.png) gardees.set(n, r.png); }
     } catch (e) {
       arret = e instanceof PlafondDeLEssaiAtteint ? `le garde-fou de l'essai a refusé un appel : ${e.message}` : e instanceof CostCapReached ? `la borne du Studio a refusé un appel : ${e.message}` : `un appel a échoué, jamais relancé : ${messageAvecCause(e).slice(0, 700)}`;

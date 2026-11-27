@@ -203,9 +203,11 @@ describe("les faits à montrer", async () => {
     expect(V.texteSansLesMentionsVraies(avec, produits, FAITS)).toBe(sans);
     // Le relecteur reçoit la liste des mentions permises ; le code les excuse, refuse le reste et ce qu'il ne veut pas montrer.
     expect(V.demandeAuRelecteurEnVrai({ nom: "Brûlerie", personnes: false, groupe: "produits", cases: [{ element: "produit-1", photo: false }], produits, faits: FAITS })).toContain("Les mentions vraies données par le client");
-    const v = { case: "produit-1", identique: true, textesLus: ["Brûlerie", "Café en grains", "250 g", "Origine Éthiopie"], logoPresent: true, personne: false, logoFonceSurFondSombre: false, produitFidele: null, texteCoupe: false, note: 9, pourquoi: "" } as any;
+    const v = { case: "produit-1", identique: true, textesLus: ["Brûlerie", "Café des collines", "250 g", "Origine Éthiopie"], logoPresent: true, personne: false, logoFonceSurFondSombre: false, produitFidele: null, texteCoupe: false, note: 9, pourquoi: "" } as any;
     const inv = { case: "produit-1", textes: ["Brûlerie"], logo: true } as any;
     expect(V.raisonsDuRefusEnVrai(v, { inventaire: inv, personnes: false, photo: false, element: "produit-1", logo: { nom: "Brûlerie" }, produits, faits: FAITS })).toEqual([]);
+    // Ses noms exacts donnés (27 novembre 2026) : un nom de produit écrit autrement, celui de la fiche compris, fait refuser.
+    expect(V.raisonsDuRefusEnVrai({ ...v, textesLus: ["Brûlerie", "Café en grains", "250 g"] }, { inventaire: inv, personnes: false, photo: false, element: "produit-1", logo: { nom: "Brûlerie" }, produits, faits: FAITS })).toEqual([`${V.DEBUT_NOMS_DE_PRODUITS_EN_VRAI}« Café en grains » (noms donnés : « Café des collines »)`]);
     expect(V.raisonsDuRefusEnVrai(v, { inventaire: inv, personnes: false, photo: false, element: "produit-1", logo: { nom: "Brûlerie" }, produits }).join(" ")).toMatch(/faits ou produits inventés.*« 250 g »/);
     expect(V.raisonsDuRefusEnVrai({ ...v, textesLus: [...v.textesLus, "1 kg"] }, { inventaire: inv, personnes: false, photo: false, element: "produit-1", logo: { nom: "Brûlerie" }, produits, faits: FAITS }).join(" ")).toMatch(/« 1 kg »/);
     expect(V.raisonsDuRefusEnVrai({ ...v, textesLus: [...v.textesLus, "Nantes"] }, { inventaire: inv, personnes: false, photo: false, element: "produit-1", logo: { nom: "Brûlerie" }, produits, faits: FAITS })).toContain(F.RAISON_FAIT_NON_MONTRE);

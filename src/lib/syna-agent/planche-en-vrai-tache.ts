@@ -39,7 +39,7 @@ import {
   type BlocDeTexte, type Separation, type VersionDuLogo,
 } from "./planche-en-vrai-code";
 import { detourerLeLogo } from "../media/detourage-logo";
-import { faitsPermisDuProjet, type FaitsPermis } from "./faits-a-montrer";
+import { aDesFaits, faitsPermisDuProjet, type FaitsPermis } from "./faits-a-montrer";
 
 // ---------------------------------------------------------------- le devis
 
@@ -302,7 +302,7 @@ export async function plancheEnVrai(o: {
       demande, `relecture-${groupe}${tour > 1 ? "-r1" : ""}`)),
     aLaChargeDuStudio: (fn) => aLaChargeDuStudio(fn),
   }, { nom, personnes: o.personnes, logo: logoSurBlanc, symbole: symboleSurBlanc, photo, apercus: decoupe.apercus, inventaire, debordes: decoupe.debordes,
-    produits: o.produits?.length ? o.produits : produitsDeLaPlanche(pl.image.id), phrase: lignesDeLaPhrase(o.ligneDuLogo), ...(faits.mentions.length || faits.interdits.length ? { faits } : {}) });
+    produits: o.produits?.length ? o.produits : produitsDeLaPlanche(pl.image.id), phrase: lignesDeLaPhrase(o.ligneDuLogo), ...(aDesFaits(faits) ? { faits } : {}) });
 
   // Les images gardées, rangées en haute définition ; les produits sans photo du client sont marqués « image d'ambiance ».
   for (const n of NOMS_DES_ELEMENTS) for (const e of res.get(n)?.essais ?? []) if (e.raisons.length) notes.push(`${n}, essai ${e.tour} refusé : ${e.raisons.join(" ; ")}`);
@@ -694,7 +694,7 @@ export async function refaireLesProduitsEnVrai(o: { ctx: Etape; ai: PlancheEnVra
     },
     relire: (groupe, items, demande, tour) => o.ctx.step(`brand:envrai:relecture:${groupe}:photo${tour > 1 ? ":r1" : ""}`, () => o.ai.relire(items.flatMap((it) => [{ data: it.apercu, label: `${it.element} aperçu` }, { data: it.image, label: `${it.element} refaite` }, ...(it.photo ? [{ data: it.photo, label: `${it.element} produit` }] : [])]), demande, `relecture-${groupe}-photo`)),
     aLaChargeDuStudio: (fn) => aLaChargeDuStudio(fn),
-  }, { nom: o.route.name.trim(), personnes: o.personnes, logo, photo, apercus: decoupe.apercus, inventaire, elements: aRefaire, debordes: decoupe.debordes, produits: produitsDeLaPlanche(ev.demo), ...((f) => (f.mentions.length || f.interdits.length ? { faits: f } : {}))(faitsPermisDuProjet(o.who.projectId)) });
+  }, { nom: o.route.name.trim(), personnes: o.personnes, logo, photo, apercus: decoupe.apercus, inventaire, elements: aRefaire, debordes: decoupe.debordes, produits: produitsDeLaPlanche(ev.demo), ...((f) => (aDesFaits(f) ? { faits: f } : {}))(faitsPermisDuProjet(o.who.projectId)) });
   const elements = [...ev.elements], issues: string[] = [];
   for (const n of aRefaire) {
     const r = res.get(n);
