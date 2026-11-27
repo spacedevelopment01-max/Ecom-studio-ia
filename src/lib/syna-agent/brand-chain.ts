@@ -15,6 +15,7 @@
  * page est supprimée ; ce qui n'est pas vérifié est écrit dans « ce qui reste à prouver »).
  */
 import { ficheTexte, goutsPour, notesDuProjet } from "./fiche";
+import { faitsDuProjet, faitsPermisDuProjet } from "./faits-a-montrer";
 import { DEFAULT_MODELS } from "./models";
 import { z } from "zod";
 import { domainDeps, domainLine, findDomains, type NameDomains } from "./brand-domains";
@@ -860,7 +861,7 @@ function studyDigest(st: Study): string {
 /** Les mots du client cités dans une consigne de SINA (« Le client a dit : « … » ») ; rien de ce qu'elle y ajoute. */
 export const clientWords = (guidance?: string): string => [...(guidance ?? "").matchAll(/client a dit\s*:\s*«\s*([^»]+?)\s*»/gi)].map((m) => m[1]).join(" ");
 /** Le dossier de chaque création de la marque : la fiche ENTIÈRE du client (le socle, 21 novembre 2026), puis la refonte. */
-const briefBlock = (j: Journey, projectId: string, guidance?: string) => [ficheTexte({ j, notes: notesDuProjet(projectId), projectId }), "", "# Existant et refonte", keepConstraints(j), ...(guidance ? ["", "# Ce que le client demande pour cette nouvelle proposition (ses mots)", guidance] : [])].join("\n");
+const briefBlock = (j: Journey, projectId: string, guidance?: string) => [ficheTexte({ j, notes: notesDuProjet(projectId), projectId, faits: faitsDuProjet(projectId) }), "", "# Existant et refonte", keepConstraints(j), ...(guidance ? ["", "# Ce que le client demande pour cette nouvelle proposition (ses mots)", guidance] : [])].join("\n");
 /** Ce que le client a dit de l'image qu'il veut : sa réponse de départ, et ses goûts et refus de sa fiche qui valent pour le logo ou les images de la marque. */
 /** Le logo fini d'une esquisse (méthode des graphistes) posé sur la planche, tel quel : il devient le logo de la planche. */
 export async function poserLeLogoFini(x: Route, assetId: string): Promise<Route> {
@@ -1019,10 +1020,11 @@ export async function runSinaBrandJob(ctx: JobContext) {
           // Les valeurs du métier déjà écrites par la tâche qui a fait les planches : reprises telles quelles, jamais repayées.
           const avant = j.identities?.chainJobId ? parseJson<Record<string, unknown>>(getJob(j.identities.chainJobId)?.checkpoint ?? "{}", {}) : {};
           for (const [k, v] of Object.entries(avant)) if (k.startsWith("brand:planche:valeurs:") && !(k in ctx.checkpoint)) ctx.save(k, v);
-          const valeurs = metier ? await T.valeursDuClient(ctx, plancheAi, { nom: route0.name, metier, fiche: ficheTexte({ j, notes: notesDuProjet(p.id), projectId: p.id }), personnes, kind }) : { ok: false as const, raison: L("le métier n'est pas encore écrit", "the trade is not written yet"), notes: [] };
+          const faits = faitsPermisDuProjet(p.id);
+          const valeurs = metier ? await T.valeursDuClient(ctx, plancheAi, { nom: route0.name, metier, fiche: ficheTexte({ j, notes: notesDuProjet(p.id), projectId: p.id, faits: faitsDuProjet(p.id) }), personnes, kind, faits }) : { ok: false as const, raison: L("le métier n'est pas encore écrit", "the trade is not written yet"), notes: [] };
           // La phrase choisie par le client sous ce logo, reprise mot pour mot sur la planche refaite.
           const phrase = (await import("./planche-de-marque")).phraseDuLogoFini(j.graphistes, route0.board.planche.logo);
-          const r = await T.plancheDeLaRoute({ ctx, ai: plancheAi, who: { userId: p.userId, projectId: p.id }, route: route0, round, valeurs, logoAssetId: route0.board.planche.logo, personnes, ...(phrase ? { phrase } : {}) });
+          const r = await T.plancheDeLaRoute({ ctx, ai: plancheAi, who: { userId: p.userId, projectId: p.id }, route: route0, round, valeurs, logoAssetId: route0.board.planche.logo, personnes, ...(phrase ? { phrase } : {}), faits });
           return { route: r.route, made: r.route.board.planche?.image ? 1 : 0, rejected: r.route.board.planche?.image ? 0 : 1, notes: [...valeurs.notes, ...r.notes], issues: r.issues, manque: manqueDeLaPlanche(r.route, !!clientLogo) };
         }
         return runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: route0, round, slots: places, clientLogo, gouts, ...(reprise ? { imagery: reprise } : {}) });
@@ -1396,7 +1398,9 @@ export async function runSinaBrandJob(ctx: JobContext) {
     const personnes = peopleAllowed(p.id), metier = j.graphistes?.metier?.metier ?? "";
     const premier = list.find((y) => todo.includes(y.key));
     // Les valeurs du métier : UN appel pour le client (ses planches partagent le nom et le métier), jamais repayé.
-    const valeurs = premier && metier ? await T.valeursDuClient(ctx, plancheAi, { nom: premier.name, metier, fiche: ficheTexte({ j, notes: notesDuProjet(p.id), projectId: p.id }), personnes, kind }).catch((e) => { if (e instanceof CostCapReached) return { ok: false as const, raison: L("le plafond annoncé a été atteint", "the announced cap was reached"), notes: [] }; throw e; })
+    // Les faits à montrer de sa fiche (27 novembre 2026) : les mentions vraies qu'il a données, ce qu'il ne veut pas montrer.
+    const faits = faitsPermisDuProjet(p.id);
+    const valeurs = premier && metier ? await T.valeursDuClient(ctx, plancheAi, { nom: premier.name, metier, fiche: ficheTexte({ j, notes: notesDuProjet(p.id), projectId: p.id, faits: faitsDuProjet(p.id) }), personnes, kind, faits }).catch((e) => { if (e instanceof CostCapReached) return { ok: false as const, raison: L("le plafond annoncé a été atteint", "the announced cap was reached"), notes: [] }; throw e; })
       : { ok: false as const, raison: L("le métier n'est pas encore écrit", "the trade is not written yet"), notes: [] };
     notes.push(...valeurs.notes);
     for (const x of list.filter((y) => todo.includes(y.key))) {
@@ -1408,7 +1412,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
         const route = await poserLeLogoFini(x, lg.assetId);
         // La phrase choisie par le client sous ce logo (méthode des graphistes), reprise mot pour mot sur sa planche.
         const phrase = phraseDuLogoFini(j.graphistes, lg.assetId);
-        const r = await T.plancheDeLaRoute({ ctx, ai: plancheAi, who: { userId: p.userId, projectId: p.id }, route, round, valeurs, logoAssetId: lg.assetId, personnes, ...(phrase ? { phrase } : {}) });
+        const r = await T.plancheDeLaRoute({ ctx, ai: plancheAi, who: { userId: p.userId, projectId: p.id }, route, round, valeurs, logoAssetId: lg.assetId, personnes, ...(phrase ? { phrase } : {}), faits });
         list = list.map((o) => (o.key === x.key ? r.route : o));
         raisonsDe.set(x.key, r.issues); notes.push(...r.notes);
       } catch (e) {

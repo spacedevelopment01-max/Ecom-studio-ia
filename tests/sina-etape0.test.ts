@@ -152,7 +152,7 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
       ] });
       expect(J.missingFields(J.journeyOf(cid))).toEqual([]);
 
-      const ok = await call("start.confirm", ctx, {});
+      const ok = await (await import("./faits-fixtures")).avecLesFaitsDemandes(ctx, () => call("start.confirm", ctx, {}));
       expect(ok.ok).toBe(true);
       const j = J.journeyOf(cid);
       expect(j.steps[0].status).toBe("done");
@@ -184,7 +184,7 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
     expect(keep.summary).toMatch(/je garde donc aussi le nom/);
     expect(J.journeyOf(cid).keep).toEqual(["logo", "slogan", "nom"]);
     await call("start.answer", ctx, { answers: ["audience", "image", "setup", "market", "price", "difference", "taste", "photos", "language", "contact", "platform"].map((f) => ({ field: f, value: f === "audience" ? "Femmes de 30 à 50 ans." : f === "platform" ? "shopify" : `réponse ${f}` })) });
-    const ok = await call("start.confirm", ctx, {});
+    const ok = await (await import("./faits-fixtures")).avecLesFaitsDemandes(ctx, () => call("start.confirm", ctx, {}));
     expect(ok.ok).toBe(true);
     const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
     expect(loadProject(pid).name).toBe("Brume d'Ambre");

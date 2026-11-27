@@ -11,7 +11,7 @@ import sharp from "sharp";
 import type { PlancheAi } from "../../src/lib/syna-agent/planche-de-marque-tache";
 import type { RelectureDeLaPlanche, ValeursDuMetier } from "../../src/lib/syna-agent/planche-de-marque";
 import type { NameDomains } from "../../src/lib/syna-agent/brand-domains";
-import { clientDeLEssai, euros, ficheDuClient, typeDuProjet, type ClientDeLEssai } from "./client-de-l-essai";
+import { clientDeLEssai, euros, faitsPermisDuClient, ficheDuClient, typeDuProjet, type ClientDeLEssai } from "./client-de-l-essai";
 import { lignesDeLArret, avisDuPlafond } from "./plafond-des-essais";
 
 // Le client inventé de l'essai (client-de-l-essai.ts) : aucun client n'est pris par défaut.
@@ -345,6 +345,8 @@ export async function essaiDesPlanches(o: { sortie: string; plafondEuros: string
   const brut: PlancheAi = o.ai ? o.ai(qui) : T.plancheDeps.ai ? T.plancheDeps.ai(jobId) : T.vraisAppelsDeLaPlanche(qui);
   const personnes = peopleAllowed(projectId);
   const fiche = await ficheDuClient(client, projectId);
+  // Ses faits à montrer (27 novembre 2026), tels que le chef d'orchestre y a répondu (`faits-de-l-essai.mts`) : sans eux, rien ne change.
+  const faits = await faitsPermisDuClient(client);
 
   const res: ResultatDesPlanches = { client, fiche, planches: [], depenseMicro: 0, appels: [], devis };
   const ecrireFichier = (nom: string, contenu: string | Buffer) => { fs.writeFileSync(path.join(o.sortie, nom), contenu); return nom; };
@@ -488,7 +490,7 @@ export async function essaiDesPlanches(o: { sortie: string; plafondEuros: string
       annee = T.anneeEnCours();
       // 3. Les valeurs du métier : un appel pour le client, contrôlé, une réécriture au plus à la charge du Studio.
       try {
-        res.valeurs = await T.valeursDuClient(ctx, ai, { nom: client.nom, metier: client.metier, fiche, personnes, kind: client.kind });
+        res.valeurs = await T.valeursDuClient(ctx, ai, { nom: client.nom, metier: client.metier, fiche, personnes, kind: client.kind, ...(faits.mentions.length || faits.interdits.length ? { faits } : {}) });
         if (!dejaEcrites) ecrireFichier("valeurs-du-metier.json", json(res.valeurs));
         else res.valeurs = { ...res.valeurs, notes: [...res.valeurs.notes, "valeurs reprises de valeurs-du-metier.json (déjà écrites et payées), aucun appel"] };
       } catch (e) { res.arret = raisonDeLArret(e, "valeurs du métier"); return ecrire(); }
@@ -510,21 +512,24 @@ export async function essaiDesPlanches(o: { sortie: string; plafondEuros: string
         const rep = aReprendre.find((x) => x.key === l.key);
         if (rep && res.valeurs.ok && res.domaine) {
           const dp = { domaine: res.domaine.domaine, statut: res.domaine.statut as never };
-          const texte1 = P.texteDeLaPlanche({ nom: client.nom, valeurs: res.valeurs.valeurs, annee, domaine: dp, personnes, ...(l.phrase ? { phrase: l.phrase } : {}) });
+          // Une planche payée avant les faits à montrer (27 novembre 2026) : son texte d'alors, sans la ligne des mentions, est
+          // reconnu ; elle n'est jamais repayée.
+          const sansFaits = P.texteDeLaPlanche({ nom: client.nom, valeurs: res.valeurs.valeurs, annee, domaine: dp, personnes, ...(l.phrase ? { phrase: l.phrase } : {}) });
+          const texte1 = rep.texte != null && rep.texte === sansFaits ? sansFaits : P.texteDeLaPlanche({ nom: client.nom, valeurs: res.valeurs.valeurs, annee, domaine: dp, personnes, ...(l.phrase ? { phrase: l.phrase } : {}), ...(faits.mentions.length ? { faits } : {}) });
           if (rep.texte != null && rep.texte !== texte1) { p.erreur = `le texte du premier essai repris (${rep.dossier}) n'est pas celui que le Studio enverrait aujourd'hui avec ces valeurs, ce domaine et cette année : rien n'est repris`; (res.erreurs ??= []).push(`planche ${l.key} : ${p.erreur}`); continue; }
           const m = await sharp(rep.png).metadata();
           const im = await saveAsset({ userId: u.id, projectId, data: rep.png, name: `planche-de-marque-${l.key}-1.png`, mime: "image/png", role: "planche-refusee", origin: "generated", status: "ready", meta: { plancheDeMarque: { key: l.key, tour: 1, nom: client.nom, texteEnvoye: texte1, recu: null, repris: rep.fichierPng, verdict: rep.verdict } } as never });
           reprises.set(T.clesDeLaPlanche.image(1, l.key, 1), { id: im.id, w: m.width ?? 1536, h: m.height ?? 2304 });
           reprises.set(T.clesDeLaPlanche.relecture(1, l.key, 1), rep.verdict);
           const d = P.laDisposition(res.valeurs.valeurs.metier);
-          const lu = P.lectureDeLaPlanche(rep.verdict, { nom: client.nom, annee, domaine: dp, personnes, animaux: d.animaux && d.laquelle === "standard", ...(l.phrase ? { phrase: l.phrase } : {}), produits: res.valeurs.valeurs.produits });
+          const lu = P.lectureDeLaPlanche(rep.verdict, { nom: client.nom, annee, domaine: dp, personnes, animaux: d.animaux && d.laquelle === "standard", ...(l.phrase ? { phrase: l.phrase } : {}), produits: res.valeurs.valeurs.produits, ...(faits.mentions.length || faits.interdits.length ? { faits } : {}) });
           const brutLocal = path.resolve(rep.fichierPng) === path.resolve(o.sortie, `planche-${l.key}-1-brute.png`) ? `planche-${l.key}-1-brute.png` : ecrireFichier(`planche-${l.key}-1-brute.png`, rep.png);
           if (rep.texte == null) ecrireFichier(`planche-${l.key}-1-texte-envoye.txt`, texte1);
           p.essais.push({ tour: 1, texte: `planche-${l.key}-1-texte-envoye.txt`, brut: brutLocal, verdict: rep.verdict, raisons: lu.raisons, ecartes: lu.ecartes, repris: rep.dossier });
           ecrireFichier(`planche-${l.key}-1-relecture-verdict-recalcule.json`, json({ verdict: rep.verdict, raisons: lu.raisons, ecartes: lu.ecartes, gardee: !lu.raisons.length, repris: rep.dossier }));
         }
         try {
-          const r = await T.plancheDeLaRoute({ ctx, ai, who: { userId: u.id, projectId }, route: route as never, round: 1, valeurs: res.valeurs, logoAssetId: a.id, personnes, ...(l.phrase ? { phrase: l.phrase } : {}) });
+          const r = await T.plancheDeLaRoute({ ctx, ai, who: { userId: u.id, projectId }, route: route as never, round: 1, valeurs: res.valeurs, logoAssetId: a.id, personnes, faits, ...(l.phrase ? { phrase: l.phrase } : {}) });
           const pl = r.route.board.planche;
           p.notes = r.notes; p.issues = r.issues;
           p.gardee = !!pl?.image; p.note = pl?.note;

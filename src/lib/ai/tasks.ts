@@ -395,7 +395,7 @@ const FAIT_MAIN = /(?:fait|fabriqu|cousu|façonn|tiss|mont|assembl|réalis|taill
  * prises par SINA) : des faits confirmés (textes) et des prix connus (en euros). Essai réel du 17 novembre 2026 : les
  * prix du catalogue et « faits à la main », dit par la cliente, étaient signalés « à confirmer ».
  */
-export function lintClaims(content: unknown, p: Project, extra: { facts?: (string | null | undefined)[]; prices?: number[] } = {}): { path: string; term: string; label: string }[] {
+export function lintClaims(content: unknown, p: Project, extra: { facts?: (string | null | undefined)[]; prices?: number[]; /** Ce que le client ne veut pas montrer (ses faits à montrer, 27 novembre 2026) : jamais écrit. */ interdits?: string[] } = {}): { path: string; term: string; label: string }[] {
   const allowed = p.product.facts
     .filter((f) => f.status === "confirmed")
     .map((f) => `${f.label} ${f.value}`)
@@ -422,6 +422,11 @@ export function lintClaims(content: unknown, p: Project, extra: { facts?: (strin
         const m = v.match(re);
         if (m && label.fr === "fabrication artisanale" && faitMain) continue;
         if (m && !allowed.includes(m[0].toLowerCase().trim()) && !issues.some((x) => x.path === path && x.term.toLowerCase() === m[0].trim().toLowerCase())) issues.push({ path, term: m[0].trim(), label: L(label.fr, label.en) });
+      }
+      // Ce que le client ne veut pas montrer (27 novembre 2026) : jamais écrit, quels que soient les mots autour.
+      for (const t of extra.interdits ?? []) {
+        const w = t.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+        if (w.length >= 2 && ` ${v.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/[^a-z0-9]+/g, " ")} `.includes(` ${w} `) && !issues.some((x) => x.path === path && x.term === t)) issues.push({ path, term: t, label: L("information que le client ne veut pas montrer", "information the client does not want shown") });
       }
       if (prices) {
         for (const m of v.matchAll(PRICE_RE)) {

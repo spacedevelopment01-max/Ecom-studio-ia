@@ -10,7 +10,7 @@
  *    Halo ne me plaît pas trop, tu peux m'en faire un autre ? », SINA avait répondu « Qu'est-ce qui te gêne dans le logo
  *    de Halo : les lettres, le bleu, l'ellipse orange au-dessus, ou l'ensemble ? »).
  */
-export type MessageDeSina = { message: string; question?: { text: string; choices?: string[] } | null; actions: { tool: string; args?: unknown }[] };
+export type MessageDeSina = { message: string; question?: { text: string; choices?: string[] } | null; actions: { tool: string; args?: unknown }[]; /** Le sujet que la question aborde (« fait:<sujet> » pour un fait à montrer). */ askField?: string };
 
 /** Les coordonnées qu'on ne demande jamais d'un coup. */
 // « nom » et « site » n'en sont pas (audit du 22 novembre 2026 : « As-tu déjà un nom, un logo ou un site ? » était réécrit).
@@ -75,13 +75,17 @@ export function nommee(texte: string, nom: string): boolean {
  * Les défauts d'un message, dits pour SINA. `payant` : l'outil passe-t-il par la carte d'accord ; `lance` : une création
  * a-t-elle vraiment démarré pendant cette demande.
  */
-export function defautsDuMessage(m: MessageDeSina, o: { etape: number; payant: (tool: string) => boolean; lance: boolean; /** Ses mots corrigés : « jamais X, toujours Y » (règle « ce qu'il corrige une fois vaut pour toujours »). */ motsCorriges?: { avoid: string; use: string }[]; /** Les planches finies par la tâche qui vient de finir, pas encore présentées (essai réel de Nadia, 23 novembre 2026). */ aPresenter?: { name: string }[] }): string[] {
+export function defautsDuMessage(m: MessageDeSina, o: { etape: number; payant: (tool: string) => boolean; lance: boolean; /** Ses mots corrigés : « jamais X, toujours Y » (règle « ce qu'il corrige une fois vaut pour toujours »). */ motsCorriges?: { avoid: string; use: string }[]; /** Les planches finies par la tâche qui vient de finir, pas encore présentées (essai réel de Nadia, 23 novembre 2026). */ aPresenter?: { name: string }[];
+  /** Les faits à montrer que ce message redemande alors qu'ils sont déjà répondus (`faitsRedemandes`, 27 novembre 2026). */ faitsRedemandes?: (m: MessageDeSina) => string[]; /** Ce qui est dit au sujet de ces faits. */ defautDesFaits?: (sujets: string[]) => string }): string[] {
   const out: string[] = [];
   const texte = `${m.message ?? ""} ${m.question?.text ?? ""} ${(m.question?.choices ?? []).join(" ")}`;
   const bord = (w: string) => new RegExp(`(?<![\\p{L}])${w.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\p{L}])`, "iu");
   // Le bon mot peut contenir l'ancien (« boutique en ligne » pour « boutique ») : il est retiré avant de chercher l'ancien.
   for (const r of o.motsCorriges ?? []) if (r.avoid.trim() && bord(r.avoid).test(r.use.trim() ? texte.replace(new RegExp(bord(r.use).source, "giu"), " ") : texte))
     out.push(`Le client a corrigé ce mot une fois pour toutes : jamais « ${r.avoid} », toujours « ${r.use} ». Ton message l'emploie encore.`);
+  // Un fait à montrer déjà répondu ne se redemande jamais (27 novembre 2026) : c'est le code qui le vérifie.
+  const redemandes = o.etape === 0 && o.faitsRedemandes ? o.faitsRedemandes(m) : [];
+  if (redemandes.length) out.push(o.defautDesFaits ? o.defautDesFaits(redemandes) : `Le client a déjà répondu pour ${redemandes.join(", ")} : ne le lui redemande pas.`);
   if (o.etape === 0 && nombreDeQuestions(m) > 1)
     out.push("Pendant « faire connaissance », c'est une question à la fois (règle du propriétaire) : ton message en pose plusieurs. Garde la plus utile maintenant, les autres viendront ensuite, une par une. Des coordonnées se demandent aussi une par une.");
   const text = `${m.message ?? ""} ${m.question?.text ?? ""}`;

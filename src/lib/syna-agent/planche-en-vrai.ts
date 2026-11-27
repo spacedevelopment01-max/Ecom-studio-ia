@@ -29,6 +29,7 @@ import { getJsonSetting } from "../settings";
 import { NOTE_DU_PROPRIETAIRE } from "./note-du-proprietaire";
 import { DOSSIER_DE_LA_PLANCHE, motQuiDitUnFait, motsDuProduit, nomDeProduitPermis, nomDuProduitALEcran } from "./planche-de-marque";
 import { libelleDeLElement } from "./planche-en-vrai-libelles";
+import { RAISON_FAIT_NON_MONTRE, chiffresPermis, demandeDesMentionsVraies, interditsDans, mentionPermise, mentionsDites, type FaitsPermis } from "./faits-a-montrer";
 
 // ---------------------------------------------------------------- 0. le réglage
 
@@ -328,8 +329,11 @@ export const SANS_PERSONNE_EN_VRAI = "Aucune personne n'apparaît.";
  * mot pour mot) : les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de
  * son logo et les noms des produits de la fiche ; rien n'y est ajouté qui dise une date, une origine ou un chiffre.
  */
-export const ligneDesTextesEnVrai = (produits: readonly string[]): string =>
-  `Les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : ${produits.map((p) => `« ${nomDuProduitALEcran(p)} »`).join(", ")} ; aucune date, aucune origine, aucun chiffre n'y est ajouté.`;
+export const ligneDesTextesEnVrai = (produits: readonly string[], faits?: FaitsPermis): string => faits?.mentions.length
+  // LES MENTIONS VRAIES (27 novembre 2026, `faits-a-montrer.ts`) : seulement quand le client en a donné ; sans elles, la
+  // ligne reste celle d'avant, à la lettre près (une image déjà reçue est reconnue sans être repayée).
+  ? `Les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo, les noms des produits du client : ${produits.map((p) => `« ${nomDuProduitALEcran(p)} »`).join(", ")}, et ces mentions vraies, données par le client, écrites exactement : ${mentionsDites(faits)} ; aucune autre date, aucune autre origine, aucun autre chiffre n'y est ajouté.`
+  : `Les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : ${produits.map((p) => `« ${nomDuProduitALEcran(p)} »`).join(", ")} ; aucune date, aucune origine, aucun chiffre n'y est ajouté.`;
 /**
  * LES PETITS TEXTES ILLISIBLES DE L'APERÇU (27 novembre 2026, essai réel de Mouture, reprise des trois images ; constat du
  * chef d'orchestre : sur les étiquettes, une plaque ou un emballage, l'aperçu en petit ne montre que des traits ; en haute
@@ -339,31 +343,39 @@ export const ligneDesTextesEnVrai = (produits: readonly string[]): string =>
  */
 export const MICRO_TEXTES_EN_VRAI = "Les petits textes illisibles de l'aperçu restent de simples traits ou une texture, sans aucun mot lisible ; seuls les mots déjà lisibles sur l'aperçu sont écrits.";
 /** La ligne qui dit ce qu'est l'élément (petits textes illisibles ; marge des formats larges ; textes des étiquettes ; sans accord du client, aucune personne). */
-export function ligneDeLElement(n: NomElement, personnes: boolean, produits?: readonly string[]): string {
+export function ligneDeLElement(n: NomElement, personnes: boolean, produits?: readonly string[], faits?: FaitsPermis): string {
   const d = def(n);
-  return [d.quoi, MICRO_TEXTES_EN_VRAI, d.large && !/marges généreuses/.test(d.quoi) ? MARGE_LARGE : "", produits?.length ? ligneDesTextesEnVrai(produits) : "", personnes ? "" : SANS_PERSONNE_EN_VRAI].filter(Boolean).join(" ");
+  return [d.quoi, MICRO_TEXTES_EN_VRAI, d.large && !/marges généreuses/.test(d.quoi) ? MARGE_LARGE : "", produits?.length ? ligneDesTextesEnVrai(produits, faits) : "", personnes ? "" : SANS_PERSONNE_EN_VRAI].filter(Boolean).join(" ");
 }
 /**
  * Le texte d'une image envoyé AVANT la ligne des étiquettes et celle des petits textes (une passe d'essai reçue avant ces
  * corrections) : le même texte, ces lignes retirées. Sert seulement à reconnaître une image déjà reçue et payée, jamais à
  * envoyer.
  */
-export const texteSansLaLigneDesTextes = (texte: string, produits: readonly string[] | undefined): string => {
+export const texteSansLaLigneDesTextes = (texte: string, produits: readonly string[] | undefined, faits?: FaitsPermis): string => {
   const t = texte.replace(` ${MICRO_TEXTES_EN_VRAI}`, "");
-  return produits?.length ? t.replace(` ${ligneDesTextesEnVrai(produits)}`, "") : t;
+  return produits?.length ? t.replace(` ${ligneDesTextesEnVrai(produits, faits)}`, "") : t;
 };
+/**
+ * Le texte d'une image envoyé AVANT les mentions vraies (27 novembre 2026) : la ligne des étiquettes d'avant à la place de
+ * celle qui les porte. Sert seulement à reconnaître une image déjà reçue et payée, jamais à envoyer.
+ */
+export const texteSansLesMentionsVraies = (texte: string, produits: readonly string[] | undefined, faits: FaitsPermis | undefined): string =>
+  produits?.length && faits?.mentions.length ? texte.replace(` ${ligneDesTextesEnVrai(produits, faits)}`, ` ${ligneDesTextesEnVrai(produits)}`) : texte;
 /** Le texte d'une image envoyé avant la ligne des petits textes seulement (la ligne des étiquettes y était déjà). */
 export const texteSansLaLigneDesPetitsTextes = (texte: string): string => texte.replace(` ${MICRO_TEXTES_EN_VRAI}`, "");
 export const finDeRepriseEnVrai = (raisons: readonly string[]) => `À corriger : ${raisons.join(" ; ")}.`;
 /** LE TEXTE ENVOYÉ : REGLE mot pour mot (sa phrase du logo seulement si le logo est joint), la photo du produit, la ligne. */
 export function texteDeLElement(o: { element: NomElement; nom: string; logo: boolean; photo: boolean; personnes: boolean; raisons?: readonly string[]; /** Le symbole seul est joint (jamais avec le logo complet). */ symbole?: boolean;
   /** Les produits de la fiche du client : la ligne des étiquettes s'ajoute à la ligne de l'élément (`ligneDesTextesEnVrai`). */
-  produits?: readonly string[] }): string {
+  produits?: readonly string[];
+  /** Les faits à montrer de sa fiche : les mentions vraies que les étiquettes peuvent porter (27 novembre 2026). */
+  faits?: FaitsPermis }): string {
   const parts = [REGLE_APERCU];
   if (o.logo) parts.push(regleDuLogo(o.nom));
   else if (o.symbole) parts.push(regleDuSymbole(o.nom));
   if (o.photo) parts.push(phraseDuProduit(o.logo || o.symbole ? 3 : 2));
-  parts.push(ligneDeLElement(o.element, o.personnes, o.produits));
+  parts.push(ligneDeLElement(o.element, o.personnes, o.produits, o.faits));
   const t = parts.join(" ");
   return o.raisons?.length ? `${t}\n\n${finDeRepriseEnVrai(o.raisons)}` : t;
 }
@@ -580,12 +592,13 @@ export const RELECTEUR_EN_VRAI = `Tu es le relecteur le plus exigeant d'un studi
 Le nom de la marque et la phrase de son logo, écrits exactement, ne sont jamais une faute, où que le logo soit posé (une étiquette, un sachet, une enseigne, une page), même quand l'aperçu est trop petit pour les lire : recopie-les dans textesLus sans les reprocher. Un petit texte de l'aperçu, illisible, doit rester des traits ou une texture : un mot lisible écrit à sa place est un texte inventé.
 Ne juge que ce que tu vois.`;
 
-export function demandeAuRelecteurEnVrai(o: { nom: string; personnes: boolean; groupe: Groupe; cases: { element: NomElement; photo: boolean }[]; produits?: readonly string[]; phrase?: readonly string[] }): string {
+export function demandeAuRelecteurEnVrai(o: { nom: string; personnes: boolean; groupe: Groupe; cases: { element: NomElement; photo: boolean }[]; produits?: readonly string[]; phrase?: readonly string[]; faits?: FaitsPermis }): string {
   return [
     `Marque : « ${o.nom.trim()} ». Groupe : ${NOM_DU_GROUPE[o.groupe]}.`,
     o.personnes ? "Le client a donné son accord pour des personnes." : "Le client n'a donné ni photo de personne ni accord : aucune personne ne doit être visible.",
     ...(o.phrase?.length ? [`Le logo porte le nom « ${o.nom.trim()} » et la phrase ${o.phrase.map((l) => `« ${l} »`).join(" puis ")} : partout où le logo apparaît, ces textes sont attendus.`] : []),
     ...(o.produits?.length ? [`Les produits que la marque vend, donnés par le client : ${o.produits.map((p) => `« ${p.trim()} »`).join(", ")}. Tout autre nom de produit, toute origine, date, année ou chiffre lisible absent de l'aperçu va dans inventes.`] : []),
+    ...demandeDesMentionsVraies(o.faits),
     `Cases : ${o.cases.map((c) => `${c.element}${c.photo ? " (photo du produit jointe)" : ""}`).join(", ")}.`,
   ].join("\n");
 }
@@ -668,12 +681,16 @@ export function sansLesTextesDuLogo(enTrop: readonly string[], logo: TextesDuLog
  * le code, `motQuiDitUnFait`), plus celles que le relecteur a relevées dans `inventes`, sauf le nom d'un produit de la fiche,
  * un texte de l'aperçu ou un texte du logo. Rend les lignes, telles qu'elles sont lues.
  */
-export function faitsInventesEnVrai(v: ImageRelue, o: { attendus: readonly string[]; lus: readonly string[]; produits?: readonly string[]; logo?: TextesDuLogo }): string[] {
+/** Une ligne lue est-elle une mention vraie donnée par le client (27 novembre 2026) ? Jamais si elle porte ce qu'il ne veut pas montrer. */
+export const mentionVraieEnVrai = (t: string, o: { faits?: FaitsPermis; produits?: readonly string[]; logo?: TextesDuLogo }): boolean =>
+  !interditsDans(t, o.faits).length && mentionPermise(t, o.faits, [...(o.produits ?? []), ...(o.logo ? [o.logo.nom, ...(o.logo.phrase ?? [])] : [])]) && chiffresPermis(t, o.faits);
+export function faitsInventesEnVrai(v: ImageRelue, o: { attendus: readonly string[]; lus: readonly string[]; produits?: readonly string[]; logo?: TextesDuLogo; /** Les mentions vraies données par le client : jamais inventées. */ faits?: FaitsPermis }): string[] {
   const attendus = new Set(o.attendus.flatMap(motsDe));
   const duLogo = new Set(o.logo ? [o.logo.nom, ...(o.logo.phrase ?? [])].flatMap(motsDe).map(enCapitales) : []);
   const nouveau = (w: string) => !attendus.has(w) && !duLogo.has(enCapitales(w));
-  const lignes = o.lus.filter((t) => motsDe(t).some((w) => nouveau(w) && motQuiDitUnFait(w)));
-  const aPart = (v.inventes ?? []).map((x) => x.texte.trim()).filter((t) => t && motsDe(t).some(nouveau) && !nomDeProduitPermis(t, o.produits));
+  const vraie = (t: string) => mentionVraieEnVrai(t, o);
+  const lignes = o.lus.filter((t) => motsDe(t).some((w) => nouveau(w) && motQuiDitUnFait(w)) && !vraie(t));
+  const aPart = (v.inventes ?? []).map((x) => x.texte.trim()).filter((t) => t && motsDe(t).some(nouveau) && !nomDeProduitPermis(t, o.produits) && !vraie(t));
   return [...new Set([...lignes, ...aPart])];
 }
 /**
@@ -692,7 +709,7 @@ export function faitsInventesEnVrai(v: ImageRelue, o: { attendus: readonly strin
  * pouvoir dire qu'un texte de l'aperçu, trop petit pour l'inventaire, est bien le même. Le code garde le dernier mot sur
  * tout ce qu'il sait vérifier seul (produits de la fiche, répétition d'un texte attendu, faits inventés).
  */
-export function textesExcusesEnVrai(v: ImageRelue, o: { attendus: readonly string[]; lus: readonly string[]; produits?: readonly string[] }): { enTrop: string[]; manquants: string[] } {
+export function textesExcusesEnVrai(v: ImageRelue, o: { attendus: readonly string[]; lus: readonly string[]; produits?: readonly string[]; /** Les mentions vraies données par le client : écrites, elles ne sont jamais en trop (27 novembre 2026). */ faits?: FaitsPermis; logo?: TextesDuLogo }): { enTrop: string[]; manquants: string[] } {
   const enTrop: string[] = [], manquants: string[] = [];
   const attendus = new Set(o.attendus.flatMap(motsDe));
   const memeProduit = (a: string, b: string) => { const x = [...new Set(motsDuProduit(a))].sort().join(" "), y = [...new Set(motsDuProduit(b))].sort().join(" "); return !!x && x === y; };
@@ -709,7 +726,7 @@ export function textesExcusesEnVrai(v: ImageRelue, o: { attendus: readonly strin
     if (nomDeProduitPermis(l, o.produits)) continue;
     const m = motsDe(l);
     if (!m.length) continue;
-    if (m.every((w) => attendus.has(w)) || vus.has(m.join(" "))) enTrop.push(...m);
+    if (m.every((w) => attendus.has(w)) || vus.has(m.join(" ")) || (o.faits?.mentions.length && mentionVraieEnVrai(l, o))) enTrop.push(...m);
   }
   return { enTrop, manquants };
 }
@@ -723,7 +740,8 @@ const sansLesMots = (mots: readonly string[], excuses: readonly string[]) => {
 export const DEBUT_FAITS_INVENTES_EN_VRAI = "faits ou produits inventés, absents de l'aperçu et de la fiche du client : ";
 export function raisonsDuRefusEnVrai(v: ImageRelue | undefined, o: { inventaire: CaseLue | undefined; personnes: boolean; photo: boolean; element?: string; deborde?: boolean;
   /** Le nom et la phrase du logo : jamais en trop là où le logo est. */ logo?: TextesDuLogo;
-  /** Les produits de la fiche du client : les seuls noms de produits permis. */ produits?: readonly string[] }): string[] {
+  /** Les produits de la fiche du client : les seuls noms de produits permis. */ produits?: readonly string[];
+  /** Les faits à montrer de sa fiche : les mentions vraies permises, ce qu'il ne veut pas montrer (27 novembre 2026). */ faits?: FaitsPermis }): string[] {
   if (!v) return ["le relecteur ne l'a pas relue"];
   const r: string[] = [];
   if (!v.identique) r.push("elle n'est pas identique à son aperçu");
@@ -734,14 +752,16 @@ export function raisonsDuRefusEnVrai(v: ImageRelue | undefined, o: { inventaire:
   // exactement, ils ne sont jamais une faute là où le logo est, dans l'aperçu ou dans l'image refaite, quelle que soit sa
   // place ; la comparaison reste lettre pour lettre (`sansLesTextesDuLogo`). Toute reprise reçoit la phrase.
   const logoLa = o.logo && (v.logoPresent || o.inventaire?.logo) ? o.logo : undefined;
-  const inventes = faitsInventesEnVrai(v, { attendus: z.attendus, lus: z.lus, produits: o.produits, logo: logoLa });
+  const inventes = faitsInventesEnVrai(v, { attendus: z.attendus, lus: z.lus, produits: o.produits, logo: logoLa, faits: o.faits });
   // Les mots des lignes inventées sont dits dans leur propre raison, pas deux fois.
   const dansLesInventes = new Set(inventes.flatMap(motsDe));
-  const excuses = textesExcusesEnVrai(v, { attendus: z.attendus, lus: z.lus, produits: o.produits });
+  const excuses = textesExcusesEnVrai(v, { attendus: z.attendus, lus: z.lus, produits: o.produits, ...(o.faits?.mentions.length ? { faits: o.faits, logo: logoLa } : {}) });
   const fidele = v.texteCoupe && coupeFideleALApercu(v);
   const coupes = fidele ? motsCoupesCommeSurLApercu(z.attendus, z.lus, logoLa) : { enTrop: [], manquants: [] };
   const t = { manquants: sansLesMots(sansLesMots(c.manquants, excuses.manquants), coupes.manquants), enTrop: sansLesMots(sansLesMots(sansLesTextesDuLogo(c.enTrop, logoLa).filter((w) => !dansLesInventes.has(w)), excuses.enTrop), coupes.enTrop) };
   if (inventes.length) r.push(`${DEBUT_FAITS_INVENTES_EN_VRAI}${inventes.map((l) => `« ${l} »`).join(", ")}`);
+  // Ce que le client ne veut pas montrer, lu sur l'image refaite (27 novembre 2026) : toujours refusé.
+  if ([...v.textesLus, ...(v.inventes ?? []).map((x) => x.texte)].some((t) => interditsDans(t, o.faits).length)) r.push(RAISON_FAIT_NON_MONTRE);
   if (t.manquants.length || t.enTrop.length) r.push(`ses textes ne sont pas ceux de l'aperçu, lettre pour lettre${t.manquants.length ? ` (manquent : ${t.manquants.slice(0, 8).map((w) => `« ${w} »`).join(", ")})` : ""}${t.enTrop.length ? ` (en trop ou mal écrits : ${t.enTrop.slice(0, 8).map((w) => `« ${w} »`).join(", ")})` : ""}`);
   if (v.logoPresent && !o.inventaire?.logo) r.push("un logo a été ajouté là où l'aperçu n'en a pas");
   if (v.personne && !o.personnes) r.push("une personne est visible sans l'accord du client");
@@ -809,8 +829,8 @@ export function motsCoupesCommeSurLApercu(attendus: readonly string[], lus: read
  * la raison des textes garde les mots qui manquent, ceux de l'aperçu, et dit seulement que des mots absents de l'aperçu
  * sont écrits. Le compte rendu garde les raisons exactes.
  */
-export function raisonsPourLeDessinateurEnVrai(raisons: readonly string[], o: { produits?: readonly string[] } = {}): string[] {
-  const ses = o.produits?.length ? ` : ${o.produits.map((p) => `« ${nomDuProduitALEcran(p)} »`).join(", ")}` : "";
+export function raisonsPourLeDessinateurEnVrai(raisons: readonly string[], o: { produits?: readonly string[]; faits?: FaitsPermis } = {}): string[] {
+  const ses = `${o.produits?.length ? ` : ${o.produits.map((p) => `« ${nomDuProduitALEcran(p)} »`).join(", ")}` : ""}${o.faits?.mentions.length ? `, et ses mentions vraies : ${mentionsDites(o.faits)}` : ""}`;
   return raisons.map((r) => r.startsWith(DEBUT_FAITS_INVENTES_EN_VRAI)
     ? `un texte absent de l'aperçu est écrit sur une étiquette, un emballage ou un objet : retire-le ; les étiquettes ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client${ses}`
     : r.replace(/\(en trop ou mal écrits : [^)]*\)/u, "(des mots absents de l'aperçu sont écrits : garde seulement ses textes, lettre pour lettre)"));
@@ -839,6 +859,8 @@ export async function refaireLesElements(deps: ElementsDeps, o: {
   nom: string; personnes: boolean; logo: Buffer; photo: Buffer | null;
   /** Les produits de la fiche du client (la ligne des étiquettes, la relecture des faits inventés) ; la phrase du logo, toutes ses lignes. */
   produits?: readonly string[]; phrase?: readonly string[]; apercus: Map<string, Buffer>; inventaire: Inventaire; elements?: readonly NomElement[];
+  /** Les faits à montrer de sa fiche (27 novembre 2026) : absents ou vides, tout reste comme avant. */
+  faits?: FaitsPermis;
   /** Le symbole seul, sur fond blanc (séparation fiable du code), joint là où l'inventaire ne voit que lui ; null : jamais joint. */
   symbole?: Buffer | null;
   /** Les cases dont l'aperçu touche la bande d'un titre de bloc (`Decoupe.debordes`). */
@@ -854,7 +876,7 @@ export async function refaireLesElements(deps: ElementsDeps, o: {
   const demande = (n: NomElement, raisons?: string[]): DemandeDElement => {
     const inv = caseLue(o.inventaire, n), jointes = jointesDeLElement({ apercu: o.apercus.get(n)!, logo: o.logo, photo: o.photo, inventaire: inv, symbole: o.symbole ?? null });
     const logo = jointes.some((j) => j.role === "logo"), symbole = jointes.some((j) => j.role === "symbole"), photo = jointes.some((j) => j.role === "produit");
-    return { element: n, texte: texteDeLElement({ element: n, nom: o.nom, logo, photo, personnes: o.personnes, raisons: raisons && raisonsPourLeDessinateurEnVrai(raisons, { produits: o.produits }), symbole, produits: o.produits }), taille: def(n).taille, jointes };
+    return { element: n, texte: texteDeLElement({ element: n, nom: o.nom, logo, photo, personnes: o.personnes, raisons: raisons && raisonsPourLeDessinateurEnVrai(raisons, { produits: o.produits, faits: o.faits }), symbole, produits: o.produits, faits: o.faits }), taille: def(n).taille, jointes };
   };
   const unTour = async (liste: NomElement[], tour: number, raisonsDe: (n: NomElement) => string[] | undefined) => {
     const faits = new Map<NomElement, { d: DemandeDElement; png: Buffer | null; raison?: string }>();
@@ -870,11 +892,11 @@ export async function refaireLesElements(deps: ElementsDeps, o: {
     for (const g of GROUPES) {
       const items = liste.filter((n) => def(n).groupe === g && faits.get(n)?.png);
       const verdicts = items.length ? await deps.relire(g, items.map((n) => ({ element: n, apercu: o.apercus.get(n)!, image: faits.get(n)!.png!, photo: faits.get(n)!.d.jointes.some((j) => j.role === "produit") ? o.photo : null })),
-        demandeAuRelecteurEnVrai({ nom: o.nom, personnes: o.personnes, groupe: g, cases: items.map((n) => ({ element: n, photo: faits.get(n)!.d.jointes.some((j) => j.role === "produit") })), produits: o.produits, phrase: o.phrase }), tour) : { images: [] };
+        demandeAuRelecteurEnVrai({ nom: o.nom, personnes: o.personnes, groupe: g, cases: items.map((n) => ({ element: n, photo: faits.get(n)!.d.jointes.some((j) => j.role === "produit") })), produits: o.produits, phrase: o.phrase, faits: o.faits }), tour) : { images: [] };
       for (const n of liste.filter((x) => def(x).groupe === g)) {
         const f = faits.get(n)!, photo = f.d.jointes.some((j) => j.role === "produit");
         const v = verdicts.images.find((x) => x.case === n);
-        const raisons = f.png ? raisonsDuRefusEnVrai(v, { inventaire: caseLue(o.inventaire, n), personnes: o.personnes, photo, element: n, deborde: o.debordes?.includes(n), logo: { nom: o.nom, phrase: o.phrase }, produits: o.produits }) : [f.raison ?? "image illisible"];
+        const raisons = f.png ? raisonsDuRefusEnVrai(v, { inventaire: caseLue(o.inventaire, n), personnes: o.personnes, photo, element: n, deborde: o.debordes?.includes(n), logo: { nom: o.nom, phrase: o.phrase }, produits: o.produits, faits: o.faits }) : [f.raison ?? "image illisible"];
         const avant = res.get(n);
         const essai: EssaiDElement = { tour, texte: f.d.texte, png: f.png, raisons, ...(v ? { verdict: v } : {}) };
         const m = f.png ? await sharp(f.png).metadata() : null;
@@ -1082,7 +1104,7 @@ export const phraseDuMelangeRefuse = () => L(
 
 /** Les promesses mesurables d'un bloc de texte (le code refuse de les poser telles quelles) ; `permis` : l'année et le domaine vérifiés. */
 const PROMESSE_DU_BLOC = /\p{N}|gratuit|offert|rembours|garanti|satisfait|avis|étoile|délai|livraison (offerte|gratuite|en)|meilleur|n°\s*1/iu;
-export const promessesDuBloc = (lignes: readonly string[], permis: readonly string[] = []) => lignes.filter((l) => PROMESSE_DU_BLOC.test(l) && !permis.some((x) => x && l.includes(x)));
+export const promessesDuBloc = (lignes: readonly string[], permis: readonly string[] = [], faits?: FaitsPermis) => lignes.filter((l) => PROMESSE_DU_BLOC.test(l) && !permis.some((x) => x && l.includes(x)) && !(faits?.mentions.length && mentionVraieEnVrai(l, { faits })));
 
 // ---------------------------------------------------------------- 10. l'état gardé dans le parcours
 

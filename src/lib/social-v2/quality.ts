@@ -11,6 +11,7 @@ import { all, json, one } from "../db";
 import { getAsset } from "../library";
 import { isAutoUsable } from "../quality/usable";
 import { lintClaims, lintHollow } from "../ai/tasks";
+import { extraDesFaits } from "../syna-agent/faits-a-montrer";
 import { decide, type GateDecision } from "../quality/gate";
 import { fold } from "../seo-v2/lang";
 import { platformSpec } from "./platforms";
@@ -45,7 +46,8 @@ export function checkPost(p: Project, postId: string): PostCheck {
   // A supplied review is evidence for that quotation, never for an aggregate rating or a new claim outside it.
   const outsideQuote=hasAuthorizedReview?text.split(testimonial!.quote).join(""):text;
   const inventedReviewOutside=/\b\d+\s+(?:avis|reviews?|clients?)\b|[★☆]|\bétoiles?\b|\bstars?\b|clients?\s+satisfaits?|satisfied customers?|happy customers?/i.test(outsideQuote);
-  for (const c of lintClaims(text, p)) {
+  // Ses mentions vraies (faits à montrer, 27 novembre 2026) sont des faits confirmés ; ce qu'il ne veut pas montrer, jamais.
+  for (const c of lintClaims(text, p, extraDesFaits(p.id))) {
     const reviewTerm=/^(?:avis|reviews?|★|étoiles?|stars?|clients? satisfaits?|satisfied customers?|happy customers?)$/i.test(c.term);
     if(hasAuthorizedReview && reviewTerm && !inventedReviewOutside)continue;
     add("invented_claim", `affirmation non confirmée : « ${c.term} » (${c.label})`, true);

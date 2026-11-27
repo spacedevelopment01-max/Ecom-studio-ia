@@ -49,7 +49,7 @@ describe("SINA — le site créé en une fois (lot 4)", async () => {
       { field: "existing", value: "Rien." }, { field: "audience", value: "Adultes." }, { field: "image", value: "Calme." }, { field: "setup", value: "1 produit" }, { field: "market", value: "France." },
       { field: "price", value: "à définir" }, { field: "difference", value: "Bien fait." }, { field: "taste", status: "none" }, { field: "photos", value: "Oui." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
     ] });
-    await call("start.confirm", ctx, {});
+    await (await import("./faits-fixtures")).avecLesFaitsDemandes(ctx, () => call("start.confirm", ctx, {}));
     const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
     ctx.projectId = pid;
     saveBrand(pid, F.FAUTEUIL_BRAND as any);

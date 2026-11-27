@@ -32,7 +32,7 @@ describe("SINA — étape 6 : un de nos thèmes", async () => {
       { field: "setup", value: "6 mélanges" }, { field: "market", value: "En ligne, France." }, { field: "price", value: "8,50 € les thés, 7,50 € les infusions" }, { field: "difference", value: "Assemblés à la main." },
       { field: "taste", status: "none" }, { field: "photos", value: "Pas encore." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
     ] });
-    expect((await call("start.confirm", ctx, {})).ok).toBe(true);
+    expect((await (await import("./faits-fixtures")).avecLesFaitsDemandes(ctx, () => call("start.confirm", ctx, {}))).ok).toBe(true);
     J.updateJourney(cid, (x) => { for (const n of [1, 2, 3, 4, 5]) J.setStep(x, n, "done"); J.setStep(x, 6, "todo"); });
     // Produits créés à l'étape 5 (onglet Produits).
     for (const title of ["Thé vert jasmin", "Rooibos vanille", "Verveine-menthe"]) await call("catalogue.create", ctx, { title });

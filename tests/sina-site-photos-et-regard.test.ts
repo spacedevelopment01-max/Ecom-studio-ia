@@ -49,7 +49,7 @@ describe("photos du site : jamais de personne sans accord, jamais de photo d'exe
       { field: "existing", value: "Rien." }, { field: "audience", value: "Adultes." }, { field: "image", value: "Doux." }, { field: "setup", value: "1 objet" }, { field: "market", value: "France." },
       { field: "price", value: "25 €" }, { field: "difference", value: "Fait main." }, { field: "taste", status: "none" }, { field: "photos", value: "Non." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
     ] });
-    await call("start.confirm", ctx, {});
+    await (await import("./faits-fixtures")).avecLesFaitsDemandes(ctx, () => call("start.confirm", ctx, {}));
     const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
     S.saveCustomTheme(pid, { version: 1, family: "classique", style: "x", header: null, footer: null, search: null,
       pages: [{ key: "home", label: "Accueil", sections: [{ uid: "s0000000a", id: "tn-ouverture" }, { uid: "s0000000b", id: "tn-bande" }] }] } as any);
@@ -387,7 +387,7 @@ describe("refaire le site : les photos déjà faites se reprennent, sans créati
       { field: "existing", value: "Rien." }, { field: "audience", value: "Adultes." }, { field: "image", value: "Doux." }, { field: "setup", value: "1 objet" }, { field: "market", value: "France." },
       { field: "price", value: "25 €" }, { field: "difference", value: "Fait main." }, { field: "taste", status: "none" }, { field: "photos", value: "Non." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
     ] });
-    await call("start.confirm", ctx, {});
+    await (await import("./faits-fixtures")).avecLesFaitsDemandes(ctx, () => call("start.confirm", ctx, {}));
     const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
     const old = await saveAsset({ projectId: pid, userId: user.id, data: await png(), name: "site-atelier.png", mime: "image/png", role: "site", origin: "generated", meta: { synaPhoto: { description: CALM, ratio: "4:5", direction: "custom", product: false } } } as any);
     S.saveCustomTheme(pid, { version: 1, family: "classique", style: "x", header: null, footer: null, search: null,

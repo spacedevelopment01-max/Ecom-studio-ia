@@ -31,6 +31,11 @@ export type ClientDeLEssai = {
   clientele?: string | null;
   /** L'image qu'il veut donner, en quelques mots (réponse « image voulue » du départ), facultatif. */
   gouts?: string | null;
+  /**
+   * Ses faits à montrer (27 novembre 2026, `faits-a-montrer.ts`), tels que le chef d'orchestre, qui joue le client, y a
+   * répondu (enregistrés par `faits-de-l-essai.mts`, gratuit) : facultatif ; sans eux, rien ne change.
+   */
+  faits?: import("../../src/lib/syna-agent/faits-a-montrer").FaitAMontrer[];
 };
 
 /**
@@ -55,6 +60,7 @@ export function clientDeLEssai(env: Record<string, string | undefined> = process
     ...(String(brut.prix ?? "").trim() ? { prix: String(brut.prix).trim() } : {}),
     ...(String(brut.clientele ?? "").trim() ? { clientele: String(brut.clientele).trim() } : {}),
     ...(String(brut.gouts ?? "").trim() ? { gouts: String(brut.gouts).trim() } : {}),
+    ...(Array.isArray(brut.faits) && brut.faits.length ? { faits: faitsDuFichier(brut.faits) } : {}),
   };
   if (o.sansNom) {
     if (c.nom) throw new Error(`Ce client a déjà un nom (« ${c.nom} ») : l'essai des noms ne vaut que pour un client qui n'en a pas encore. Rien n'est lancé.`);
@@ -77,7 +83,27 @@ export async function ficheDuClient(c: ClientDeLEssai, projectId?: string): Prom
     },
     keep: [], steps: {},
   };
-  return ficheTexte({ j: j as never, notes: [], projectId: projectId ?? null });
+  return ficheTexte({ j: j as never, notes: [], projectId: projectId ?? null, ...(c.faits?.length ? { faits: c.faits } : {}) });
+}
+
+/** Les faits du fichier du client, vérifiés (un fait mal formé arrête tout : rien n'est lancé). */
+export function faitsDuFichier(brut: unknown[]): NonNullable<ClientDeLEssai["faits"]> {
+  return brut.map((x, i) => {
+    const f = (x ?? {}) as Record<string, unknown>;
+    const etat = String(f.etat ?? "donne");
+    if (typeof f.sujet !== "string" || !f.sujet.trim() || !["donne", "ne_sait_pas", "ne_montre_pas"].includes(etat)) throw new Error(`Fait n° ${i + 1} du client illisible (« sujet » et « etat » : donne, ne_sait_pas ou ne_montre_pas) : rien n'est lancé.`);
+    return {
+      sujet: f.sujet.trim(), etat: etat as "donne", at: typeof f.at === "number" ? f.at : 0,
+      ...(typeof f.produit === "string" && f.produit.trim() ? { produit: f.produit.trim() } : {}),
+      ...(typeof f.valeur === "string" && f.valeur.trim() ? { valeur: f.valeur.trim() } : {}),
+      ...(Array.isArray(f.noms) ? { noms: f.noms.map((n) => String(n).trim()).filter(Boolean) } : {}),
+    };
+  });
+}
+/** Ce que ses images et ses textes peuvent écrire (les mentions vraies), et ce qu'il ne veut pas montrer. */
+export async function faitsPermisDuClient(c: Pick<ClientDeLEssai, "faits">) {
+  const { faitsPermis } = await import("../../src/lib/syna-agent/faits-a-montrer");
+  return faitsPermis(c.faits ?? []);
 }
 
 /** Ses réponses facultatives (prix, client idéal, image voulue), comme le Studio les garde au départ ; rien quand elles manquent. */
