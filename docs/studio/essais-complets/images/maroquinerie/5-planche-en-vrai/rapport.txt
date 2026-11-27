@@ -1,0 +1,201 @@
+Essai de la planche en vrai — client « Havane » (maroquinerie artisanale qui fabrique et vend en ligne des sacs, des portefeuilles et des ceintures en cuir), type « produits »
+Produits ou prestations de sa fiche : sacs en cuir ; portefeuilles en cuir ; ceintures en cuir
+Photos de produit du client : 0 (les produits de la planche restent des images d'ambiance sans elles)
+Plafond de l'essai : 3,7000 €
+Personnes permises : non (aucune photo de personne ni accord)
+Planche choisie : /home/user/Ecom-studio-ia/data/essai-maroquinerie/4-planches/planche-A-2-brute.png (sha256 9087b9cc5dcc19d45d57638b0c7a0f50f2519ce44177aceea460fbb12c084849) ; disposition standard
+Logo fini : /home/user/Ecom-studio-ia/data/essai-maroquinerie/3-logos/esquisse-02-logo-garde.png (sha256 9d336814c7d7736f9f34c0f34cb9aa31458c00c7adfe27104e260551e54d9644)
+Données de la planche : © 2026 Havane ; havanefrance.fr — disponible ; phrase sous le nom : « SACS · PORTEFEUILLES · CEINTURES »
+Couleurs tirées du logo par le Studio : dark #052116, primary #BC702F, secondary #F6EBE2, accent #2A3C34, light #FCF8F5
+Réglage sina.planche.envrai : allumé dans la base de l'essai seulement
+
+Devis de l'essai de la planche en vrai (fonctions du devis du Studio, aucun appel) :
+- inventaire · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,2141 € · au plus 0,5141 €
+- retouche · publications · 3 appels · openai:gpt-image-2.5-sunburst (high) · toujours · charge client · probable 0,1622 € · au plus 0,3757 €
+- retouche · ouvertures et site · 4 appels · openai:gpt-image-2.5-sunburst (high) · toujours · charge client · probable 0,1530 € · au plus 0,4125 €
+- retouche · produits et emballage · 4 appels · openai:gpt-image-2.5-sunburst (high) · toujours · charge client · probable 0,2050 € · au plus 0,4849 €
+- retouche · références · 6 appels · openai:gpt-image-2.5-sunburst (high) · toujours · charge client · probable 0,3096 € · au plus 0,7343 €
+- relecture · publications · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,1135 € · au plus 0,2711 €
+- relecture · ouvertures et site · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,1135 € · au plus 0,2711 €
+- relecture · produits et emballage · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,1135 € · au plus 0,2711 €
+- relecture · références · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,1135 € · au plus 0,2711 €
+- reprise d'une retouche · publications · 3 appels · openai:gpt-image-2.5-sunburst (high) · si le relecteur refuse · charge Studio · probable 0,1622 € · au plus 0,3757 €
+- reprise d'une retouche · ouvertures et site · 4 appels · openai:gpt-image-2.5-sunburst (high) · si le relecteur refuse · charge Studio · probable 0,1530 € · au plus 0,4125 €
+- reprise d'une retouche · produits et emballage · 4 appels · openai:gpt-image-2.5-sunburst (high) · si le relecteur refuse · charge Studio · probable 0,2050 € · au plus 0,4849 €
+- reprise d'une retouche · références · 6 appels · openai:gpt-image-2.5-sunburst (high) · si le relecteur refuse · charge Studio · probable 0,3096 € · au plus 0,7343 €
+- relecture de la reprise · publications · 1 appel · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse · charge Studio · probable 0,1135 € · au plus 0,2711 €
+- relecture de la reprise · ouvertures et site · 1 appel · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse · charge Studio · probable 0,1135 € · au plus 0,2711 €
+- relecture de la reprise · produits et emballage · 1 appel · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse · charge Studio · probable 0,1135 € · au plus 0,2711 €
+- relecture de la reprise · références · 1 appel · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse · charge Studio · probable 0,1135 € · au plus 0,2711 €
+Probable, sans refus : 1,4980 € (devis du Studio : 1,4980 €)
+Probable, si chaque image est refaite une fois : 2,7819 €
+Plafond minimal pour aller au bout à coup sûr (somme des maxima, reprises comprises) : 6,6978 €
+  dont plafond du client de la tâche 3,6059 € et borne du Studio 3,0918 € (devisDeLaPlancheEnVrai)
+Hors plafond minimal : une réponse de texte mal formée à réparer coûterait au plus 3,0764 € de plus en tout.
+Plafond conseillé (plafond minimal, une réparation de l'inventaire et une de relecture, arrondi) : 7,6000 €
+
+Découpe : 42 aperçus (apercus/) ; aucune case refusée
+
+LOGO_HD : le symbole du logo est séparable, aucune petite version n'est reprise de l'aperçu ; rien à refaire en haute définition, aucun appel.
+
+Inventaire (inventaire-demande.txt, inventaire-reponse.json) :
+  polices lues : titres « Playfair Display » (serif), textes « Montserrat » (sans)
+  couleurs lues : Vert Forêt ; Cognac ; Sable ; Sauge ; Cuir Foncé
+  icône : Triangle vert foncé sans barre, souligné d'un trait cognac, sur fond crème ; favicon : Triangle blanc et trait cognac sur un carré arrondi vert forêt ; reprennent le logo : oui
+  publication-1x1 : logo oui, produit non, personne non, compréhensible oui ; textes : « HAVANE » « SACS · PORTEFEUILLES · CEINTURES » « Le beau » « dure plus loin. »
+  publication-4x5 : logo oui, produit oui, personne non, compréhensible oui ; textes : « HAVANE » « SACS · PORTEFEUILLES · CEINTURES » « Un essentiel, » « tout simplement. » « Cuir de vachette pleine fleur » « Tannage végétal »
+  publication-9x16 : logo oui, produit non, personne non, compréhensible non ; textes : « HAVANE » « SACS · PORTEFEUILLES · CEINTURES » « Toujours » « plus loin » « avec vous. »
+  ouverture-site : logo oui, produit oui, personne non ; textes : « HAVANE » « Sacs » « Portefeuilles » « Ceintures » « Des essentiels » « en cuir, pour la vie. » « Découvrir la collection → »
+  ouverture-planche : logo oui, produit oui, personne non ; textes : « E » « URES » « Des objets » « de cuir pour » « aujourd'hui » « et demain. » « SACS » « PORTEFEUILLES » « CEINTURES » « L'ARTISANAT » « DANS LE DÉTAIL »
+  site-ordinateur : logo oui, produit oui, personne non ; textes : « 08 » « SITE WEB – Une expérience fluide, du premier clic à la prochaine balade » « HAVANE » « Sacs » « Portefeuilles » « Ceintures » « Des essentiels » « en cuir, pour la vie. » « Découvrir la collection → » « Cuir de France » « Fait main à Toulouse » « Tannage végétal »
+  site-telephone : logo oui, produit oui, personne non ; textes : « 6.GI » « HAVANE » « Sacs · Portefeuilles · Ceintures » « L'élégance » « au quotidien. » « Découvrir »
+  produit-1 : logo non, produit oui, personne non ; textes : aucun
+  produit-2 : logo non, produit oui, personne non ; textes : « Portefeuilles en cuir »
+  produit-3 : logo non, produit oui, personne non ; textes : aucun
+  emballage : logo oui, produit oui, personne non ; textes : « 09 » « PACKAGING & SUPPORTS – Une marque qui vous suit partout » « HAVANE » « SACS · PORTEFEUILLES · CEINTURES » « HAVANE » « SACS · PORTEFEUILLES · CEINTURES » « HAVANE »
+  reference-1 : logo non, produit non, personne non ; textes : aucun
+  reference-2 : logo non, produit non, personne non ; textes : aucun
+  reference-3 : logo non, produit non, personne non ; textes : aucun
+  reference-4 : logo non, produit oui, personne non ; textes : aucun
+  reference-5 : logo non, produit non, personne non ; textes : aucun
+  reference-6 : logo non, produit non, personne non ; textes : aucun
+
+Les images, case par case (cases/ : texte envoyé, images jointes, image HD reçue, refusées comprises) :
+  publication-1x1 : GARDÉE (cases/publication-1x1-gardee-hd.png)
+    essai 1 : jointes apercu, logo ; image HD cases/publication-1x1-1-hd.png
+      relecture : note 8/10 — Composition, gros plan du cuir surpiqué, titre et barre orange identiques à l'aperçu. Seule différence : le logo, blanc sur l'aperçu, devient foncé, mais il reste lisible sur le halo clair.
+      raisons du refus : aucune
+  publication-4x5 : GARDÉE (cases/publication-4x5-gardee-hd.png)
+    essai 1 : jointes apercu, logo ; image HD cases/publication-4x5-1-hd.png
+      relecture : note 9/10 — Fidèle à l'aperçu : même portefeuille sur la pierre, même titre et mêmes deux mentions avec leurs pictogrammes. Le marquage du portefeuille reste illisible, comme sur l'aperçu.
+      raisons du refus : aucune
+  publication-9x16 : GARDÉE (cases/publication-9x16-gardee-hd.png)
+    essai 1 : jointes apercu, logo ; image HD cases/publication-9x16-1-hd.png
+      relecture : note 6/10 — Le paysage, la route, le clocher et le titre suivent bien l'aperçu. En revanche, la phrase du logo « SACS · PORTEFEUILLES · CEINTURES » a été remplacée par des pointillés, et le logo, blanc sur l'aperçu, devient foncé sur le ciel bleu.
+      raisons du refus : elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « SACS », « · », « · », « PORTEFEUILLES », « CEINTURES ») ; un logo foncé est posé sur un fond sombre : il doit y être clair ; sa fidélité n'est pas au niveau (6/10, il faut 8)
+    essai 2 (reprise à la charge du Studio) : jointes apercu, logo ; image HD cases/publication-9x16-2-hd.png
+      relecture : note 9/10 — L'image refaite reprend fidèlement l'aperçu : même paysage avec le clocher, la route sinueuse et le cyprès, même titre et même trait orange. Le logo est clair sur le ciel, l'image est nette et aucune personne n'est visible.
+      raisons du refus : aucune
+  ouverture-site : GARDÉE (cases/ouverture-site-gardee-hd.png)
+    essai 1 : jointes apercu, logo ; image HD cases/ouverture-site-1-hd.png
+      relecture : note 8/10 — Même en-tête, même accroche et même sac avec son étiquette métallique, avec une lumière fidèle. Seule une ceinture apparaît en plus au premier plan, ce qui reste discret.
+      raisons du refus : aucune
+  ouverture-planche : GARDÉE (cases/ouverture-planche-gardee-hd.png)
+    essai 1 : jointes apercu, logo ; image HD cases/ouverture-planche-1-hd.png
+      relecture : note 8/10 — Composition, textes et produits (portefeuille, ceinture, sac) fidèles à l'aperçu. Le logo, coupé sur l'aperçu, est ici montré en entier avec sa phrase exacte, et le portefeuille porte le nom de la marque.
+      raisons du refus : aucune
+  site-ordinateur : GARDÉE (cases/site-ordinateur-gardee-hd.png)
+    essai 1 : jointes apercu, logo ; image HD cases/site-ordinateur-1-hd.png
+      relecture : note 9/10 — L'ordinateur, la page d'accueil et le bandeau de réassurance reprennent l'aperçu à l'identique, avec une image nette. Le titre de planche « 08 SITE WEB » est logiquement retiré.
+      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « 08 », « SITE », « WEB », « - », « Une », « expérience », « fluide », « du »)
+    essai 2 (reprise à la charge du Studio) : jointes apercu, logo ; image HD cases/site-ordinateur-2-hd.png
+      relecture : note 9/10 — L'image refaite reprend fidèlement l'aperçu : même mise en page, même sac, mêmes textes et mêmes couleurs, avec une meilleure netteté. Le mot « balade » touche le bord droit exactement comme sur l'aperçu.
+      raisons du refus : aucune
+  site-telephone : GARDÉE (cases/site-telephone-gardee-hd.png)
+    essai 1 : jointes apercu, logo ; image HD cases/site-telephone-1-hd.png
+      relecture : note 7/10 — L'écran du téléphone reprend fidèlement l'aperçu : logo, menu, accroche, bouton et portefeuille. L'heure « 9:41 » est lisible alors qu'elle n'était que des traits sur l'aperçu.
+      raisons du refus : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « 9:41 » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « 6.GI ») ; sa fidélité n'est pas au niveau (7/10, il faut 8)
+    essai 2 (reprise à la charge du Studio) : jointes apercu, logo ; image HD cases/site-telephone-2-hd.png
+      relecture : note 8/10 — Même téléphone, même en-tête, même bandeau et même portefeuille que sur l'aperçu. Le cadrage descend un peu plus bas et montre le portefeuille en entier, avec le nom de la marque gravé dessus.
+      raisons du refus : aucune
+  produit-1 : GARDÉE (cases/produit-1-gardee-hd.png) — image d'ambiance, ce n'est pas son produit
+    essai 1 : jointes apercu ; image HD cases/produit-1-1-hd.png
+      relecture : note 9/10 — Le sac cabas en cuir cognac sur son socle en pierre reprend fidèlement l'aperçu : même forme, mêmes anses, même lumière. L'image est nette et sans défaut visible.
+      raisons du refus : aucune
+  produit-2 : GARDÉE (cases/produit-2-gardee-hd.png) — image d'ambiance, ce n'est pas son produit
+    essai 1 : jointes apercu ; image HD cases/produit-2-1-hd.png
+      relecture : note 8/10 — Le portefeuille, le socle et la légende « Portefeuilles en cuir » collée au bas reprennent l'aperçu, qui montre déjà la même coupe et le même rond vert. Le marquage embossé reste illisible et ne forme pas « Havane », comme sur l'aperçu.
+      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « ΛVAΓK »)
+    essai 2 (reprise à la charge du Studio) : jointes apercu ; image HD cases/produit-2-2-hd.png
+      relecture : note 9/10 — Même portefeuille en cuir brun, même socle en pierre, même titre et même pastille verte coupée en bas à droite, comme sur l'aperçu. Le petit marquage embossé reste une estampe peu lisible, comme sur l'aperçu.
+      raisons du refus : aucune
+  produit-3 : GARDÉE (cases/produit-3-gardee-hd.png) — image d'ambiance, ce n'est pas son produit
+    essai 1 : jointes apercu ; image HD cases/produit-3-1-hd.png
+      relecture : note 9/10 — La ceinture enroulée avec sa boucle laiton sur le bloc de pierre est fidèle à l'aperçu, avec la même composition et les mêmes teintes. Le rendu est net et sans défaut.
+      raisons du refus : aucune
+  emballage : GARDÉE (cases/emballage-gardee-hd.png)
+    essai 1 : jointes apercu, logo ; image HD cases/emballage-1-hd.png
+      relecture : note 9/10 — La boîte kraft, le sachet en coton, la carte verte et l'étiquette reprennent l'aperçu, avec le logo Havane écrit correctement partout. Seul le bandeau de titre de la planche n'est pas repris, ce qui est normal pour la photo.
+      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « 09 », « PACKAGING », « & », « SUPPORTS », « - », « Une », « marque », « qui »)
+    essai 2 (reprise à la charge du Studio) : jointes apercu, logo ; image HD cases/emballage-2-hd.png
+      relecture : note 9/10 — Composition, couleurs et placements identiques à l'aperçu : boîte kraft, pochon en coton, carte verte au symbole clair, étiquette et portefeuille. Le logo et sa phrase sont écrits exactement.
+      raisons du refus : aucune
+  reference-1 : GARDÉE (cases/reference-1-gardee-hd.png)
+    essai 1 : jointes apercu ; image HD cases/reference-1-1-hd.png
+      relecture : note 9/10 — Même composition de peaux de cuir ondulées, mêmes teintes brun foncé et cognac, mêmes placements. Image nette, sans texte ni personne.
+      raisons du refus : aucune
+  reference-2 : GARDÉE (cases/reference-2-gardee-hd.png)
+    essai 1 : jointes apercu ; image HD cases/reference-2-1-hd.png
+      relecture : note 9/10 — Couture sellier en diagonale et aiguilles placées comme sur l'aperçu, mêmes couleurs. Rendu net et fidèle.
+      raisons du refus : aucune
+  reference-3 : GARDÉE (cases/reference-3-gardee-hd.png)
+    essai 1 : jointes apercu ; image HD cases/reference-3-1-hd.png
+      relecture : note 9/10 — Mêmes outils de maroquinier sur l'établi en bois, même disposition et même lumière chaude. Aucun texte ajouté.
+      raisons du refus : aucune
+  reference-4 : GARDÉE (cases/reference-4-gardee-hd.png)
+    essai 1 : jointes apercu ; image HD cases/reference-4-1-hd.png
+      relecture : note 9/10 — Même sac cabas cognac posé sur la pierre, avec le feuillage à gauche et la couture diagonale sur la face. Rendu net et fidèle.
+      raisons du refus : aucune
+  reference-5 : GARDÉE (cases/reference-5-gardee-hd.png)
+    essai 1 : jointes apercu ; image HD cases/reference-5-1-hd.png
+      relecture : note 8/10 — Même pile de peaux de cuir avec la même composition. Le motif gaufré floral de l'aperçu est remplacé par un grain vieilli, mais les couleurs et les placements sont respectés.
+      raisons du refus : aucune
+  reference-6 : GARDÉE (cases/reference-6-gardee-hd.png)
+    essai 1 : jointes apercu ; image HD cases/reference-6-1-hd.png
+      relecture : note 9/10 — Deux bandes de cuir craquelé avec des coutures claires en diagonale, comme sur l'aperçu. Mêmes couleurs, image nette.
+      raisons du refus : aucune
+
+Relectures : publications (essai 1, relectures/publications-1-verdict.json) ; site (essai 1, relectures/site-1-verdict.json) ; produits (essai 1, relectures/produits-1-verdict.json) ; references (essai 1, relectures/references-1-verdict.json) ; publications (essai 2, relectures/publications-2-verdict.json) ; site (essai 2, relectures/site-2-verdict.json) ; produits (essai 2, relectures/produits-2-verdict.json)
+
+Logos (logos/) : logos/logo-principal.png, logos/logo-horizontal.png, logos/logo-empile.png, logos/logo-compact.png, logos/icone.png, logos/favicon.png, logos/monochrome-fonce.png, logos/monochrome-clair.png, logos/inverse.png, logos/badge.png, logos/favicon-32.png, logos/favicon-64.png, logos/icone-512.png, logos/avatar-reseaux.png, logos/symbole.png
+Palette mesurée (palette.json) : #0D3B2E Vert Forêt ; #C4672B Cognac ; #EADCC9 Sable ; #9BAE94 Sauge ; #4B3A2E Cuir Foncé
+Police des titres (polices.json) : lue « Montserrat », prise « Montserrat » (Montserrat-700.ttf, 700)
+Police des textes (polices.json) : lue « Playfair Display », prise « Playfair Display » (PlayfairDisplay-400.ttf, 400)
+Publications pour le calendrier : publication-1x1 (compréhensible) ; publication-4x5 (compréhensible) ; publication-9x16 (incompréhensible, reste sur la planche)
+  note : publication-9x16, essai 1 refusé : elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « SACS », « · », « · », « PORTEFEUILLES », « CEINTURES ») ; un logo foncé est posé sur un fond sombre : il doit y être clair ; sa fidélité n'est pas au niveau (6/10, il faut 8)
+  note : site-ordinateur, essai 1 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « 08 », « SITE », « WEB », « - », « Une », « expérience », « fluide », « du »)
+  note : site-telephone, essai 1 refusé : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « 9:41 » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « 6.GI ») ; sa fidélité n'est pas au niveau (7/10, il faut 8)
+  note : produit-2, essai 1 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « ΛVAΓK »)
+  note : emballage, essai 1 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « 09 », « PACKAGING », « & », « SUPPORTS », « - », « Une », « marque », « qui »)
+  note : palette : #0D3B2E (écrit sur l'aperçu, mesuré #053327, écart 2.4) ; #C4672B (écrit sur l'aperçu, mesuré #C16E34, écart 2.3) ; #EADCC9 (écrit sur l'aperçu, mesuré #E8DBC4, écart 1.9) ; #9BAE94 (écrit sur l'aperçu, mesuré #9EAD94, écart 1.4) ; #4B3A2E (écrit sur l'aperçu, mesuré #574436, écart 3.6)
+  SINA dirait : Tes produits sur la planche en vrai sont des images d'ambiance (« image d'ambiance, ce n'est pas ton produit ») : ils ne vont jamais sur les emplacements produit de ton site, où « Ta photo ici » attend tes photos. Quand tu m'envoies tes photos, je peux refaire ces cases avec ton vrai produit, je t'annonce le prix avant.
+  SINA dirait : La publication 3 de ta planche reste sur ta planche, mais je ne la mets pas à ton calendrier : quelqu'un qui ne connaît pas ta marque ne comprendrait pas ce qu'elle propose.
+
+Planche assemblée : planche-en-vrai.png (3072 × 4608)
+
+Étapes : Je découpe ta planche choisie → Je fais l'inventaire de ta planche → Je refais chaque image de ta planche en haute définition → Je prépare tes logos, tes couleurs et tes polices → J'assemble ta planche en vrai
+
+Dépense réelle comptée par le Studio, appel par appel (réservé au plus → réglé) :
+- 3232d60a0f28e90a2617f3f515ea5f14887250af650a707e092bb0143ef4e05e · anthropic:claude-opus-5-5 · charge du client · réservé 0,3314 € → réglé 0,1535 € (settled) · jetons 5030 en entrée, 7221 en sortie
+- f219d2c7e23429803392e3d2891e1c4be6e82f691ebe64b4a0c3436cd631b11f · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,1074 € → réglé 0,0543 € (settled) · jetons 1180 en entrée, 1834 en sortie
+- 916371d459fe2ca4ea7433b7457b481c784a49bf3cee175d2983b7b5a15ce44f · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,1004 € → réglé 0,0478 € (settled) · jetons 1160 en entrée, 1587 en sortie
+- bfe24bf732615d6001589016ddd1fd12d6d3e942ebe9e432dcb0b5227e3c570d · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0902 € → réglé 0,0413 € (settled) · jetons 1167 en entrée, 1331 en sortie
+- 4dca59e919b57a8c5ea81ce4f85f2fa28e33a9e278b714076c32fd2c3896c4a0 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0720 € → réglé 0,0283 € (settled) · jetons 1394 en entrée, 772 en sortie
+- 012eb041e647a10cb52a1629aeeec59641f5ddf6e27abd251a9077250180a0c9 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0700 € → réglé 0,0260 € (settled) · jetons 1232 en entrée, 724 en sortie
+- fe02bce80356c13148976a9149064607f7ef140e60ea3edeb5621d2f1b913ecf · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0933 € → réglé 0,0449 € (settled) · jetons 1570 en entrée, 1366 en sortie
+- b97b52d1aab22a33bc81d3784d3e00d8a47f1a3c69a3c3f4ce2fc866bc3caa77 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0752 € → réglé 0,0297 € (settled) · jetons 1189 en entrée, 876 en sortie
+- 6ba0f471f23530bab33673a5f777630058bef63c29ddaf43c203bcf6af145019 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0762 € → réglé 0,0404 € (settled) · jetons 618 en entrée, 1437 en sortie
+- 6ee7064241ef07bda87cfcc33bb831c2d108478e19b2f6ddc53279bc09cafd99 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0762 € → réglé 0,0406 € (settled) · jetons 648 en entrée, 1437 en sortie
+- 7a3c7a8fb8af481581d13fcb170ad8be2439bbb74cf7a30d796af255b0cb70bf · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0762 € → réglé 0,0403 € (settled) · jetons 616 en entrée, 1437 en sortie
+- bdade202d22cc8e8572b17f6fac2827a98c0a93a2eecc0d7957b4b65a27de808 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0962 € → réglé 0,0493 € (settled) · jetons 1696 en entrée, 1500 en sortie
+- fe6b78949aaedeefd278c2ae233ad7b87721a6e9d72f29a45f79c04b39c47211 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0776 € → réglé 0,0420 € (settled) · jetons 575 en entrée, 1514 en sortie
+- f0943d2e2d47cbcbd915b273b17d439ade1fad22d42a5c8ec652b21c8ee4844e · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0776 € → réglé 0,0420 € (settled) · jetons 575 en entrée, 1514 en sortie
+- c490707f3051ab492ca9ea30213587a46b0daea5f7f7eb1eabbb0658295f6542 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0776 € → réglé 0,0420 € (settled) · jetons 575 en entrée, 1514 en sortie
+- 8cbfb169e45af24c1ade243691c00546ce970bbf4b49786d82512e9afc90db84 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0776 € → réglé 0,0420 € (settled) · jetons 575 en entrée, 1514 en sortie
+- b51e70cbfb5821f8eff7593491fd3f5e31cf54a3963309ef59d9a6df5b4474cd · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0776 € → réglé 0,0420 € (settled) · jetons 575 en entrée, 1514 en sortie
+- edff0ac43020adfb8bdc5769fe9f9d58909fe5d702c619a1c5ee03a3aaa780d7 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0776 € → réglé 0,0421 € (settled) · jetons 588 en entrée, 1514 en sortie
+- 8c565d2b841f0fd6a7637a3d69ab9d88058ebcc7fc31c810d4d9bcb6108e87a6 · anthropic:claude-opus-5-5 · charge du client · réservé 0,1939 € → réglé 0,0686 € (settled) · jetons 6437 en entrée, 1950 en sortie
+- 2cada22d834c16cd1e33ba8f949883fdd1fbaaacfc69d1dfe005adba24da5d9c · anthropic:claude-opus-5-5 · charge du client · réservé 0,1986 € → réglé 0,0788 € (settled) · jetons 7455 en entrée, 3061 en sortie
+- 73fa29499d246f424dee4d8f0aed9868ad1fe0415fe7285e2385a743262a0afd · anthropic:claude-opus-5-5 · charge du client · réservé 0,1973 € → réglé 0,0634 € (settled) · jetons 7162 en entrée, 2223 en sortie
+- 1bb1c02ca63d12ce3b1781b1bee711aec58df36ed57bd60550231ae73da53537 · anthropic:claude-opus-5-5 · charge du client · réservé 0,2046 € → réglé 0,0504 € (settled) · jetons 8763 en entrée, 1145 en sortie
+- 051821a95651fa8e1110494c0d98c2f816bcc8f9ffad1d62b2dd8dc4957d9afd · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0921 € → réglé 0,0417 € (settled) · jetons 1259 en entrée, 1331 en sortie
+- 2be0a297d24846f505d603fdcba1b12d9942cd7bcdde3e14594684597e5de2d8 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0943 € → réglé 0,0451 € (settled) · jetons 1620 en entrée, 1366 en sortie
+- 73d16a26254d40d222fde893d8d4f1a5ac187b799afe2846df3583ad1d95f293 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0807 € → réglé 0,0308 € (settled) · jetons 1456 en entrée, 876 en sortie
+- bf0ec8e4cd891955baa37d0c92e4ec86f59f1800b880715e3d5970a55da90fa6 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0772 € → réglé 0,0407 € (settled) · jetons 690 en entrée, 1437 en sortie
+- 2f40b4954e115b49ca06b23083da7cea18c1f2f63e2f8a7e14c16bdc8c78cfc6 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0972 € → réglé 0,0495 € (settled) · jetons 1747 en entrée, 1500 en sortie
+- a1da6942b77f101d75ea81f271d310f6c3b3779a78331ab465bc88acafe0d60d · anthropic:claude-opus-5-5 · charge du Studio · réservé 0,1767 € → réglé 0,0153 € (settled) · jetons 2696 en entrée, 320 en sortie
+- 140e9873b48130f2e5727b2a9b1b375def2f3ac61e6d93e2c00b765b9a161ea4 · anthropic:claude-opus-5-5 · charge du Studio · réservé 0,1864 € → réglé 0,0506 € (settled) · jetons 4807 en entrée, 1951 en sortie
+- a89776755d1914919dd1ad0c582ce857817ae8ee56d6ea910c6f5d85d0a5999a · anthropic:claude-opus-5-5 · charge du Studio · réservé 0,1843 € → réglé 0,0399 € (settled) · jetons 4339 en entrée, 1421 en sortie
+
+Dépense réelle comptée par le Studio : 1,4235 €
+Détail complet : depense.json (appel par appel), usage.json (jetons, qualité, taille, fond, format renvoyés).

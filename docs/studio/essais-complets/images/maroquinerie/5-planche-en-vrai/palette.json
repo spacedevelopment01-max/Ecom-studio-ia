@@ -1,0 +1,44 @@
+{
+  "couleurs": [
+    {
+      "hex": "#0D3B2E",
+      "nom": "Vert Forêt",
+      "mots": []
+    },
+    {
+      "hex": "#C4672B",
+      "nom": "Cognac",
+      "mots": []
+    },
+    {
+      "hex": "#EADCC9",
+      "nom": "Sable",
+      "mots": []
+    },
+    {
+      "hex": "#9BAE94",
+      "nom": "Sauge",
+      "mots": []
+    },
+    {
+      "hex": "#4B3A2E",
+      "nom": "Cuir Foncé",
+      "mots": []
+    }
+  ],
+  "roles": {
+    "light": "#EADCC9",
+    "dark": "#0D3B2E",
+    "primary": "#C4672B",
+    "secondary": "#9BAE94",
+    "accent": "#4B3A2E"
+  },
+  "couleursDuLogo": {
+    "dark": "#052116",
+    "primary": "#BC702F",
+    "secondary": "#F6EBE2",
+    "accent": "#2A3C34",
+    "light": "#FCF8F5"
+  },
+  "encre": "#052116"
+}

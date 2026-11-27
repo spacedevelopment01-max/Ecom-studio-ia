@@ -14,3 +14,15 @@ Défauts relevés sans arrêter l'essai (règle du budget de 5 € en tout, 27 n
    « phrase du client juste partout » (8,5/10). Planche jugée montrable par le chef d'orchestre.
 5. **Planche A, essai 1** : domaine lu en double (« havanefrance.fr / havanefrance.fr — disponible ») ; phrase écrite
    en double sur la boîte kraft (« … / … ») ; à vérifier si c'est un vrai défaut du dessin ou une lecture doublée.
+6. **Planche en vrai, logo compact, icône, favicon et badge** : le code prend la lettre H comme symbole et écrit dessous
+   « SACS », le premier mot de la phrase du logo, coupée (« H / SACS ») ; sur l'aperçu, le compact était le chevron Λ seul.
+7. **Planche en vrai, onglet Marque** : le logo empilé est cassé (« H / SACS / AVANE / PORTEFEUILLES · CEINTURES ») ; le
+   logo inversé sur fond sombre est illisible (texte foncé sur bande foncée).
+8. **Planche en vrai, haut de la planche** : un second petit logo « HAVANE » s'ajoute au milieu du bandeau, et la photo
+   du bandeau déborde au-dessus de son cadre.
+9. **Planche en vrai, téléphone** : « 6.GI » de la barre d'état gardé comme texte attendu ; au 1er essai, l'heure « 9:41 »
+   comptée comme fait inventé (règle : jamais jugé sur l'heure d'un téléphone).
+10. **Planche en vrai, reprises** : site sur ordinateur et emballage refusés au 1er essai parce que les titres de bloc
+   (« 08 SITE WEB – … », « 09 PACKAGING & SUPPORTS – … ») manquaient dans l'image, alors qu'ils sont hors de la zone de
+   l'image (règle : une image est jugée sur les textes de sa seule zone) ; elles ont été reprises (dépense Studio).
+11. **Onglet Marque, produit 2** : l'image découpée garde le bas de la carte (« Portefeuilles en cuir » et le rond du bouton).

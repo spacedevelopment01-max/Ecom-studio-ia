@@ -1,0 +1,35 @@
+{
+  "lues": {
+    "titres": {
+      "nom": "Playfair Display",
+      "genre": "serif",
+      "procheDuCatalogue": "Playfair Display"
+    },
+    "textes": {
+      "nom": "Montserrat",
+      "genre": "sans",
+      "procheDuCatalogue": "Montserrat"
+    }
+  },
+  "choisies": {
+    "titres": {
+      "cle": "montserrat",
+      "famille": "Montserrat",
+      "fichier": "Montserrat-700.ttf",
+      "poids": 700,
+      "handle": "montserrat_n7",
+      "lue": "Montserrat",
+      "remplacee": false
+    },
+    "textes": {
+      "cle": "playfair_display",
+      "famille": "Playfair Display",
+      "fichier": "PlayfairDisplay-400.ttf",
+      "poids": 400,
+      "handle": "playfair_display_n4",
+      "lue": "Playfair Display",
+      "remplacee": false
+    }
+  },
+  "remplacees": []
+}
