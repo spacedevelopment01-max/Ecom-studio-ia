@@ -66,6 +66,12 @@ prestations : tant qu'il n'est pas donné, les sujets « chacun » attendent.
 
 - matieres | chacun | matières?|matériaux?|en quoi (est|sont)|quel bois|quel cuir|quelle terre | Pour chacun, ses matières, telles qu'elles peuvent s'écrire.
 
+## Partie : le cuir (quand : mots cuir, maroquin*, sellier, sellerie)
+
+- tannage | chacun | \btannages?\b|\btanné|tannerie | Pour chacun, le tannage de son cuir (végétal, au chrome, avec tes mots).
+- coutures | chacun | \bcoutures?\b|\bcousus?\b|point sellier | Pour chacun, comment il est cousu (à la main, à la machine, au point sellier, avec tes mots).
+- finitions | chacun | \bfinitions?\b|\btranches?\b|\bcoloris\b|teintes? du cuir | Pour chacun, ses finitions et ses teintes (tranches, coloris), telles qu'elles peuvent s'écrire.
+
 ## Partie : la marque (quand : toujours)
 
 - annee | marque | année de (création|naissance)|depuis quand|créée? en|fondée? en|en quelle année|date de création | L'année de création de ton entreprise.

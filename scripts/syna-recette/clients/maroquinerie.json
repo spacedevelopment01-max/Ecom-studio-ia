@@ -1,0 +1,9 @@
+{
+  "metier": "maroquinerie artisanale qui fabrique et vend en ligne des sacs, des portefeuilles et des ceintures en cuir",
+  "kind": "produits",
+  "produits": ["sacs en cuir", "portefeuilles en cuir", "ceintures en cuir"],
+  "prix": "environ 180 € le sac, 60 € le portefeuille et 50 € la ceinture",
+  "clientele": "des gens qui veulent un bel objet en cuir qui dure des années, pour eux ou pour l'offrir",
+  "gouts": "chaleureux, élégant et artisanal",
+  "descripteur": "maroquinerie"
+}

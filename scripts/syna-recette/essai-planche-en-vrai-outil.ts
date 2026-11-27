@@ -11,7 +11,7 @@ import type { LogosEnHdAi, PlancheEnVraiAi } from "../../src/lib/syna-agent/plan
 import type { EtatPlancheEnVrai, Inventaire, Laquelle, NomElement, RelectureDuGroupe, VersionEnHd } from "../../src/lib/syna-agent/planche-en-vrai";
 import type { StatutDuDomaine } from "../../src/lib/syna-agent/planche-de-marque";
 import type { NameDomains } from "../../src/lib/syna-agent/brand-domains";
-import { clientDeLEssai, euros, faitsPermisDuClient, ficheDuClient, typeDuProjet, type ClientDeLEssai } from "./client-de-l-essai";
+import { clientDeLEssai, euros, faitsPermisDuClient, ficheDuClient, rangerLesFaitsDansLeProjet, typeDuProjet, type ClientDeLEssai } from "./client-de-l-essai";
 import { lignesDeLArret, avisDuPlafond } from "./plafond-des-essais";
 import { messageAvecCause } from "../../src/lib/ai/erreur-reseau";
 import type { LigneDeDepense } from "./essai-planches-outil";
@@ -640,6 +640,8 @@ export async function essaiDeLaPlancheEnVrai(o: {
   const u = await account();
   const projectId = project(u, typeDuProjet(client)) as string;
   run("UPDATE projects SET name=? WHERE id=?", client.nom, projectId);
+  // Ses faits rangés dans la fiche du projet, comme dans le Studio : ce qui les relit dans le projet les voit aussi.
+  await rangerLesFaitsDansLeProjet(u.id, projectId, client);
   const jobId = `essai-planche-en-vrai-${id()}`;
   const qui: Qui = { userId: u.id, projectId, jobId };
   const personnes = peopleAllowed(projectId);

@@ -122,7 +122,8 @@ export const LIBELLE_DU_SUJET: Record<string, { fr: string; en: string }> = {
   mentions: { fr: "Mentions et labels", en: "Mentions and labels" }, fabrication: { fr: "Lieu de fabrication", en: "Where it is made" },
   durees: { fr: "Durée", en: "Duration" }, lieu: { fr: "Lieu", en: "Place" }, composition: { fr: "Composition", en: "Composition" },
   torrefaction: { fr: "Degré de torréfaction", en: "Roast level" }, notes_de_gout: { fr: "Notes de goût", en: "Tasting notes" },
-  matieres: { fr: "Matières", en: "Materials" }, annee: { fr: "Année de création", en: "Year founded" }, ville: { fr: "Ville", en: "City" },
+  matieres: { fr: "Matières", en: "Materials" }, tannage: { fr: "Tannage", en: "Tanning" }, coutures: { fr: "Coutures", en: "Stitching" },
+  finitions: { fr: "Finitions et teintes", en: "Finishes and colours" }, annee: { fr: "Année de création", en: "Year founded" }, ville: { fr: "Ville", en: "City" },
 };
 export const libelleDuSujet = (s: string, lang: "fr" | "en" = "fr") => LIBELLE_DU_SUJET[s]?.[lang] ?? s.replace(/_/g, " ");
 
