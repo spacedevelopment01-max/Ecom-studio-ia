@@ -1,0 +1,180 @@
+{
+  "passe": 3,
+  "at": 1795738285222,
+  "gardees": [
+    {
+      "element": "publication-1x1",
+      "tour": 1
+    },
+    {
+      "element": "publication-9x16",
+      "tour": 1
+    },
+    {
+      "element": "ouverture-site",
+      "tour": 1
+    },
+    {
+      "element": "ouverture-planche",
+      "tour": 1
+    },
+    {
+      "element": "site-ordinateur",
+      "tour": 1
+    },
+    {
+      "element": "reference-1",
+      "tour": 1
+    },
+    {
+      "element": "reference-2",
+      "tour": 1
+    },
+    {
+      "element": "reference-3",
+      "tour": 1
+    }
+  ],
+  "aRefaire": [
+    {
+      "element": "publication-4x5",
+      "raisons": [
+        "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Une », « de », « caractère », « ÉQUILIBRE », « & », « INTENSITÉ »)"
+      ],
+      "raisonsAvant": [
+        "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Une », « torréfaction », « de », « caractère », « ÉQUILIBRE », « & », « INTENSITÉ »)"
+      ]
+    },
+    {
+      "element": "site-telephone",
+      "raisons": [
+        "un texte est coupé ou collé au bord",
+        "sa fidélité n'est pas au niveau (7/10, il faut 8)"
+      ],
+      "raisonsAvant": [
+        "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « MOUTURE », « TORRÉFACTION », « ARTISANALE », « MOUTURE », « TORRÉFACTION », « ARTISANALE »)",
+        "un texte est coupé ou collé au bord",
+        "sa fidélité n'est pas au niveau (7/10, il faut 8)"
+      ]
+    },
+    {
+      "element": "produit-1",
+      "raisons": [
+        "faits ou produits inventés, absents de l'aperçu et de la fiche du client : « CLASSÉ | 500 g | 100% ARABICA »",
+        "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « L'EXCELLENCE », « SÉLECTIONNÉ », « AVEC », « PASSION », « TORRÉFIÉ », « EN », « PETITES », « QUANTITÉS »)"
+      ],
+      "raisonsAvant": [
+        "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « L'EXCELLENCE », « ARABICA », « SÉLECTIONNÉ », « AVEC », « PASSION », « TORRÉFIÉ »)"
+      ]
+    },
+    {
+      "element": "produit-2",
+      "raisons": [
+        "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « ÉQUILIBRÉ », « DES », « ARÔMES », « RICHES », « ET », « GÉNÉREUX », « POUR », « UN »)"
+      ],
+      "raisonsAvant": [
+        "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « ÉQUILIBRÉ », « DES », « ARÔMES », « RICHES », « ET », « GÉNÉREUX »)"
+      ]
+    },
+    {
+      "element": "produit-3",
+      "raisons": [
+        "faits ou produits inventés, absents de l'aperçu et de la fiche du client : « L'ARABY DE PÉROU », « 100% ARABICA »",
+        "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « NOTES », « CHOCOLATÉES », « ET », « FRUITÉES », « L'ARABICA », « SIGNATURE »)",
+        "sa fidélité n'est pas au niveau (6/10, il faut 8)"
+      ],
+      "raisonsAvant": [
+        "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « L'ARABY », « DE », « PÉROU », « 100% », « ARABICA », « NOTES »)",
+        "sa fidélité n'est pas au niveau (6/10, il faut 8)"
+      ]
+    },
+    {
+      "element": "emballage",
+      "raisons": [
+        "faits ou produits inventés, absents de l'aperçu et de la fiche du client : « Grains | 250 g »",
+        "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « L'Instart », « franc », « - », « MÉLANGE », « Notes », « de », « chocolat », « noir »)",
+        "un logo foncé est posé sur un fond sombre : il doit y être clair",
+        "sa fidélité n'est pas au niveau (6/10, il faut 8)"
+      ],
+      "raisonsAvant": [
+        "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « L'Instart », « franc », « - », « MÉLANGE », « Notes », « de », « chocolat », « noir »)",
+        "un logo foncé est posé sur un fond sombre : il doit y être clair",
+        "sa fidélité n'est pas au niveau (6/10, il faut 8)"
+      ]
+    },
+    {
+      "element": "reference-4",
+      "raisons": [
+        "faits ou produits inventés, absents de l'aperçu et de la fiche du client : « 100% ARABICA », « 250G e », « 100% ARAI », « 250 »",
+        "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « EN », « EN », « GRAINS », « GRAINS ») (en trop ou mal écrits : « ERRANO », « CHOCOLAT », « - », « NOISETTE », « DE », « CERROAZUL », « AGRUMES », « - »)",
+        "un texte est coupé ou collé au bord",
+        "sa fidélité n'est pas au niveau (6/10, il faut 8)"
+      ],
+      "raisonsAvant": [
+        "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « EN », « EN », « GRAINS », « GRAINS ») (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « ERRANO », « 100% », « ARABICA », « CHOCOLAT », « - », « NOISETTE »)",
+        "un texte est coupé ou collé au bord",
+        "sa fidélité n'est pas au niveau (6/10, il faut 8)"
+      ]
+    },
+    {
+      "element": "reference-5",
+      "raisons": [
+        "faits ou produits inventés, absents de l'aperçu et de la fiche du client : « DEPUIS 1928 »",
+        "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « CAFÉ »)"
+      ],
+      "raisonsAvant": [
+        "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « CAFÉ », « DEPUIS », « 1928 »)"
+      ]
+    },
+    {
+      "element": "reference-6",
+      "raisons": [
+        "faits ou produits inventés, absents de l'aperçu et de la fiche du client : « L'ARABICA PUR BRÉSIL », « TORRÉFIÉ EN FRANCE », « 250 G », « LE MOKA ÉTHIOPIE - BIO »",
+        "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « ARÔMES », « DOUX », « ET », « ÉQUILIBRÉS », « NOTES », « FRUITÉES », « ET », « FLORALES »)"
+      ],
+      "raisonsAvant": [
+        "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « L'ARABICA », « PUR », « BRÉSIL », « ARÔMES », « DOUX », « ET »)"
+      ]
+    }
+  ],
+  "refuseesDeuxFois": [],
+  "perimees": [
+    "publication-4x5-2",
+    "site-telephone-2",
+    "produit-1-2",
+    "produit-2-2"
+  ],
+  "aLOeil": {},
+  "devis": {
+    "probableMicro": 1258905,
+    "maxMicro": 3771594,
+    "plafondConseilleMicro": 3000000,
+    "images": 9,
+    "relectures": 4,
+    "logoHd": true
+  },
+  "texte": [
+    "Rejugement gratuit de la passe 3 (REJUGER=1, aucun appel) : 8 image(s) gardée(s) sur 17, 9 à refaire, 0 refusée(s) deux fois.",
+    "  publication-1x1 : GARDÉE (essai 1) ; refusée avant le rejugement pour : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE »)",
+    "  publication-4x5 : À REFAIRE : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Une », « de », « caractère », « ÉQUILIBRE », « & », « INTENSITÉ ») (sa reprise reçue avec la consigne d'avant, jamais relue, est périmée)",
+    "  publication-9x16 : GARDÉE (essai 1) ; refusée avant le rejugement pour : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE »)",
+    "  ouverture-site : GARDÉE (essai 1)",
+    "  ouverture-planche : GARDÉE (essai 1) ; refusée avant le rejugement pour : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « à »)",
+    "  site-ordinateur : GARDÉE (essai 1) ; refusée avant le rejugement pour : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE »)",
+    "  site-telephone : À REFAIRE : un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (7/10, il faut 8) (sa reprise reçue avec la consigne d'avant, jamais relue, est périmée)",
+    "  produit-1 : À REFAIRE : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « CLASSÉ | 500 g | 100% ARABICA » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « L'EXCELLENCE », « SÉLECTIONNÉ », « AVEC », « PASSION », « TORRÉFIÉ », « EN », « PETITES », « QUANTITÉS ») (sa reprise reçue avec la consigne d'avant, jamais relue, est périmée)",
+    "  produit-2 : À REFAIRE : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « ÉQUILIBRÉ », « DES », « ARÔMES », « RICHES », « ET », « GÉNÉREUX », « POUR », « UN ») (sa reprise reçue avec la consigne d'avant, jamais relue, est périmée)",
+    "  produit-3 : À REFAIRE : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « L'ARABY DE PÉROU », « 100% ARABICA » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « NOTES », « CHOCOLATÉES », « ET », « FRUITÉES », « L'ARABICA », « SIGNATURE ») ; sa fidélité n'est pas au niveau (6/10, il faut 8) (sa reprise est partie sans réponse : résultat incertain)",
+    "  emballage : À REFAIRE : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « Grains | 250 g » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « L'Instart », « franc », « - », « MÉLANGE », « Notes », « de », « chocolat », « noir ») ; un logo foncé est posé sur un fond sombre : il doit y être clair ; sa fidélité n'est pas au niveau (6/10, il faut 8)",
+    "  reference-1 : GARDÉE (essai 1)",
+    "  reference-2 : GARDÉE (essai 1)",
+    "  reference-3 : GARDÉE (essai 1)",
+    "  reference-4 : À REFAIRE : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « 100% ARABICA », « 250G e », « 100% ARAI », « 250 » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « EN », « EN », « GRAINS », « GRAINS ») (en trop ou mal écrits : « ERRANO », « CHOCOLAT », « - », « NOISETTE », « DE », « CERROAZUL », « AGRUMES », « - ») ; un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (6/10, il faut 8)",
+    "  reference-5 : À REFAIRE : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « DEPUIS 1928 » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « CAFÉ »)",
+    "  reference-6 : À REFAIRE : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « L'ARABICA PUR BRÉSIL », « TORRÉFIÉ EN FRANCE », « 250 G », « LE MOKA ÉTHIOPIE - BIO » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « ARÔMES », « DOUX », « ET », « ÉQUILIBRÉS », « NOTES », « FRUITÉES », « ET », « FLORALES »)",
+    "Ce que le code a pu rejuger : les textes lus, la note et les cases cochées par le relecteur. Ce qu'il ne peut pas : un texte que le relecteur n'a pas recopié ; les images gardées ont été regardées au contrôle, aucune n'a été marquée à refaire.",
+    "Images reçues avec la consigne d'avant et jamais relues, périmées (rangées à part et refaites à la reprise) : publication-4x5-2, site-telephone-2, produit-1-2, produit-2-2.",
+    "Reste à faire (REPRENDRE=1, devis du Studio) : 9 image(s) refaite(s) une fois à la charge du Studio, 4 relecture(s) (publications, site, produits, references), puis LOGO_HD (4 images et 1 relecture, une reprise des refusées), puis les logos, la palette, les polices et l'assemblage par le code (gratuits).",
+    "Probable : 1,2589 € ; somme des maxima : 3,7716 € ; plafond conseillé : 3,0000 € (deux fois le probable, arrondi)."
+  ]
+}
