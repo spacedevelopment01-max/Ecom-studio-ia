@@ -814,6 +814,9 @@ export async function plancheEnVraiParLeCode(o: {
   demo: Buffer; laquelle: Laquelle; inventaire: Inventaire; route: Route; logo: Buffer; images: ReadonlyMap<NomElement, Buffer>; phrase?: string; ligneDuLogo?: string | null; metierCourt?: string | null;
   /** Les petites versions du logo refaites en haute définition : gardées (fond retiré), et refusées deux fois. */
   logosEnHd?: { gardes: ReadonlyMap<VersionDuLogo, Buffer>; refuses: readonly VersionDuLogo[] };
+  /** Les faits à montrer du client (27 novembre 2026) : les mêmes que ceux du premier passage, pour que les textes écrits
+   * par le code gardent ses mentions vraies ; sans eux, rien ne change. */
+  faits?: FaitsPermis;
 }) {
   const decoupe = await decouperLesApercus(o.demo, o.laquelle), notes: string[] = [];
   const separation = await separerSymbole(o.logo);
@@ -825,7 +828,7 @@ export async function plancheEnVraiParLeCode(o: {
   const lues = policesDeLApercu(o.inventaire), polices = { titres: policeDuCatalogue(lues.titres, 700), textes: policeDuCatalogue(lues.textes, 400) };
   const bas = texteDuBasDuBadge({ ligneDuLogo: o.ligneDuLogo, metierCourt: o.metierCourt, signature: o.phrase ?? o.route.slogan ?? "" });
   const v = await versionsDuLogo({ logo: o.logo, separation, couleur: await couleurDuLogo(o.logo), sombre: luminance(roles.primary) < 0.45 ? roles.primary : roles.dark, clair: roles.light, monoClair: monoClairDe(ret.hex), nom: o.route.name.trim(), bas, police: POLICE_DU_BADGE, tuiles: decoupe.apercus, hd: o.logosEnHd?.gardes });
-  const t = textesDeLaPlanche(o.inventaire, o.route);
+  const t = textesDeLaPlanche(o.inventaire, o.route, aDesFaits(o.faits) ? o.faits : undefined);
   notes.push(...t.notes);
   // Les versions en haute définition posées sur la planche seulement si elles ne changent pas visiblement leur case.
   const tu = await tuilesDuBloc01({ demo: o.demo, boites: decoupe.boites, versions: v.versions, depuisLApercu: v.depuisLApercu, enHd: v.enHd });
@@ -837,7 +840,9 @@ export async function plancheEnVraiParLeCode(o: {
   const montrees = new Map<NomElement, Buffer>();
   for (const [n, png] of o.images) montrees.set(n, await imageMontree(n, png));
   const refusesEnHd = (o.logosEnHd?.refuses ?? []).filter((x) => v.depuisLApercu.includes(x));
-  return { planche, site, montrees, versions: v.versions, symbole: v.symbole, depuisLApercu: v.depuisLApercu, enHd: v.enHd, refusesEnHd, surLaPlancheEnHd: [...tu.tuilesEnHd.keys()], symboleComplet: v.symboleComplet, separation, palette, roles, polices, notes, decoupe };
+  return { planche, site, montrees, versions: v.versions, symbole: v.symbole, depuisLApercu: v.depuisLApercu, enHd: v.enHd, refusesEnHd, surLaPlancheEnHd: [...tu.tuilesEnHd.keys()], symboleComplet: v.symboleComplet, separation, palette, roles, polices, notes, decoupe,
+    /** Les textes que le code écrit dans la planche (titres, haut, ton, bloc 10) : les mêmes qu'au premier passage. */
+    textes: { titres: t.titres, blocs: t.blocs, haut: t.haut, hautDansLeLogo: t.hautDansLeLogo } };
 }
 
 /**

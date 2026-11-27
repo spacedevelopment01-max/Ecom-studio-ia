@@ -1105,7 +1105,7 @@ export async function reassemblerLEssaiEnVrai(o: {
   }
 
   // a) Le code seul, puis l'assemblage.
-  const code = await T.plancheEnVraiParLeCode({ demo, laquelle, inventaire, route, logo, images, phrase: donnees.phrase, ...(versionsHd.length ? { logosEnHd: { gardes: gardesHd, refuses: refusesHd } } : {}) });
+  const code = await T.plancheEnVraiParLeCode({ demo, laquelle, inventaire, route, logo, images, phrase: donnees.phrase, ...avecFaits, ...(versionsHd.length ? { logosEnHd: { gardes: gardesHd, refuses: refusesHd } } : {}) });
   if (logosEnHd) logosEnHd.surLaPlanche = code.surLaPlancheEnHd;
   for (const [k, b] of Object.entries(code.versions)) ecrire(`logos/${k}.png`, b);
   ecrire("palette.json", `${JSON.stringify({ couleurs: code.palette, roles: code.roles }, null, 2)}\n`);
