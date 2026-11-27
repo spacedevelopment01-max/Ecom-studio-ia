@@ -58,7 +58,8 @@ import path from "node:path";
   const plafond = Math.floor(Number(process.env.PLAFOND_ESSAI_EUR.replace(",", ".")) * 1_000_000);
   if (plafond < devis.plafondMinimalMicro) console.log(`Le plafond ${euros(plafond)} est sous la somme des maxima ${euros(devis.plafondMinimalMicro)} (probable ${euros(devis.probableMicro)}) : l'essai part quand même. Il s'arrête proprement avant tout appel dont le pire cas dépasserait ce qui reste, garde ses fichiers et dit ce qu'il faudrait pour finir.`);
   const sortie = path.resolve(sortieArg);
-  const r = await essaiDesEsquisses({ sortie, plafondEuros: process.env.PLAFOND_ESSAI_EUR, client });
+  // AUTRES_PISTES=<esquisses.json de la recherche d'avant> : « d'autres pistes », comme dans le Studio.
+  const r = await essaiDesEsquisses({ sortie, plafondEuros: process.env.PLAFOND_ESSAI_EUR, client, ...(process.env.AUTRES_PISTES ? { autresPistes: path.resolve(process.env.AUTRES_PISTES) } : {}) });
   console.log(`${r.esquisses} esquisse(s) gardée(s) par le relecteur, ${r.ecartees.length} écartée(s)${r.reprise ? " (planches refaites une fois, à la charge du Studio)" : ""}, ${r.planches.length} planche(s), dépense comptée ${euros(r.depenseMicro)}. Rapport : ${path.join(sortie, "rapport.txt")}`);
   if (r.arret) { console.log(`Arrêt : ${r.arret}`); process.exit(2); }
   process.exit(0);
