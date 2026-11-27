@@ -1,0 +1,444 @@
+{
+  "cases": [
+    {
+      "element": "publication-1x1",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 9,
+          "raisonsAvant": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE »)"
+          ],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 1,
+      "deborde": false
+    },
+    {
+      "element": "publication-4x5",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 8,
+          "raisonsAvant": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Une », « torréfaction », « de », « caractère », « ÉQUILIBRE », « & », « INTENSITÉ »)"
+          ],
+          "raisonsApres": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Une », « ÉQUILIBRE », « & », « INTENSITÉ »)"
+          ]
+        },
+        {
+          "tour": 2,
+          "note": 9,
+          "raisonsAvant": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Saveurs », « intenses »)"
+          ],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 2,
+      "deborde": false
+    },
+    {
+      "element": "publication-9x16",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 9,
+          "raisonsAvant": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE »)"
+          ],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 1,
+      "deborde": true
+    },
+    {
+      "element": "ouverture-site",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 9,
+          "raisonsAvant": [],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 1,
+      "deborde": false
+    },
+    {
+      "element": "ouverture-planche",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 9,
+          "raisonsAvant": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « à »)"
+          ],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 1,
+      "deborde": false
+    },
+    {
+      "element": "site-ordinateur",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 9,
+          "raisonsAvant": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE »)"
+          ],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 1,
+      "deborde": false
+    },
+    {
+      "element": "site-telephone",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 7,
+          "raisonsAvant": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « MOUTURE », « TORRÉFACTION », « ARTISANALE », « MOUTURE », « TORRÉFACTION », « ARTISANALE »)",
+            "un texte est coupé ou collé au bord",
+            "sa fidélité n'est pas au niveau (7/10, il faut 8)"
+          ],
+          "raisonsApres": [
+            "un texte est coupé ou collé au bord",
+            "sa fidélité n'est pas au niveau (7/10, il faut 8)"
+          ]
+        },
+        {
+          "tour": 2,
+          "note": 7,
+          "raisonsAvant": [
+            "elle n'est pas identique à son aperçu",
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « Une », « boutiq », « toujours », « avec », « vous ») (en trop ou mal écrits : « Cafés », « en », « grains », « Cafés », « moulus », « Coffrets »)",
+            "sa fidélité n'est pas au niveau (7/10, il faut 8)"
+          ],
+          "raisonsApres": [
+            "elle n'est pas identique à son aperçu",
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « Une », « boutiq », « toujours », « avec », « vous »)",
+            "sa fidélité n'est pas au niveau (7/10, il faut 8)"
+          ]
+        }
+      ],
+      "gardee": null,
+      "deborde": false
+    },
+    {
+      "element": "produit-1",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 8.5,
+          "raisonsAvant": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « L'EXCELLENCE », « ARABICA », « SÉLECTIONNÉ », « AVEC », « PASSION », « TORRÉFIÉ »)"
+          ],
+          "raisonsApres": [
+            "faits ou produits inventés, absents de l'aperçu et de la fiche du client : « CLASSÉ | 500 g | 100% ARABICA »",
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « L'EXCELLENCE », « SÉLECTIONNÉ », « AVEC », « PASSION », « TORRÉFIÉ », « PETITES », « QUANTITÉS »)"
+          ]
+        },
+        {
+          "tour": 2,
+          "note": 9,
+          "raisonsAvant": [],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 2,
+      "deborde": false
+    },
+    {
+      "element": "produit-2",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 9,
+          "raisonsAvant": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « ÉQUILIBRÉ », « DES », « ARÔMES », « RICHES », « ET », « GÉNÉREUX »)"
+          ],
+          "raisonsApres": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « ÉQUILIBRÉ », « DES », « ARÔMES », « RICHES », « ET », « GÉNÉREUX », « POUR », « UN »)"
+          ]
+        },
+        {
+          "tour": 2,
+          "note": 7,
+          "raisonsAvant": [
+            "faits ou produits inventés, absents de l'aperçu et de la fiche du client : « EXCELLENCE »",
+            "sa fidélité n'est pas au niveau (7/10, il faut 8)"
+          ],
+          "raisonsApres": [
+            "faits ou produits inventés, absents de l'aperçu et de la fiche du client : « EXCELLENCE »",
+            "sa fidélité n'est pas au niveau (7/10, il faut 8)"
+          ]
+        }
+      ],
+      "gardee": null,
+      "deborde": false
+    },
+    {
+      "element": "produit-3",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 6,
+          "raisonsAvant": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « L'ARABY », « DE », « PÉROU », « 100% », « ARABICA », « NOTES »)",
+            "sa fidélité n'est pas au niveau (6/10, il faut 8)"
+          ],
+          "raisonsApres": [
+            "faits ou produits inventés, absents de l'aperçu et de la fiche du client : « L'ARABY DE PÉROU », « 100% ARABICA »",
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « NOTES », « CHOCOLATÉES », « ET », « FRUITÉES », « L'ARABICA », « SIGNATURE »)",
+            "sa fidélité n'est pas au niveau (6/10, il faut 8)"
+          ]
+        },
+        {
+          "tour": 2,
+          "note": 9,
+          "raisonsAvant": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « CAFÉS », « EN », « GRAINS », « CAFÉS », « MOULUS »)"
+          ],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 2,
+      "deborde": false
+    },
+    {
+      "element": "emballage",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 6,
+          "raisonsAvant": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « L'Instart », « franc », « - », « MÉLANGE », « Notes », « de », « chocolat », « noir »)",
+            "un logo foncé est posé sur un fond sombre : il doit y être clair",
+            "sa fidélité n'est pas au niveau (6/10, il faut 8)"
+          ],
+          "raisonsApres": [
+            "faits ou produits inventés, absents de l'aperçu et de la fiche du client : « Grains | 250 g »",
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « L'Instart », « franc », « - », « MÉLANGE », « Notes », « de », « chocolat », « noir »)",
+            "un logo foncé est posé sur un fond sombre : il doit y être clair",
+            "sa fidélité n'est pas au niveau (6/10, il faut 8)"
+          ]
+        },
+        {
+          "tour": 2,
+          "note": 9,
+          "raisonsAvant": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Cafés », « moulus »)"
+          ],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 2,
+      "deborde": false
+    },
+    {
+      "element": "reference-1",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 8,
+          "raisonsAvant": [],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 1,
+      "deborde": false
+    },
+    {
+      "element": "reference-2",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 9,
+          "raisonsAvant": [],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 1,
+      "deborde": false
+    },
+    {
+      "element": "reference-3",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 9,
+          "raisonsAvant": [],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 1,
+      "deborde": false
+    },
+    {
+      "element": "reference-4",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 6,
+          "raisonsAvant": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « EN », « EN », « GRAINS », « GRAINS ») (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « ERRANO », « 100% », « ARABICA », « CHOCOLAT », « - », « NOISETTE »)",
+            "un texte est coupé ou collé au bord",
+            "sa fidélité n'est pas au niveau (6/10, il faut 8)"
+          ],
+          "raisonsApres": [
+            "faits ou produits inventés, absents de l'aperçu et de la fiche du client : « 100% ARABICA », « 250G e », « 100% ARAI », « 250 »",
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « EN », « EN », « GRAINS », « GRAINS ») (en trop ou mal écrits : « ERRANO », « CHOCOLAT », « - », « NOISETTE », « DE », « CERROAZUL », « AGRUMES », « - »)",
+            "un texte est coupé ou collé au bord",
+            "sa fidélité n'est pas au niveau (6/10, il faut 8)"
+          ]
+        },
+        {
+          "tour": 2,
+          "note": 8,
+          "raisonsAvant": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « CAFÉ », « CAFÉ », « GRAINS ») (en trop ou mal écrits : « COFFRETS », « CAFÉS », « MOULUS », « CAFÉS », « CAFÉS »)",
+            "un texte est coupé ou collé au bord"
+          ],
+          "raisonsApres": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « CAFÉ »)",
+            "un texte est coupé ou collé au bord"
+          ]
+        }
+      ],
+      "gardee": null,
+      "deborde": false
+    },
+    {
+      "element": "reference-5",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 8,
+          "raisonsAvant": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « CAFÉ », « DEPUIS », « 1928 »)"
+          ],
+          "raisonsApres": [
+            "faits ou produits inventés, absents de l'aperçu et de la fiche du client : « DEPUIS 1928 »"
+          ]
+        },
+        {
+          "tour": 2,
+          "note": 8,
+          "raisonsAvant": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Café », « de », « Qualité »)"
+          ],
+          "raisonsApres": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Café », « de », « Qualité »)"
+          ]
+        }
+      ],
+      "gardee": null,
+      "deborde": false
+    },
+    {
+      "element": "reference-6",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 9,
+          "raisonsAvant": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « L'ARABICA », « PUR », « BRÉSIL », « ARÔMES », « DOUX », « ET »)"
+          ],
+          "raisonsApres": [
+            "faits ou produits inventés, absents de l'aperçu et de la fiche du client : « L'ARABICA PUR BRÉSIL », « TORRÉFIÉ EN FRANCE », « 250 G », « LE MOKA ÉTHIOPIE - BIO »",
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « ARÔMES », « DOUX », « ET », « ÉQUILIBRÉS », « NOTES », « FRUITÉES », « ET », « FLORALES »)"
+          ]
+        },
+        {
+          "tour": 2,
+          "note": 9,
+          "raisonsAvant": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Cafés », « en », « grains », « Cafés », « moulus »)"
+          ],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 2,
+      "deborde": false
+    }
+  ],
+  "gardees": 13,
+  "planche": "planche-en-vrai.png",
+  "comparaison": "comparaison-apercu-et-reassemblee.jpg",
+  "palette": [
+    {
+      "hex": "#2E1A12",
+      "nom": "Brun café"
+    },
+    {
+      "hex": "#A86B3A",
+      "nom": "Cuivre"
+    },
+    {
+      "hex": "#C89B6B",
+      "nom": "Caramel"
+    },
+    {
+      "hex": "#F6E9D7",
+      "nom": "Crème"
+    },
+    {
+      "hex": "#7B8470",
+      "nom": "Sauge"
+    }
+  ],
+  "logosDeLApercu": [
+    "logo-horizontal",
+    "logo-empile"
+  ],
+  "logosEnHd": {
+    "versions": [
+      "logo-compact",
+      "icone",
+      "favicon",
+      "badge"
+    ],
+    "devis": {
+      "maxMicro": 1607990,
+      "probableMicro": 354721,
+      "siToutEstRefaitMicro": 709442,
+      "repriseMicro": 803995,
+      "images": 4,
+      "relectures": 1
+    },
+    "depenseMicro": 0,
+    "gardees": [
+      "logo-compact",
+      "icone",
+      "favicon",
+      "badge"
+    ],
+    "refusees": [],
+    "surLaPlanche": [
+      "favicon"
+    ]
+  },
+  "notes": [
+    "palette : #2E1A12 (écrit sur l'aperçu, mesuré #32180B, écart 2.9) ; #A86B3A (écrit sur l'aperçu, mesuré #A95D28, écart 5) ; #C89B6B (écrit sur l'aperçu, mesuré #C58D59, écart 4.6) ; #F6E9D7 (écrit sur l'aperçu, mesuré #F7E9D5, écart 0.7) ; #7B8470 (écrit sur l'aperçu, mesuré #7D7F68, écart 3.5)",
+    "haut de la planche : « D », « à », « le », « TO » sont des morceaux du titre du bandeau voisin ; ils ne sont pas réécrits",
+    "monochrome-fonce fait par le code : la planche garde l'aperçu agrandi (elle change visiblement la case (15.7 % des points)) ; la version du code sert aux fichiers à télécharger",
+    "monochrome-clair fait par le code : la planche garde l'aperçu agrandi (elle change visiblement la case (35.6 % des points)) ; la version du code sert aux fichiers à télécharger",
+    "inverse fait par le code : la planche garde l'aperçu agrandi (elle change visiblement la case (21.3 % des points)) ; la version du code sert aux fichiers à télécharger",
+    "logo-compact en haute définition : la planche garde l'aperçu agrandi (ses proportions changent la case (écart 9 %)) ; la haute définition sert aux fichiers à télécharger",
+    "icone en haute définition : la planche garde l'aperçu agrandi (ses proportions changent la case (écart 29 %)) ; la haute définition sert aux fichiers à télécharger",
+    "favicon en haute définition : posé sur la planche (0.7 % des points changés)",
+    "badge en haute définition : la planche garde l'aperçu agrandi (elle change visiblement la case (13.5 % des points)) ; la haute définition sert aux fichiers à télécharger"
+  ],
+  "projectId": "zfgqpwuieua1yq4c",
+  "conversationId": "8kx19m8zu2a65h2s",
+  "etat": "etat.json",
+  "projetCree": false
+}

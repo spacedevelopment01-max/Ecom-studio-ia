@@ -1,0 +1,62 @@
+{
+  "versions": [
+    {
+      "version": "logo-compact",
+      "memeForme": true,
+      "memesLettres": true,
+      "texteCirculaire": "aucun",
+      "textesDeLApercu": [],
+      "textesLus": [],
+      "memesCouleurs": true,
+      "ajout": false,
+      "texteCoupe": false,
+      "note": 8,
+      "pourquoi": "On retrouve le même hexagone au fond brun foncé, avec un double liseré cuivré et la même flamme crème au centre. La version est fidèle et nette, mais le liseré paraît un peu plus orangé que sur l'aperçu."
+    },
+    {
+      "version": "icone",
+      "memeForme": true,
+      "memesLettres": true,
+      "texteCirculaire": "aucun",
+      "textesDeLApercu": [],
+      "textesLus": [],
+      "memesCouleurs": true,
+      "ajout": false,
+      "texteCoupe": false,
+      "note": 9,
+      "pourquoi": "Le carré arrondi brun foncé et la flamme crème à langue intérieure sont identiques à l'aperçu. La version est nette, bien centrée et sans ajout."
+    },
+    {
+      "version": "favicon",
+      "memeForme": true,
+      "memesLettres": true,
+      "texteCirculaire": "aucun",
+      "textesDeLApercu": [],
+      "textesLus": [],
+      "memesCouleurs": true,
+      "ajout": false,
+      "texteCoupe": false,
+      "note": 9,
+      "pourquoi": "On retrouve le même carré arrondi brun et la même flamme crème que sur l'aperçu. La version est fidèle, nette et garde une marge confortable."
+    },
+    {
+      "version": "badge",
+      "memeForme": true,
+      "memesLettres": true,
+      "texteCirculaire": "identique",
+      "textesDeLApercu": [
+        "MOUTURE",
+        "TORRÉFACTION ARTISANALE"
+      ],
+      "textesLus": [
+        "MOUTURE",
+        "TORRÉFACTION ARTISANALE"
+      ],
+      "memesCouleurs": true,
+      "ajout": false,
+      "texteCoupe": false,
+      "note": 9,
+      "pourquoi": "Le badge rond reprend la flamme brune, les petits tirets et les textes circulaires « MOUTURE » et « TORRÉFACTION ARTISANALE », à l'identique de l'aperçu. Le tracé est fidèle et net, sans rien de coupé."
+    }
+  ]
+}

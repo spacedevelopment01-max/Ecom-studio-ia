@@ -1,0 +1,334 @@
+{
+  "key": "A",
+  "demo": "e30n43ceu22i3dby",
+  "logo": "i1btymdiy75c3n4k",
+  "laquelle": "standard",
+  "at": 1795773902582,
+  "elements": [
+    {
+      "element": "publication-1x1",
+      "id": "88r7x9f8cnjeg5m8",
+      "w": 1080,
+      "h": 1080,
+      "essais": 1,
+      "description": "Une tasse de café fumante posée sur une table en bois parmi des grains, avec un titre en haut et le logo en bas."
+    },
+    {
+      "element": "publication-4x5",
+      "id": "schvdeqck8mirjlz",
+      "w": 1080,
+      "h": 1350,
+      "essais": 2,
+      "description": "Un sachet kraft de café en grains Mouture à côté d'un titre, de trois atouts avec icônes et d'un bouton « Découvrir »."
+    },
+    {
+      "element": "publication-9x16",
+      "id": "1xy1n9m40idkqn7q",
+      "w": 1080,
+      "h": 1920,
+      "essais": 1,
+      "description": "Un sondage vertical sur fond de grains et de café moulu, avec quatre choix de boissons et le logo en bas."
+    },
+    {
+      "element": "ouverture-site",
+      "id": "3pp6fkp57wqkjbeo",
+      "w": 1920,
+      "h": 720,
+      "essais": 1,
+      "description": "Une bannière avec un sac en toile de jute renversant des grains de café, un titre et un bouton cuivré."
+    },
+    {
+      "element": "ouverture-planche",
+      "id": "bwnjvw4w2dm08l8f",
+      "w": 2304,
+      "h": 768,
+      "essais": 1,
+      "description": "Une large bannière avec une tasse de café fumante, des grains et un sac de jute, encadrée de textes coupés sur les bords."
+    },
+    {
+      "element": "site-ordinateur",
+      "id": "o23bvt58ged6dpxs",
+      "w": 1520,
+      "h": 995,
+      "essais": 1,
+      "description": "Un ordinateur portable affichant la page d'accueil du site Mouture avec menu, bannière de grains de café et quatre garanties.",
+      "idPlanche": "oaca8rbhx7kqkzy4"
+    },
+    {
+      "element": "site-telephone",
+      "id": null,
+      "essais": 2,
+      "raison": "refusée au rejugement : elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « Une », « boutiq », « toujours », « avec », « vous ») ; sa fidélité n'est pas au niveau (7/10, il faut 8)"
+    },
+    {
+      "element": "produit-1",
+      "id": "woqssfu31wq7n9ys",
+      "w": 912,
+      "h": 1088,
+      "essais": 2,
+      "ambiance": true,
+      "description": "Un sachet kraft de café en grains Mouture à côté d'un bol rempli de grains."
+    },
+    {
+      "element": "produit-2",
+      "id": null,
+      "essais": 2,
+      "raison": "refusée au rejugement : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « EXCELLENCE » ; sa fidélité n'est pas au niveau (7/10, il faut 8)"
+    },
+    {
+      "element": "produit-3",
+      "id": "29cwkz290ygn8ohy",
+      "w": 912,
+      "h": 1088,
+      "essais": 2,
+      "ambiance": true,
+      "description": "Un coffret en carton contenant deux sachets de café Mouture et une tasse blanche au logo, sur lit de frisures."
+    },
+    {
+      "element": "emballage",
+      "id": "2yi3y04n3e0t9rz1",
+      "w": 1344,
+      "h": 1024,
+      "essais": 2,
+      "description": "Une boîte en carton illustrée de montagnes, un sachet, une tasse émaillée et une carte, tous aux couleurs de Mouture."
+    },
+    {
+      "element": "reference-1",
+      "id": "2b13yx1w3wbwl7je",
+      "w": 1024,
+      "h": 912,
+      "essais": 1,
+      "description": "Des grains de café en cours de torréfaction dans un brûloir en métal."
+    },
+    {
+      "element": "reference-2",
+      "id": "6yg637q9aj9shsfn",
+      "w": 1024,
+      "h": 912,
+      "essais": 1,
+      "description": "Un sac de jute ouvert rempli de grains de café verts."
+    },
+    {
+      "element": "reference-3",
+      "id": "wlck40eafvai0147",
+      "w": 1024,
+      "h": 912,
+      "essais": 1,
+      "description": "Une tasse de café fumante sur une planche en bois entourée de grains."
+    },
+    {
+      "element": "reference-4",
+      "id": null,
+      "essais": 2,
+      "raison": "refusée au rejugement : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « CAFÉ ») ; un texte est coupé ou collé au bord"
+    },
+    {
+      "element": "reference-5",
+      "id": null,
+      "essais": 2,
+      "raison": "refusée au rejugement : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Café », « de », « Qualité »)"
+    },
+    {
+      "element": "reference-6",
+      "id": "zl2ynkh92z6y1fe3",
+      "w": 1024,
+      "h": 912,
+      "essais": 2,
+      "description": "Un coffret en carton ouvert contenant deux sachets de café Mouture sur des frisures de papier."
+    }
+  ],
+  "logos": [
+    {
+      "version": "logo-principal",
+      "id": "8mr0enr5ej7wfsoz"
+    },
+    {
+      "version": "logo-horizontal",
+      "id": "nwrpdoiy60z6rm3x"
+    },
+    {
+      "version": "logo-empile",
+      "id": "yvm7sjk81d9y46n3"
+    },
+    {
+      "version": "logo-compact",
+      "id": "1i1y4omvrw8spnbh"
+    },
+    {
+      "version": "icone",
+      "id": "membme4tots4rnny"
+    },
+    {
+      "version": "favicon",
+      "id": "cet33bmxnj58khhs"
+    },
+    {
+      "version": "monochrome-fonce",
+      "id": "xgz96200ltnd96by"
+    },
+    {
+      "version": "monochrome-clair",
+      "id": "vy8ajvkkq11lvap4"
+    },
+    {
+      "version": "inverse",
+      "id": "gfldqbub5jp1irol"
+    },
+    {
+      "version": "badge",
+      "id": "9sj30hr7iycvyeyi"
+    }
+  ],
+  "favicons": {
+    "f32": "q5nlky4ryy01ekkz",
+    "f64": "y7piezwn30cgojf6",
+    "f512": "b01gg2yt8j8pi5ey",
+    "avatar": "n4pglny5x8zg0g2z"
+  },
+  "palette": [
+    {
+      "hex": "#2E1A12",
+      "nom": "Brun café",
+      "mots": [
+        "Authenticité",
+        "Profondeur"
+      ]
+    },
+    {
+      "hex": "#A86B3A",
+      "nom": "Cuivre",
+      "mots": [
+        "Chaleur",
+        "Artisanat"
+      ]
+    },
+    {
+      "hex": "#C89B6B",
+      "nom": "Caramel",
+      "mots": [
+        "Gourmandise",
+        "Convivialité"
+      ]
+    },
+    {
+      "hex": "#F6E9D7",
+      "nom": "Crème",
+      "mots": [
+        "Douceur",
+        "Équilibre"
+      ]
+    },
+    {
+      "hex": "#7B8470",
+      "nom": "Sauge",
+      "mots": [
+        "Nature",
+        "Élégance"
+      ]
+    }
+  ],
+  "polices": {
+    "titres": {
+      "cle": "montserrat",
+      "famille": "Montserrat",
+      "fichier": "Montserrat-700.ttf",
+      "poids": 700,
+      "handle": "montserrat_n7",
+      "lue": "Montserrat",
+      "remplacee": false
+    },
+    "textes": {
+      "cle": "playfair_display",
+      "famille": "Playfair Display",
+      "fichier": "PlayfairDisplay-400.ttf",
+      "poids": 400,
+      "handle": "playfair_display_n4",
+      "lue": "Playfair Display",
+      "remplacee": false
+    }
+  },
+  "symboleComplet": true,
+  "publications": [
+    {
+      "element": "publication-1x1",
+      "id": "88r7x9f8cnjeg5m8",
+      "texte": "Plus qu'un café, un moment à vous. MOUTURE",
+      "comprehensible": true,
+      "format": "1:1"
+    },
+    {
+      "element": "publication-4x5",
+      "id": "schvdeqck8mirjlz",
+      "texte": "Un café de caractère, au quotidien. Torréfaction artisanale Origines sélectionnées Saveurs intenses Découvrir MOUTURE TORRÉFACTION ARTISANALE CAFÉ EN GRAINS L'ESSENTIEL",
+      "comprehensible": true,
+      "format": "4:5"
+    },
+    {
+      "element": "publication-9x16",
+      "id": "1xy1n9m40idkqn7q",
+      "texte": "Votre rituel café du jour ? Café noir Café au lait Cappuccino Autre MOUTURE",
+      "comprehensible": true,
+      "format": "9:16"
+    }
+  ],
+  "issues": [
+    "Sur ta planche en vrai, 4 images n'ont pas passé ma relecture, même refaites (Site sur téléphone, Produit 2, Image de référence 4, Image de référence 5) : leurs cases gardent l'aperçu de ta planche choisie, sans fichier en haute définition. Je peux les refaire à ma charge : rien n'est compté sur ton budget.",
+    "Tes produits sur la planche en vrai sont des images d'ambiance (« image d'ambiance, ce n'est pas ton produit ») : ils ne vont jamais sur les emplacements produit de ton site, où « Ta photo ici » attend tes photos. Quand tu m'envoies tes photos, je peux refaire ces cases avec ton vrai produit, je t'annonce le prix avant."
+  ],
+  "notes": [
+    "publication-4x5, essai 1 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Une », « de », « caractère », « ÉQUILIBRE », « & », « INTENSITÉ »)",
+    "publication-4x5, essai 2 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Saveurs », « intenses »)",
+    "site-telephone, essai 1 refusé : un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (7/10, il faut 8)",
+    "site-telephone, essai 2 refusé : elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « Une », « boutiq », « toujours », « avec », « vous ») (en trop ou mal écrits : « Cafés », « en », « grains », « Cafés », « moulus », « Coffrets ») ; sa fidélité n'est pas au niveau (7/10, il faut 8)",
+    "produit-1, essai 1 refusé : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « CLASSÉ | 500 g | 100% ARABICA » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « L'EXCELLENCE », « SÉLECTIONNÉ », « AVEC », « PASSION », « TORRÉFIÉ », « EN », « PETITES », « QUANTITÉS »)",
+    "produit-2, essai 1 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « ÉQUILIBRÉ », « DES », « ARÔMES », « RICHES », « ET », « GÉNÉREUX », « POUR », « UN »)",
+    "produit-2, essai 2 refusé : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « EXCELLENCE » ; sa fidélité n'est pas au niveau (7/10, il faut 8)",
+    "produit-3, essai 1 refusé : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « L'ARABY DE PÉROU », « 100% ARABICA » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « NOTES », « CHOCOLATÉES », « ET », « FRUITÉES », « L'ARABICA », « SIGNATURE ») ; sa fidélité n'est pas au niveau (6/10, il faut 8)",
+    "produit-3, essai 2 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « CAFÉS », « EN », « GRAINS », « CAFÉS », « MOULUS »)",
+    "emballage, essai 1 refusé : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « Grains | 250 g » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « L'Instart », « franc », « - », « MÉLANGE », « Notes », « de », « chocolat », « noir ») ; un logo foncé est posé sur un fond sombre : il doit y être clair ; sa fidélité n'est pas au niveau (6/10, il faut 8)",
+    "emballage, essai 2 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Cafés », « moulus »)",
+    "reference-4, essai 1 refusé : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « 100% ARABICA », « 250G e », « 100% ARAI », « 250 » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « EN », « EN », « GRAINS », « GRAINS ») (en trop ou mal écrits : « ERRANO », « CHOCOLAT », « - », « NOISETTE », « DE », « CERROAZUL », « AGRUMES », « - ») ; un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (6/10, il faut 8)",
+    "reference-4, essai 2 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « CAFÉ », « CAFÉ », « GRAINS ») (en trop ou mal écrits : « COFFRETS », « CAFÉS », « MOULUS », « CAFÉS », « CAFÉS ») ; un texte est coupé ou collé au bord",
+    "reference-5, essai 1 refusé : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « DEPUIS 1928 » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « CAFÉ »)",
+    "reference-5, essai 2 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Café », « de », « Qualité »)",
+    "reference-6, essai 1 refusé : faits ou produits inventés, absents de l'aperçu et de la fiche du client : « L'ARABICA PUR BRÉSIL », « TORRÉFIÉ EN FRANCE », « 250 G », « LE MOKA ÉTHIOPIE - BIO » ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « ARÔMES », « DOUX », « ET », « ÉQUILIBRÉS », « NOTES », « FRUITÉES », « ET », « FLORALES »)",
+    "reference-6, essai 2 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Cafés », « en », « grains », « Cafés », « moulus »)",
+    "palette : #2E1A12 (écrit sur l'aperçu, mesuré #32180B, écart 2.9) ; #A86B3A (écrit sur l'aperçu, mesuré #A95D28, écart 5) ; #C89B6B (écrit sur l'aperçu, mesuré #C58D59, écart 4.6) ; #F6E9D7 (écrit sur l'aperçu, mesuré #F7E9D5, écart 0.7) ; #7B8470 (écrit sur l'aperçu, mesuré #7D7F68, écart 3.5)",
+    "logos refaits par le code (séparation non fiable : aucune séparation nette entre un symbole et le nom ; en haute définition : logo-compact, icone, favicon, badge)",
+    "logo-compact en haute définition : gardée (essai 1)",
+    "icone en haute définition : gardée (essai 1)",
+    "favicon en haute définition : gardée (essai 1)",
+    "badge en haute définition : gardée (essai 1)",
+    "palette : #2E1A12 (écrit sur l'aperçu, mesuré #32180B, écart 2.9) ; #A86B3A (écrit sur l'aperçu, mesuré #A95D28, écart 5) ; #C89B6B (écrit sur l'aperçu, mesuré #C58D59, écart 4.6) ; #F6E9D7 (écrit sur l'aperçu, mesuré #F7E9D5, écart 0.7) ; #7B8470 (écrit sur l'aperçu, mesuré #7D7F68, écart 3.5)",
+    "haut de la planche : « D », « à », « le », « TO » sont des morceaux du titre du bandeau voisin ; ils ne sont pas réécrits",
+    "monochrome-fonce fait par le code : la planche garde l'aperçu agrandi (elle change visiblement la case (15.7 % des points)) ; la version du code sert aux fichiers à télécharger",
+    "monochrome-clair fait par le code : la planche garde l'aperçu agrandi (elle change visiblement la case (35.6 % des points)) ; la version du code sert aux fichiers à télécharger",
+    "inverse fait par le code : la planche garde l'aperçu agrandi (elle change visiblement la case (21.3 % des points)) ; la version du code sert aux fichiers à télécharger",
+    "logo-compact en haute définition : la planche garde l'aperçu agrandi (ses proportions changent la case (écart 9 %)) ; la haute définition sert aux fichiers à télécharger",
+    "icone en haute définition : la planche garde l'aperçu agrandi (ses proportions changent la case (écart 29 %)) ; la haute définition sert aux fichiers à télécharger",
+    "favicon en haute définition : posé sur la planche (0.7 % des points changés)",
+    "badge en haute définition : la planche garde l'aperçu agrandi (elle change visiblement la case (13.5 % des points)) ; la haute définition sert aux fichiers à télécharger",
+    "réassemblage de l'essai 5-planche-en-vrai : 13 image(s) gardée(s) sur 17 au rejugement",
+    "planche réassemblée par le code, sans appel"
+  ],
+  "logosDeLApercu": [
+    "logo-horizontal",
+    "logo-empile"
+  ],
+  "logosEnHd": [
+    "logo-compact",
+    "icone",
+    "favicon",
+    "badge"
+  ],
+  "planche": {
+    "id": "7t4uf2ixl9j1z6sx",
+    "w": 3072,
+    "h": 4608
+  },
+  "siteEntier": {
+    "id": "dhvr9ljnmd28pooa",
+    "w": 1708,
+    "h": 942
+  }
+}
