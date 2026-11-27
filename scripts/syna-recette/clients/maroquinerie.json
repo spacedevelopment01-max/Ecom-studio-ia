@@ -1,9 +1,99 @@
 {
   "metier": "maroquinerie artisanale qui fabrique et vend en ligne des sacs, des portefeuilles et des ceintures en cuir",
   "kind": "produits",
-  "produits": ["sacs en cuir", "portefeuilles en cuir", "ceintures en cuir"],
+  "produits": [
+    "sacs en cuir",
+    "portefeuilles en cuir",
+    "ceintures en cuir"
+  ],
   "prix": "environ 180 € le sac, 60 € le portefeuille et 50 € la ceinture",
   "clientele": "des gens qui veulent un bel objet en cuir qui dure des années, pour eux ou pour l'offrir",
   "gouts": "chaleureux, élégant et artisanal",
-  "descripteur": "maroquinerie"
+  "descripteur": "maroquinerie",
+  "faits": [
+    {
+      "sujet": "noms",
+      "etat": "donne",
+      "at": 1795794760233,
+      "noms": [
+        "Sac cabas",
+        "Portefeuille",
+        "Ceinture"
+      ]
+    },
+    {
+      "sujet": "formats",
+      "etat": "donne",
+      "at": 1795794760591,
+      "produit": "Sac cabas",
+      "valeur": "38 x 30 cm"
+    },
+    {
+      "sujet": "formats",
+      "etat": "donne",
+      "at": 1795794760591,
+      "produit": "Portefeuille",
+      "valeur": "11 x 9 cm"
+    },
+    {
+      "sujet": "formats",
+      "etat": "donne",
+      "at": 1795794760591,
+      "produit": "Ceinture",
+      "valeur": "de 85 à 115 cm"
+    },
+    {
+      "sujet": "origine",
+      "etat": "donne",
+      "at": 1795794760591,
+      "valeur": "Cuir de France"
+    },
+    {
+      "sujet": "mentions",
+      "etat": "ne_montre_pas",
+      "at": 1795794760591
+    },
+    {
+      "sujet": "fabrication",
+      "etat": "donne",
+      "at": 1795794760591,
+      "valeur": "Fait main à Toulouse"
+    },
+    {
+      "sujet": "matieres",
+      "etat": "donne",
+      "at": 1795794760591,
+      "valeur": "cuir de vachette pleine fleur"
+    },
+    {
+      "sujet": "tannage",
+      "etat": "donne",
+      "at": 1795794760591,
+      "valeur": "tannage végétal"
+    },
+    {
+      "sujet": "coutures",
+      "etat": "donne",
+      "at": 1795794760591,
+      "valeur": "cousu main au point sellier"
+    },
+    {
+      "sujet": "finitions",
+      "etat": "donne",
+      "at": 1795794760591,
+      "valeur": "naturel, cognac et noir"
+    },
+    {
+      "sujet": "annee",
+      "etat": "donne",
+      "at": 1795794760591,
+      "valeur": "2019"
+    },
+    {
+      "sujet": "ville",
+      "etat": "donne",
+      "at": 1795794760591,
+      "valeur": "Toulouse"
+    }
+  ]
 }
