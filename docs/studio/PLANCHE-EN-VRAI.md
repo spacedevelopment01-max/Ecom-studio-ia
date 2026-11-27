@@ -521,3 +521,26 @@ Vérifié sans appel sur les vrais fichiers de l'essai (non copiés dans le dép
 le favicon, le badge et le symbole sont le chevron de l'aperçu ; l'inversé est blanc sur le vert ; le bloc 01 a huit
 cases, sans vide, chacune avec sa légende ; le bandeau n'a plus de second logo ; le produit 2 montré fait 912 × 949.
 Tests : `tests/planche-en-vrai-havane.test.ts`, dessins faits dans le test, sans image de l'essai.
+
+**Le réassemblage de Havane après correction (27 novembre 2026)**, cinq défauts relevés par le chef d'orchestre :
+
+- a. Les titres « 08 SITE WEB – … » et « 09 PACKAGING & SUPPORTS – … » avaient disparu. Cause : sur cet aperçu, ces deux
+  titres sont écrits plus bas que leur case fixe, dans le haut des cases du site et de l'emballage ; tant que l'image
+  refaite reprenait le titre, il se voyait ; depuis que le titre n'est plus attendu (défaut 10), l'image refaite sans lui
+  est gardée et posée par-dessus. Correction : à la découpe, un titre de bloc écrit dans le haut d'une case d'image
+  (`titreEnHautDeLaCase`) ramène le haut de la case sous lui ; la planche garde le titre de l'aperçu ; une image refaite
+  qui porte encore le titre en haut est posée et montrée sans lui (`sansTitreEnHaut`), et le site en une seule image ne le
+  prend pas. L'image reste jugée sur les textes de sa seule zone.
+- b. Un trait vertical restait entre le favicon et le monochrome foncé : le code redessinait le filet de l'aperçu entre
+  ces deux cases. Sur une rangée refaite (dix cases ramenées à huit), il n'est plus redessiné.
+- c. Le logo horizontal à télécharger était minuscule (la marque et sa phrase sur une seule ligne, 18 pour 1). Un logo
+  horizontal plus de deux fois plus allongé que le dessin de sa tuile de l'aperçu (`TROP_ALLONGE`) est illisible : il est
+  repris de sa tuile, comme sur la planche, fichier compris.
+- d. Le monochrome clair était dit « sans aucune encre » : la mesure ne voyait que l'encre franche, pas le sauge sur le
+  crème. Le fichier avait raison. Sans encre franche, l'encre pâle compte (dans la version et dans la tuile).
+- e. « 6.GI » dans la barre d'état : la ligne de l'élément du téléphone dit en positif « La barre d'état du téléphone
+  affiche une heure simple et lisible, « 9:41 », ou de simples traits. » (`BARRE_D_ETAT_EN_VRAI`) ; une image reçue avant
+  cette ligne est reconnue sans être repayée (`texteSansLaLigneDeLaBarreDEtat`) ; l'heure n'y est jamais un fait inventé.
+
+Tests : `tests/planche-en-vrai-havane-reassemblage.test.ts`, sur les vrais fichiers (`tests/fixtures/havane-planche-en-vrai` :
+l'aperçu choisi, le logo fini au fond retiré, l'inventaire réel, l'image du site gardée qui porte encore son titre).

@@ -713,7 +713,9 @@ export async function essaiDeLaPlancheEnVrai(o: {
         const sansMentions = P.texteSansLesMentionsVraies(d.texte, client.produits, faitsDuClient);
         // Une image reçue avant les noms exacts donnés par le client (27 novembre 2026) : la ligne d'alors, aux produits de la fiche.
         const sansNoms = P.texteSansLesNomsDonnes(d.texte, client.produits, faitsDuClient);
-        const avantLaLigne = recue.texte != null && recue.texte !== d.texte && [P.texteSansLaLigneDesTextes(d.texte, client.produits, faitsDuClient), P.texteSansLaLigneDesPetitsTextes(d.texte), sansMentions, P.texteSansLaLigneDesPetitsTextes(sansMentions), sansNoms, P.texteSansLaLigneDesPetitsTextes(sansNoms)].includes(recue.texte);
+        const variantes = [P.texteSansLaLigneDesTextes(d.texte, client.produits, faitsDuClient), P.texteSansLaLigneDesPetitsTextes(d.texte), sansMentions, P.texteSansLaLigneDesPetitsTextes(sansMentions), sansNoms, P.texteSansLaLigneDesPetitsTextes(sansNoms)];
+        // Une image reçue avant la ligne de la barre d'état (27 novembre 2026) : chacun de ces textes, cette ligne en moins.
+        const avantLaLigne = recue.texte != null && recue.texte !== d.texte && [...variantes, ...[d.texte, ...variantes].map(P.texteSansLaLigneDeLaBarreDEtat)].includes(recue.texte);
         if (avantLaLigne) res.reprise!.ecarts.push(`${d.element} (essai ${tour}) : image reçue avant la ligne des étiquettes, reprise telle quelle et rejugée par le code`);
         else if (recue.texte != null && recue.texte !== d.texte) throw (erreur ??= new RepriseRefusee(`le texte de ${d.element} (essai ${tour}) n'est plus celui de la passe d'avant : l'image reçue ne correspondrait plus ; rien de plus n'est lancé (REJUGER=1 dit lesquelles refaire)`));
         const differentes = d.jointes.filter((j) => recue.jointes.get(j.role) && recue.jointes.get(j.role) !== sha(j.data)).map((j) => j.role);
