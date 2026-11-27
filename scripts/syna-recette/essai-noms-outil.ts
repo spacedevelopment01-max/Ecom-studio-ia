@@ -201,6 +201,34 @@ export function rapportAvecLesEcartes(rapport: string, lignes: string[]): string
   return `${rapport.slice(0, coupe)}\n${lignes.join("\n")}\n${rapport.slice(coupe)}`;
 }
 
+const POURQUOI_DE_LA_PAROLE: Record<string, string> = {
+  hors_extrait: "pas retrouvée mot pour mot dans l'extrait de la recherche",
+  page_illisible: "page impossible à relire (accès refusé, page vide ou trop lente)",
+  pas_relue: "page au-delà des 16 pages relues",
+  pas_sur_la_page: "page relue, mais la parole n'y est pas mot pour mot",
+};
+
+/**
+ * Ce que l'étude des clients a lu (essai réel du 27 novembre 2026 : « 0 parole réelle de clients trouvée », sans savoir
+ * où elles s'étaient perdues) : les pages trouvées par famille, les paroles rendues par l'étude, puis chaque parole écartée
+ * et pourquoi. Pour le propriétaire seulement ; une étude d'avant ce compte rendu le dit.
+ */
+export function lignesDeLaLectureDeLEtude(etude: { quotes?: unknown[]; notFound?: string[]; sources?: number; dropped?: number; lecture?: import("../../src/lib/syna-agent/brand-chain").LectureDeLEtude }): string[] {
+  const l = etude.lecture;
+  const lignes = ["L'étude des clients (pour toi seulement) :"];
+  if (!l) return [...lignes, `- ${etude.sources ?? 0} page(s) lue(s) ; ${etude.quotes?.length ?? 0} parole(s) gardée(s), ${etude.dropped ?? 0} écartée(s) (le détail n'était pas encore gardé).`];
+  const familles = new Map<string, number>();
+  for (const p of l.pages) familles.set(p.famille, (familles.get(p.famille) ?? 0) + 1);
+  const NOM: Record<string, string> = { customers: "paroles de clients", competitors: "concurrents", offer: "usages", sector: "secteur" };
+  lignes.push(`- Pages trouvées par les recherches : ${l.pages.length}${familles.size ? ` (${[...familles].map(([f, n]) => `${n} ${NOM[f] ?? f}`).join(", ")})` : ""}.`);
+  for (const p of l.pages.filter((x) => x.famille === "customers")) lignes.push(`  - ${p.url} (extrait de ${p.extrait} caractères)`);
+  lignes.push(`- Paroles rendues par l'étude : ${l.proposees} ; gardées après les deux relectures : ${etude.quotes?.length ?? 0}.`);
+  const parRaison = new Map<string, number>();
+  for (const x of l.ecartees) parRaison.set(x.pourquoi, (parRaison.get(x.pourquoi) ?? 0) + 1);
+  if (l.ecartees.length) lignes.push(`- Écartées : ${[...parRaison].map(([r, n]) => `${n} ${POURQUOI_DE_LA_PAROLE[r] ?? r}`).join(" ; ")}.`, ...l.ecartees.map((x) => `  - « ${x.text} » (${x.url}) : ${POURQUOI_DE_LA_PAROLE[x.pourquoi] ?? x.pourquoi}`));
+  return lignes;
+}
+
 /** Les noms écartés de la tâche des noms, relus dans son état (aucun appel). */
 async function ecartesDeLaTache(jobId: string, o: { kind: "produits" | "services"; count: number }): Promise<NomsEcartes | null> {
   const { one } = await import("../../src/lib/db");
@@ -380,6 +408,11 @@ export async function essaiDesNoms(o: {
     ...res.noms.map((n) => `${n.numero}. ${n.nom} [${n.verification === "verifie" ? "vérifié" : "non vérifié"}]${n.doute ? ` (avec un doute : ${n.doute})` : ""} — ${n.pourquoi || n.detail}\n   ${n.phraseDeLAdresse}\n   La planche écrirait : « ${n.adresseDeLaPlanche.mention} »`),
     "", "Le nom choisi part aux étapes suivantes par CLIENT_NOM=\"<le nom, tel qu'il est écrit ci-dessus>\".",
     "", ...lignesDesNomsEcartes(res.ecartes, count));
+  // Ce que l'étude a lu, et où se sont perdues les paroles de clients (relu dans l'état de la tâche, aucun appel).
+  try {
+    const etude = (JSON.parse(one<{ checkpoint: string | null }>("SELECT checkpoint FROM jobs WHERE id=?", jobId)?.checkpoint || "{}") as Record<string, unknown>)["brand:study"] as Parameters<typeof lignesDeLaLectureDeLEtude>[0] | undefined;
+    if (etude) { lignes.push("", ...lignesDeLaLectureDeLEtude(etude)); ecrireFichier("etude-des-clients.json", json({ paroles: etude.quotes ?? [], notFound: etude.notFound ?? [], lecture: etude.lecture ?? null })); }
+  } catch { /* rien : seul le compte rendu de l'étude manque */ }
   if (!res.arret) res.etapesFaites = etapesFaites();
   return ecrire();
 }

@@ -336,7 +336,21 @@ export const StudySchema = z.object({
   facts: z.array(z.object({ text: z.string().min(1).max(400), url: z.string().max(2000) })).max(20).default([]),
   notFound: z.array(z.string().max(240)).max(10).default([]),
 });
-export type Study = z.infer<typeof StudySchema> & { sources: number; dropped: number };
+export type Study = z.infer<typeof StudySchema> & { sources: number; dropped: number; lecture?: LectureDeLEtude };
+
+/**
+ * Ce que l'étude a lu et pourquoi chaque parole de client écartée l'a été (essai réel du 27 novembre 2026 : « 0 parole
+ * réelle de clients trouvée », sans savoir où elles s'étaient perdues). Un compte rendu pour le propriétaire, gardé dans
+ * l'état de la tâche : il ne change rien à ce qui est gardé, et rien n'en part vers l'IA.
+ */
+export type LectureDeLEtude = {
+  /** Les pages trouvées par les recherches, par famille, avec la longueur de leur extrait. */
+  pages: { url: string; famille: ResearchCategory; extrait: number }[];
+  /** Les paroles rendues par l'étude, avant les deux relectures. */
+  proposees: number;
+  /** Chaque parole écartée (texte coupé à 160 caractères) et pourquoi. */
+  ecartees: { text: string; url: string; pourquoi: "hors_extrait" | "page_illisible" | "pas_relue" | "pas_sur_la_page" }[];
+};
 
 const StrategySchema = z.object({
   job: z.string().max(400).default(""),
@@ -376,7 +390,7 @@ export const JudgeSchema = z.object({
 });
 export type VerdictDuJuge = z.infer<typeof JudgeSchema>;
 
-const VerifySchema = z.object({ checks: z.array(z.object({ name: z.string().max(60), taken: z.boolean().default(false), url: z.string().max(2000).default(""), note: z.string().max(300).default("") })).max(12).default([]) });
+const VerifySchema = z.object({ checks: z.array(z.object({ name: z.string().max(60), taken: z.boolean().default(false), url: z.string().max(2000).default(""), note: z.string().max(300).default(""), metierDuClient: z.string().max(200).default("") })).max(12).default([]) });
 
 /** Route telle que la rend la direction artistique : la planche avec ses pictogrammes encore en SVG brut. */
 const DraftBoard = BoardSchema.omit({ nameCheck: true, domains: true, signs: true, wordmark: true, idea: true, hero: true, object: true, site: true, posts: true, images: true }).extend({
@@ -516,6 +530,23 @@ export function verifiedQuotes(quotes: { text: string; url: string }[], findings
   return { kept, dropped: quotes.length - kept.length };
 }
 
+/**
+ * Les lettres accentuées écrites en entités nommées (« &eacute; », « &ccedil; », « &oelig; »), fréquentes sur les forums et
+ * les vieux sites français (essai réel de la maroquinerie, 27 novembre 2026 : aucune parole de client gardée) : sans elles,
+ * une parole recopiée avec ses accents ne se retrouvait jamais sur sa page.
+ */
+const ENTITES_NOMMEES: Record<string, string> = (() => {
+  const m: Record<string, string> = { oelig: "œ", OElig: "Œ", aelig: "æ", AElig: "Æ", szlig: "ß", euro: "€", ndash: "–", mdash: "—", sbquo: "‚", bdquo: "„", thinsp: " ", ensp: " ", emsp: " ", shy: "", deg: "°", middot: "·", bull: "•" };
+  // La lettre décomposée (NFD) donne le nom de l'accent : « é » = « e » + accent aigu → « eacute » et « Eacute ».
+  const ACCENT: Record<string, string> = { "̀": "grave", "́": "acute", "̂": "circ", "̃": "tilde", "̈": "uml", "̊": "ring", "̧": "cedil" };
+  for (const l of "àáâãäåèéêëìíîïòóôõöùúûüýÿñç") {
+    const [base, marque] = [...l.normalize("NFD")];
+    m[`${base}${ACCENT[marque]}`] = l;
+    m[`${base.toUpperCase()}${ACCENT[marque]}`] = l.toUpperCase();
+  }
+  return m;
+})();
+
 /** Texte lisible d'une page (balises retirées, entités et échappements décodés) : sert à y retrouver une parole citée. */
 export function pageText(html: string): string {
   return html
@@ -523,14 +554,27 @@ export function pageText(html: string): string {
     .replace(/<[^>]*>/g, " ")
     .replace(/&#x([0-9a-fA-F]+);/g, (_m, h: string) => String.fromCodePoint(parseInt(h, 16))).replace(/&#(\d+);/g, (_m, d: string) => String.fromCodePoint(Number(d)))
     .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&apos;|&rsquo;|&lsquo;/g, "'").replace(/&laquo;|&raquo;|&ldquo;|&rdquo;/g, '"').replace(/&hellip;/g, "…").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/&([a-zA-Z]{2,8});/g, (tout, nom: string) => ENTITES_NOMMEES[nom] ?? tout)
     .replace(/\s+/g, " ").trim();
+}
+
+/**
+ * Le texte d'une page téléchargée, dans son vrai jeu de caractères : celui que disent l'en-tête de la réponse ou la page
+ * elle-même (« charset=… »), sinon l'UTF-8. Une page en ISO-8859-1 ou en windows-1252 (vieux forums français) lue comme de
+ * l'UTF-8 perdait tous ses accents, et aucune parole citée ne s'y retrouvait.
+ */
+export function texteDeLaPage(body: Buffer, contentType = ""): string {
+  const tete = body.subarray(0, 4096).toString("latin1");
+  const dit = (contentType.match(/charset\s*=\s*["']?([\w-]+)/i) ?? tete.match(/<meta[^>]+charset\s*=\s*["']?([\w-]+)/i))?.[1]?.toLowerCase() ?? "utf-8";
+  const jeu = /^(iso-?8859-?1|latin-?1|windows-?1252|cp1252|iso-?8859-?15)$/.test(dit) ? "windows-1252" : "utf-8";
+  try { return new TextDecoder(jeu).decode(body); } catch { return body.toString("utf8"); }
 }
 
 /** Téléchargement d'une page citée (gratuit, adresse publique seulement) ; null si elle ne se laisse pas lire. Remplaçable par les tests. */
 export const brandPageDeps: { read?: (url: string) => Promise<string | null> } = {};
 async function readPage(url: string): Promise<string | null> {
   try {
-    const html = brandPageDeps.read ? await brandPageDeps.read(url) : await (async () => { const r = await safeFetch(url, { maxBytes: 2_500_000, timeoutMs: 12_000 }); return r.status < 400 ? r.body.toString("utf8") : null; })();
+    const html = brandPageDeps.read ? await brandPageDeps.read(url) : await (async () => { const r = await safeFetch(url, { maxBytes: 2_500_000, timeoutMs: 12_000 }); return r.status < 400 ? texteDeLaPage(r.body, r.type) : null; })();
     return html == null ? null : pageText(html);
   } catch { return null; }
 }
@@ -546,11 +590,20 @@ export function quoteOnPage(quote: string, text: string): boolean {
  * n'est gardée comme « réelle » que si le Studio la retrouve, mot pour mot, en relisant la page citée. Une page qui ne
  * se laisse pas relire (avis chargés après coup, accès refusé) fait écarter ses paroles : c'est dit, jamais maquillé.
  */
-export async function quotesReadOnPages(quotes: { text: string; url: string }[]): Promise<{ kept: { text: string; url: string }[]; unread: number }> {
+export async function quotesReadOnPages(quotes: { text: string; url: string }[]): Promise<{
+  kept: { text: string; url: string }[]; unread: number;
+  /** Pourquoi chaque parole écartée l'a été (compte rendu de l'essai, aucun effet sur ce qui est gardé). */
+  ecartees: { text: string; url: string; pourquoi: "page_illisible" | "pas_relue" | "pas_sur_la_page" }[];
+}> {
   const urls = [...new Set(quotes.map((q) => q.url))].slice(0, MAX_PAGES_REREAD);
   const texts = new Map(await Promise.all(urls.map(async (u) => [u, await readPage(u)] as const)));
-  const kept = quotes.filter((q) => { const t = texts.get(q.url); return !!t && quoteOnPage(q.text, t); });
-  return { kept, unread: quotes.length - kept.length };
+  const kept: { text: string; url: string }[] = [], ecartees: { text: string; url: string; pourquoi: "page_illisible" | "pas_relue" | "pas_sur_la_page" }[] = [];
+  for (const q of quotes) {
+    const t = texts.get(q.url);
+    if (t && quoteOnPage(q.text, t)) kept.push(q);
+    else ecartees.push({ ...q, pourquoi: !texts.has(q.url) ? "pas_relue" : !t ? "page_illisible" : "pas_sur_la_page" });
+  }
+  return { kept, unread: quotes.length - kept.length, ecartees };
 }
 
 /**
@@ -677,7 +730,37 @@ type EquipesDeNoms = { team: string; names: z.infer<typeof TeamSchema>["names"] 
  * (une tâche d'avant le 26 novembre 2026 ne l'a pas : la comparaison se lit alors à `preuves`, posé seulement après elle,
  * ou à un nom trouvé pris ; sans l'un ni l'autre, rien ne prouve qu'une page ait été comparée : non vérifié).
  */
-type VerificationDesNoms = { done: boolean; compare?: boolean; taken: string[]; preuves?: { name: string; url: string; note: string }[] };
+type VerificationDesNoms = {
+  done: boolean; compare?: boolean; taken: string[]; preuves?: { name: string; url: string; note: string }[];
+  /**
+   * Les noms dits « pris » en les comparant à un AUTRE métier que celui de la fiche (essai réel du 27 novembre 2026 : un
+   * nom écarté parce que « c'est le même secteur que ton projet de vêtements », pour une maroquinerie) : ce résultat ne
+   * compte pas ; le nom n'est pas écarté, mais il n'est pas dit « vérifié » non plus.
+   */
+  aRevoir?: { name: string; url: string; note: string; metier: string }[];
+};
+
+/** Les mots d'un texte qui comptent (quatre lettres au moins), sans accents ni casse. */
+const motsQuiComptent = (t: string) => t.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().split(/[^a-z0-9]+/).filter((m) => m.length >= 4);
+/** Les mots qui ne disent aucun métier (« ton projet de … », « une boutique qui vend … »). */
+const MOTS_SANS_METIER = new Set(["dans", "pour", "avec", "sans", "leur", "leurs", "cette", "celui", "celle", "comme", "plus", "tout", "tous", "toutes", "autre", "autres", "vend", "vends", "vendre", "vente", "ligne", "fabrique", "fabriquer", "propose", "proposer", "projet", "metier", "activite", "secteur", "client", "clients", "marque", "boutique", "entreprise", "produits", "produit", "services", "service", "prestations", "prestation", "france", "francais", "francaise"]);
+/** Un mot est-il dans la fiche, au singulier ou au pluriel près ? */
+const dansLaFiche = (mot: string, fiche: Set<string>) => fiche.has(mot) || fiche.has(mot.replace(/[sx]$/, "")) || fiche.has(`${mot}s`) || fiche.has(`${mot}x`);
+
+/**
+ * Le métier que le vérificateur des noms prête au client, quand ce n'est pas celui de sa fiche (contrôle gratuit) : le
+ * métier qu'il a recopié (`metierDuClient`), sinon celui que sa note lui prête (« ton projet de … », « ta boutique de … »).
+ * Un seul mot de métier absent de la fiche suffit : la comparaison n'a pas été faite avec CE client. null : rien à redire.
+ */
+export function metierPreteAuClient(c: { note?: string; metierDuClient?: string }, fiche: string): string | null {
+  const mots = new Set(motsQuiComptent(fiche));
+  const etranger = (t: string) => motsQuiComptent(t).filter((m) => !MOTS_SANS_METIER.has(m)).some((m) => !dansLaFiche(m, mots));
+  const recopie = (c.metierDuClient ?? "").trim();
+  if (recopie && etranger(recopie)) return recopie;
+  const m = (c.note ?? "").match(/(?:^|[^\p{L}])(?:ton|ta|tes)\s+(?:propre\s+)?(?:projet|métier|metier|activité|activite|secteur|boutique|marque|entreprise|commerce|atelier)s?\s+(?:de\s+|d['’]\s*|du\s+|des\s+|en\s+)?([^,.;:()«»"]{2,80})/iu);
+  if (m && etranger(m[1])) return m[1].trim();
+  return null;
+}
 
 /**
  * L'état de la vérification des noms : « verifie » seulement si des pages ont été comparées aux noms (décision du
@@ -701,10 +784,18 @@ export async function verifierLesNoms(ai: { research: ChainAi["research"]; ask: 
     let findings = await ai.research(id, P.verifyQuery(noms, brief), "competitors");
     if (!findings.length) findings = await ai.research(`${id}-2`, P.verifyQueryAutrement(noms, brief), "competitors");
     if (!findings.length) return { done: true, compare: false, taken: [] };
-    const r = await ai.ask(id, { kind: "verify", system: P.VERIFY_SYSTEM, schema: VerifySchema, prompt: `# Noms à vérifier\n${noms.map((n) => `- ${n}`).join("\n")}\n\n# Pages trouvées\n${findings.map((f) => `${f.url}\n${f.title}\n${f.excerpt}`).join("\n\n")}` });
-    // `preuves` : ce que la vérification a vu, et où (le compte rendu des noms écartés, les noms pris des routes).
-    const preuves = r.checks.filter((c) => c.taken && findings.some((f) => sameUrl(f.url, c.url))).map((c) => ({ name: c.name, url: c.url, note: c.note }));
-    return { done: true, compare: true, taken: preuves.map((c) => c.name), preuves };
+    // La fiche du client part AVEC les pages (essai réel du 27 novembre 2026 : sans elle, le vérificateur devinait le
+    // métier du client d'après les pages et l'a pris pour un autre).
+    const r = await ai.ask(id, { kind: "verify", system: P.VERIFY_SYSTEM, schema: VerifySchema, prompt: P.verifyPrompt(noms, brief, findings) });
+    // `preuves` : ce que la vérification a vu, et où (le compte rendu des noms écartés, les noms pris des routes). Un nom
+    // dit pris en le comparant à un autre métier que celui de la fiche n'est pas une preuve (`metierPreteAuClient`).
+    const preuves: NonNullable<VerificationDesNoms["preuves"]> = [], aRevoir: NonNullable<VerificationDesNoms["aRevoir"]> = [];
+    for (const c of r.checks.filter((x) => x.taken && findings.some((f) => sameUrl(f.url, x.url)))) {
+      const metier = metierPreteAuClient(c, brief);
+      if (metier) aRevoir.push({ name: c.name, url: c.url, note: c.note, metier });
+      else preuves.push({ name: c.name, url: c.url, note: c.note });
+    }
+    return { done: true, compare: true, taken: preuves.map((c) => c.name), preuves, ...(aRevoir.length ? { aRevoir } : {}) };
   } catch (e) { if (e instanceof CostCapReached) throw e; return { done: false, compare: false, taken: [] }; }
 }
 
@@ -1067,17 +1158,27 @@ export async function runSinaBrandJob(ctx: JobContext) {
     }));
     const findings: WebFinding[] = [];
     for (const f of lots.flat()) if (!findings.some((x) => sameUrl(x.url, f.url))) findings.push(f);
-    if (!findings.length) return { quotes: [], competitors: [], mould: "", substitutes: [], facts: [], notFound: [L("La recherche sur le web n'a rien donné : je n'ai lu aucune parole réelle de clients.", "Web research returned nothing.")], sources: 0, dropped: 0 };
+    if (!findings.length) return { quotes: [], competitors: [], mould: "", substitutes: [], facts: [], notFound: [L("La recherche sur le web n'a rien donné : je n'ai lu aucune parole réelle de clients.", "Web research returned nothing.")], sources: 0, dropped: 0, lecture: { pages: [], proposees: 0, ecartees: [] } };
     // Lecture bornée (coût maîtrisé) : les pages de paroles de clients d'abord et en plus long, 45 pages au plus.
     const shownPages = [...findings].sort((x, y) => Number(y.category === "customers") - Number(x.category === "customers")).slice(0, MAX_STUDY_PAGES);
     const pages = shownPages.map((f, i) => `[page ${i}] ${f.url}\n${f.title}\n${f.excerpt.slice(0, f.category === "customers" ? 2400 : 1000)}`).join("\n\n");
     const raw = await ai.ask("study", { kind: "study", system: P.STUDY_SYSTEM, schema: StudySchema, prompt: `${brief}\n\n# Pages trouvées (${shownPages.length})\n${pages}` });
     // Deux relectures gratuites : la parole est dans l'extrait de la recherche, PUIS dans la page elle-même.
     const q = verifiedQuotes(raw.quotes, findings);
-    const read =2 > 1 ? await quotesReadOnPages(q.kept) : { kept: q.kept, unread: 0 };
+    const read = await quotesReadOnPages(q.kept);
     const urls = (u: string) => findings.some((f) => sameUrl(f.url, u));
     const notFound = [...raw.notFound, ...(read.unread ? [L(read.unread > 1 ? `${read.unread} paroles rapportées par ma recherche : je n'ai pas pu les relire sur leur page, je ne les ai pas gardées.` : "1 parole rapportée par ma recherche : je n'ai pas pu la relire sur sa page, je ne l'ai pas gardée.", `${read.unread} reported quote(s) could not be re-read on their page and were dropped.`)] : [])].slice(0, 10);
-    return { ...raw, notFound, quotes: read.kept.slice(0, 40), facts: raw.facts.filter((f) => urls(f.url)), competitors: raw.competitors.map((c) => ({ ...c, url: urls(c.url) ? c.url : "" })), sources: new Set(findings.map((f) => f.url)).size, dropped: q.dropped + read.unread };
+    // Le compte rendu de la lecture : les pages par famille, et pourquoi chaque parole écartée l'a été (rien d'autre ne change).
+    const court = (t: string) => (t.length > 160 ? `${t.slice(0, 159)}…` : t);
+    const lecture: LectureDeLEtude = {
+      pages: findings.slice(0, 60).map((f) => ({ url: f.url, famille: f.category, extrait: f.excerpt.length })),
+      proposees: raw.quotes.length,
+      ecartees: [
+        ...raw.quotes.filter((x) => !q.kept.includes(x)).map((x) => ({ text: court(x.text), url: x.url, pourquoi: "hors_extrait" as const })),
+        ...read.ecartees.map((x) => ({ text: court(x.text), url: x.url, pourquoi: x.pourquoi })),
+      ].slice(0, 60),
+    };
+    return { ...raw, notFound, quotes: read.kept.slice(0, 40), facts: raw.facts.filter((f) => urls(f.url)), competitors: raw.competitors.map((c) => ({ ...c, url: urls(c.url) ? c.url : "" })), sources: new Set(findings.map((f) => f.url)).size, dropped: q.dropped + read.unread, lecture };
   });
   if (study.quotes.length < 10) notes.push(`${study.quotes.length} parole(s) réelle(s) de clients trouvée(s) : moins de dix`);
 
@@ -1176,9 +1277,12 @@ export async function runSinaBrandJob(ctx: JobContext) {
       try { ctx.save(`${CLE_DES_NOMS_ECARTES}:${round}`, nomsEcartes({ equipes1: teams, equipes2: verdicts.equipes2 ?? null, concurrents: study.competitors.map((c) => c.name), dejaMontres: shown, juge1: verdicts.juge1 ?? null, juge2: verdicts.juge2 ?? null, todo: todo.length, verification: pris })); }
       catch { /* rien : seul le compte rendu manque */ }
     }
+    // Un nom comparé à un autre métier que celui de la fiche n'est ni écarté ni dit « vérifié » ; c'est écrit aux notes.
+    for (const x of pris.aRevoir ?? []) notes.push(`« ${x.name} » : la vérification l'a comparé à un autre métier que celui de la fiche (« ${x.metier} ») ; ce résultat ne compte pas : le nom n'est pas écarté, mais il n'est pas dit vérifié`);
+    const aRevoir = new Set((pris.aRevoir ?? []).map((x) => normText(x.name)));
     const libres = candidats.filter((n) => !pris.taken.some((t) => normText(t) === normText(n)));
     if (!libres.length) throw new UserFacingError(L("Aucun des noms gardés n'est libre : dis-moi ce que tu veux de différent et je recommence.", "None of the kept names is free."));
-    const avecPourquoi = libres.map((name) => { const k = judged.find((x) => normText(x.name) === normText(name)); const n = allowed.find((x) => normText(x.name) === normText(name)); return { name, why: k?.why ?? doubts.get(normText(name)) ?? "", detail: n?.detail ?? "", doute: doubts.get(normText(name)) ?? null, verification: etat.verification }; });
+    const avecPourquoi = libres.map((name) => { const k = judged.find((x) => normText(x.name) === normText(name)); const n = allowed.find((x) => normText(x.name) === normText(name)); return { name, why: k?.why ?? doubts.get(normText(name)) ?? "", detail: n?.detail ?? "", doute: doubts.get(normText(name)) ?? null, verification: aRevoir.has(normText(name)) ? ("non_verifie" as const) : etat.verification }; });
     const verifies = etat.verification === "verifie";
     updateJourney(a.conversationId, (x) => { x.nomsVerifies = libres; x.nomsDeLaMarque = { list: avecPourquoi, verifies, verification: etat.verification, ...(etat.pourquoi ? { pourquoiNonVerifie: etat.pourquoi } : {}), atelier: ctx.job.id, count: a.count, at: Date.now() }; });
     // La phrase à dire au client vient en tête du résultat (SINA le relit, raccourci) : jamais « vérifié » sans comparaison.
