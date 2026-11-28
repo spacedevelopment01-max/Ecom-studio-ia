@@ -223,3 +223,6 @@ Le propriétaire a remarqué « toujours les mêmes mimiques ». On garde la voi
   « Sauf que… », « Problème : », « Le détail qui tue : », « Et personne ne s'y attendait. », « Tu vas pas aimer la suite. », une question directe…
 - Chutes : ne plus commencer par « Bref » à chaque fois.
 - Avant d'envoyer la voix, relire les deux dernières vidéos et vérifier qu'aucune formule ni couleur de jeu n'est reprise.
+
+## Prononciation (28 novembre 2026)
+Paul prononce « pet » avec le T. Dans le texte lu par la voix, écrire « pé » (les sous-titres gardent « pet »). Même méthode pour tout mot mal prononcé : l'écrire comme il se prononce dans texte_joue.txt seulement.
