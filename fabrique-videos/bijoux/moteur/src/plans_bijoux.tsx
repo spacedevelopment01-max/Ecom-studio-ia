@@ -96,7 +96,7 @@ export const B04: React.FC = () => (
 			<Fond c="#e8eef0" />
 			{t > 16.2 && <g transform={`translate(540 950) scale(${pop(t, 16.2)})`}><rect x={-300} y={-160} width={600} height={320} rx={30} fill="#fff" stroke={INK} strokeWidth={8} />{txt(0, -60, 'USINE À', 50, INK)}{txt(0, 20, 'SPERMATOZOÏDES', 56, '#2f6fb0')}{Array.from({length: 6}).map((_, i) => <g key={i} transform={`translate(${-200 + ((f * 4 + i * 80) % 400)} 100)`}><circle r={12} fill="#fff" stroke={INK} strokeWidth={3} /><path d={`M 12 0 q 20 ${Math.sin(f * 0.5 + i) * 12} 40 0`} stroke={INK} strokeWidth={3} fill="none" /></g>)}</g>}
 			{t > 19.2 && <><Thermo x={330} y={1650} k={0.85} label="37°" s={0.8} /><Thermo x={750} y={1650} k={0.6} label="34°" s={0.8} /></>}
-			{T(t, 14.45, 'UNE VRAIE RAISON', 110)}
+			{T(t, 14.45, "SAUF QU'IL Y A UNE RAISON", 84)}
 			{t > 17.86 && T(t, 17.86, 'IL FAUT DU FRAIS', 110, '#bfe6fa', 560)}
 		</>)}
 	</Plan>
@@ -138,8 +138,8 @@ export const B07: React.FC = () => (
 			<Ciel id="b7" haut="#f6b26b" bas="#fde4b8" /><Soleil x={860} y={300} f={f} />
 			<rect x={-800} y={1600} width={2680} height={1300} fill="#d8b860" stroke={INK} strokeWidth={6} />
 			<Elephant x={600} y={1650} s={1.0} f={f} />
-			{T(t, 31.3, "MAIS L'ÉLÉPHANT…", 110)}
-			{t > 33.29 && T(t, 33.29, 'LES GARDE DEDANS', 110, '#fff', 560)}
+			{T(t, 31.3, 'LE DÉTAIL QUI TUE :', 110)}
+			{t > 33.29 && T(t, 33.29, "L'ÉLÉPHANT LES GARDE DEDANS", 76, '#fff', 560)}
 			{t > 35.56 && <Ecran>{txt(540, 1750, 'ET ÇA MARCHE TRÈS BIEN', 70, '#FFD23F')}</Ecran>}
 		</>)}
 	</Plan>
