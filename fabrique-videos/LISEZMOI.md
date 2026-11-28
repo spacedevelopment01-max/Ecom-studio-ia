@@ -213,3 +213,13 @@ Mesure : relever la courbe de rétention de chaque vidéo (TikTok Studio) et not
 
 ## Règle (26 novembre 2026) : la première seconde
 Dès la première image : voix ou texte fort à l'écran. Jamais d'introduction (bruit seul, image seule) avant la voix. La voix démarre avant 0,5 s.
+
+## Règle (28 novembre 2026) : Paul reste, mais il ne doit plus avoir les mêmes tics
+Le propriétaire a remarqué « toujours les mêmes mimiques ». On garde la voix de Paul, on change la façon de dire.
+- Indications de jeu : au plus 1 ou 2 [laughs] par vidéo ; chaque vidéo a SA couleur dominante, différente de la précédente
+  (blasé, agacé, surexcité, faussement sérieux / documentaire, dégoûté, conspirateur, commentateur sportif, prof dépassé, présentateur du journal…).
+- Ne plus mettre [whispers] avant chaque révélation, ni [mischievously] partout.
+- Relances : « Mais attends… le plus fou » interdit plus d'une vidéo sur trois. Varier : « Et là, c'est le drame. », « Accroche-toi. »,
+  « Sauf que… », « Problème : », « Le détail qui tue : », « Et personne ne s'y attendait. », « Tu vas pas aimer la suite. », une question directe…
+- Chutes : ne plus commencer par « Bref » à chaque fois.
+- Avant d'envoyer la voix, relire les deux dernières vidéos et vérifier qu'aucune formule ni couleur de jeu n'est reprise.
